@@ -1,0 +1,61 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-4.6.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+    <changeSet author="SC7DS3 (generated)" id="1669997260426-1">
+        <createTable tableName="mode">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mode_pkey"/>
+            </column>
+            <column name="label" type="VARCHAR"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="SC7DS3 (generated)" id="1669997260426-2">
+        <createTable tableName="context">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="context_pkey"/>
+            </column>
+            <column name="label" type="VARCHAR"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="SC7DS3 (generated)" id="1669997260426-3">
+        <createTable tableName="campaign">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="campaign_pkey"/>
+            </column>
+            <column name="label" type="VARCHAR"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="SC7DS3 (generated)" id="1669997260426-4">
+        <createTable tableName="questionnaire">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="questionnaire_pkey"/>
+            </column>
+            <column name="label" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="surveyUnitData" type="BYTEA">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modeId" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="contextId" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="formModelId" type="VARCHAR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="campaignId" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="SC7DS3 (generated)" id="1669997260426-5">
+        <addForeignKeyConstraint baseColumnNames="campaignId" baseTableName="questionnaire" constraintName="campaign_id_fk" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="campaign" validate="true"/>
+    </changeSet>
+    <changeSet author="SC7DS3 (generated)" id="1669997260426-6">
+        <addForeignKeyConstraint baseColumnNames="contextId" baseTableName="questionnaire" constraintName="context_id_fk" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="context" validate="true"/>
+    </changeSet>
+    <changeSet author="SC7DS3 (generated)" id="1669997260426-7">
+        <addForeignKeyConstraint baseColumnNames="modeId" baseTableName="questionnaire" constraintName="mode_id_fk" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="id" referencedTableName="mode" validate="true"/>
+    </changeSet>
+</databaseChangeLog>
