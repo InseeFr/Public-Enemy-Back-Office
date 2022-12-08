@@ -26,6 +26,7 @@ import org.springframework.web.reactive.config.CorsRegistry;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+
 @Configuration
 @EnableConfigurationProperties
 @ComponentScan(basePackages = { "fr.insee.publicenemy.api" })
@@ -50,9 +51,16 @@ public class AppConfiguration implements WebMvcConfigurer {
         HttpClient httpClient = HttpClient.newBuilder()
             .proxy(ProxySelector.of(new InetSocketAddress(proxyUrl, proxyPort)))
             .build();
-
+        
+        /*HttpClient httpClient = HttpClient.create()
+            .wiretap(true)
+            .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP)
+            .host(proxyUrl)
+            .port(proxyPort));
+*/
         builder
             .clientConnector(new JdkClientHttpConnector(httpClient))
+            //.clientConnector(new ReactorClientHttpConnector(httpClient))
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE) 
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         return builder.build();
