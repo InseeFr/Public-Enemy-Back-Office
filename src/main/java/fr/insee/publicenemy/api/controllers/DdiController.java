@@ -26,8 +26,8 @@ public class DdiController {
 
     @GetMapping("/json-lunatic/{questionnaireId}")
     public JsonLunatic getJsonLunatic(@PathVariable String questionnaireId) {
-        Context context = new Context(1L, "HOUSEHOLD", "HOUSEHOLD");
-        Mode mode = new Mode(1L, "CAWI","CAWI");
+        Context context = new Context(0L, "HOUSEHOLD");
+        Mode mode = new Mode(1L,"CAWI");
         return ddiUseCase.getJsonLunatic(questionnaireId, context, mode);
     }
 }

@@ -15,8 +15,8 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import fr.insee.publicenemy.api.application.dto.ApiError;
 import fr.insee.publicenemy.api.application.exceptions.ApiException;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

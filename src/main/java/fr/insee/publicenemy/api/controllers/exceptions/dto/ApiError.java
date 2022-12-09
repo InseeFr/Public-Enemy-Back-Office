@@ -1,4 +1,4 @@
-package fr.insee.publicenemy.api.application.dto;
+package fr.insee.publicenemy.api.controllers.exceptions.dto;
 
 import java.util.ArrayList;
 import java.util.Date;

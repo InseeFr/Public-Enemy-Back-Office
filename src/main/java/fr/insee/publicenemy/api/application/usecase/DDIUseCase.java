@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
@@ -10,6 +11,7 @@ import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 
 @Service
+@Transactional
 public class DDIUseCase {
     
     private DdiServicePort ddiService;

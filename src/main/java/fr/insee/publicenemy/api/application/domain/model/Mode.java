@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Mode {
+
     private Long id;
-    private String name;
+    
     private String value;
 }

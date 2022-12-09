@@ -28,10 +28,11 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import fr.insee.publicenemy.api.application.dto.ApiError;
-import fr.insee.publicenemy.api.application.dto.ApiFieldError;
 import fr.insee.publicenemy.api.application.exceptions.ApiException;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiFieldError;
 import fr.insee.publicenemy.api.infrastructure.i18n.I18nMessageServiceImpl;
+import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -268,6 +269,22 @@ public class ApiExceptionHandler {
             WebRequest request) {
         return buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
+    }
+
+    /**
+     * Handle RepositoryEntity not found Exception. .
+     *
+     * @param ex      Exception
+     * @param request WebRequest
+     * @return the ApiError object
+     */
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler({ RepositoryEntityNotFoundException.class })
+    public ApiError handleRepositoryEntityNotFoundException(
+            RepositoryEntityNotFoundException ex,
+            WebRequest request) {
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        return errorComponent.buildErrorObject(attributes, request, HttpStatus.NOT_FOUND);
     }
 
     /**

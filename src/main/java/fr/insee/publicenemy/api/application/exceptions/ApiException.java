@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import fr.insee.publicenemy.api.application.dto.ApiFieldError;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiFieldError;
 import lombok.Getter;
 import lombok.Setter;
 
