@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package fr.insee.publicenemy.api.configuration;
 
 import java.net.InetSocketAddress;
@@ -52,15 +47,8 @@ public class AppConfiguration implements WebMvcConfigurer {
             .proxy(ProxySelector.of(new InetSocketAddress(proxyUrl, proxyPort)))
             .build();
         
-        /*HttpClient httpClient = HttpClient.create()
-            .wiretap(true)
-            .proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP)
-            .host(proxyUrl)
-            .port(proxyPort));
-*/
         builder
             .clientConnector(new JdkClientHttpConnector(httpClient))
-            //.clientConnector(new ReactorClientHttpConnector(httpClient))
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE) 
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
         return builder.build();
