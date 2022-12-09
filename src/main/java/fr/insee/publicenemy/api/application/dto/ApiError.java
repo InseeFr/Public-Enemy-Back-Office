@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.application.dto;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class ApiError {
 
     private String path;
 
-    private String message;
+    private List<String> messages;
 
     @JsonIgnore
     private String debugMessage;
@@ -38,4 +39,11 @@ public class ApiError {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
     private Date timestamp;
+
+    public void addMessage(String message) {
+        if (messages == null) {
+            messages = new ArrayList<>();
+        }
+        this.messages.add(message);
+    }
 }
