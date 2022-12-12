@@ -14,6 +14,19 @@ public interface QuestionnairePort {
      */
     public Questionnaire addQuestionnaire(Questionnaire questionnaire);
 
+     /**
+     * Get questionnaire
+     * @param questionnaireId
+     * @return  questionnaire
+     */
+    public Questionnaire getQuestionnaire(Long questionnaireId);
+
+    /**
+     * Get all questionnaires
+     * @param questionnaireId
+     * @return  all questionnaires
+     */
+    public List<Questionnaire> getQuestionnaires();
 
     /**
      * update questionnaire
@@ -21,6 +34,12 @@ public interface QuestionnairePort {
      * @return saved questionnaire
      */
     public Questionnaire updateQuestionnaire(Questionnaire questionnaire);
+
+    /**
+     * delete questionnaire
+     * @param id
+     */
+    public void deleteQuestionnaire(Long id);
 
     /**
      * 
@@ -47,7 +66,7 @@ public interface QuestionnairePort {
      * @return mode
      */
     public Mode getMode(Long id);
-    
+
     /**
      * get mode by name
      * @param name

@@ -12,4 +12,8 @@ public class Context {
     private Long id;
 
     private String value;
+
+    public Context(Long id) {
+        this.id = id;
+    }
 }

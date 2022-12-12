@@ -7,8 +7,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name="campaign")
 public class CampaignEntity {
@@ -19,7 +21,9 @@ public class CampaignEntity {
     @Column
     private String label;
 
-    public CampaignEntity(String label) {
-        this.label = label;
+    public static CampaignEntity createWithLabel(String label) {
+        CampaignEntity campaign = new CampaignEntity();
+        campaign.setLabel(label);
+        return campaign;
     }
 }

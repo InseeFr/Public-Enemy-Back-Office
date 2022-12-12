@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.infrastructure.questionnaire.entity;
 
+import fr.insee.publicenemy.api.application.domain.model.Mode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,4 +26,17 @@ public class ModeEntity {
 
     @Column
     private String value;
+
+    public ModeEntity(Long id, String value) {
+        this.id = id;
+        this.value = value;
+    }
+
+    public static ModeEntity createFromModel(Mode mode) {
+        return new ModeEntity(mode.getId(), mode.getValue());
+    }
+
+    public Mode toModel() {
+        return new Mode(getId(), getValue());
+    }
 }

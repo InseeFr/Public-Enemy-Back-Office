@@ -29,6 +29,71 @@ public class QuestionnaireUseCase {
      * @return the saved questionnaire
      */
     public Questionnaire addQuestionnaire(String questionnaireId, Long contextId, byte[] csvContent) {
+        return questionnairePort.addQuestionnaire(getQuestionnaire(questionnaireId, contextId, csvContent));
+    }
+
+    /**
+     * Get questionnaire
+     * @param questionnaireId
+     * @return the questionnaire
+     */
+    public Questionnaire getQuestionnaire(Long questionnaireId) {
+        return questionnairePort.getQuestionnaire(questionnaireId);
+    }
+
+    /**
+     * Get questionnaire list
+     * @param questionnaireId
+     * @return the questionnaire list
+     */
+    public List<Questionnaire> getQuestionnaires() {
+        return questionnairePort.getQuestionnaires();
+    }
+
+    /**
+     * get modes
+     * @return all modes
+     */
+    public List<Mode> getModes() {
+        return questionnairePort.getModes();
+    }
+
+    /**
+     * Get contexts
+     * @return all contexts
+     */
+    public List<Context> getContexts() {
+        return questionnairePort.getContexts();
+    }
+
+    /**
+     * delete questionnaire
+     * @param questionnaireId
+     */
+    public void deleteQuestionnaire(Long id) {
+        questionnairePort.deleteQuestionnaire(id);
+    }
+
+        /**
+     * Save questionnaire
+     * @param questionnaireId
+     * @param contextId
+     * @param surveyUnitData
+     * @return the saved questionnaire
+     */
+    public Questionnaire saveQuestionnaire(Long id, Long contextId, byte[] surveyUnitData) {
+        Questionnaire questionnaire = new Questionnaire(id, contextId, surveyUnitData);
+        return questionnairePort.updateQuestionnaire(questionnaire);
+    }
+
+    /**
+     * Get questionnaire model
+     * @param questionnaireId
+     * @param contextId
+     * @param csvContent
+     * @return the questionnaire model
+     */
+    private Questionnaire getQuestionnaire(String questionnaireId, Long contextId, byte[] csvContent) {
         Context context = questionnairePort.getContext(contextId);        
         Ddi ddi = ddiUseCase.getDdi(questionnaireId);
         List<String> modesString = ddi.getModes();
@@ -36,7 +101,6 @@ public class QuestionnaireUseCase {
         List<Mode> modes = modesString.stream()
                 .map(questionnairePort::getModeByName)
                 .collect(Collectors.toList());  
-        Questionnaire questionnaire = new Questionnaire(questionnaireId, ddi.getLabel(), context, modes, csvContent);
-        return questionnairePort.addQuestionnaire(questionnaire);
+        return new Questionnaire(questionnaireId, ddi.getLabel(), context, modes, csvContent);
     }
 }

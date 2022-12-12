@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class QuestionnaireAddDto {
+public class QuestionnaireAddRest {
     private String questionnaireId;
     private Long contextId;
 }

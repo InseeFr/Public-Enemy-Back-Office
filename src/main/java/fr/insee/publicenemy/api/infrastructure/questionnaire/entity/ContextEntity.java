@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.infrastructure.questionnaire.entity;
 
+import fr.insee.publicenemy.api.application.domain.model.Context;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,4 +26,17 @@ public class ContextEntity {
 
     @Column
     private String value;
+
+    public ContextEntity(Long id, String value) {
+        this.id = id;
+        this.value = value;
+    }
+
+    public static ContextEntity createFromModel(Context context) {
+        return new ContextEntity(context.getId(), context.getValue());
+    }
+
+    public Context toModel() {
+        return new Context(getId(), getValue());
+    }
 }

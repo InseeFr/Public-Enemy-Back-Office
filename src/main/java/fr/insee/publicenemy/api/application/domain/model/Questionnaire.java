@@ -39,4 +39,10 @@ public class Questionnaire {
         this.modes = modes;
         this.surveyUnitData = csvContent;
     }
+
+    public Questionnaire(Long id, Long contextId, byte[] surveyUnitData) {
+        this.id = id;
+        this.context = new Context(contextId);
+        this.surveyUnitData = surveyUnitData;
+    }
 }

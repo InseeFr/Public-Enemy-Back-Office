@@ -1,11 +1,8 @@
 package fr.insee.publicenemy.api.infrastructure.questionnaire;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,20 +10,22 @@ import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
-import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.CampaignEntity;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.ContextEntity;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.ModeEntity;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.QuestionnaireEntity;
+import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.QuestionnaireEntitySummary;
+import lombok.extern.slf4j.Slf4j;
 
 @Repository
 @Transactional
+@Slf4j
 public class QuestionnaireRepository implements QuestionnairePort {
 
     private final CampaignEntityRepository campaignEntityRepository;
     private final QuestionnaireEntityRepository questionnaireEntityRepository;
+    private final QuestionnaireEntitySummaryRepository questionnaireEntitySummaryRepository;
     private final ContextEntityRepository contextEntityRepository;
     private final ModeEntityRepository modeEntityRepository;
-    private final ModelMapper mapper;
 
     /**
      * Constructor
@@ -37,85 +36,79 @@ public class QuestionnaireRepository implements QuestionnairePort {
      * @param mapper
      */
     public QuestionnaireRepository(CampaignEntityRepository campaignEntityRepository,
-            QuestionnaireEntityRepository questionnaireEntityRepository,
-            ContextEntityRepository contextEntityRepository, ModeEntityRepository modeEntityRepository, ModelMapper mapper) {
+            QuestionnaireEntityRepository questionnaireEntityRepository, 
+            QuestionnaireEntitySummaryRepository questionnaireEntitySummaryRepository,
+            ContextEntityRepository contextEntityRepository, ModeEntityRepository modeEntityRepository) {
         this.campaignEntityRepository = campaignEntityRepository;
         this.questionnaireEntityRepository = questionnaireEntityRepository;
+        this.questionnaireEntitySummaryRepository = questionnaireEntitySummaryRepository;
         this.contextEntityRepository = contextEntityRepository;
         this.modeEntityRepository = modeEntityRepository;
-        this.mapper = mapper;
+    }
+
+    @Override
+    public List<Questionnaire> getQuestionnaires() {
+        return questionnaireEntitySummaryRepository.findAll().stream().map(QuestionnaireEntitySummary::toModel).collect(Collectors.toList());
+    }
+
+    @Override
+    public Questionnaire getQuestionnaire(Long questionnaireId) {
+        QuestionnaireEntitySummary questionnaireEntity = questionnaireEntitySummaryRepository.findById(questionnaireId)
+                .orElseThrow(() -> new  RepositoryEntityNotFoundException("Questionnaire not found"));
+
+        return questionnaireEntity.toModel();
     }
 
     @Override
     public Questionnaire addQuestionnaire(Questionnaire questionnaire) {
         long campaignCount = campaignEntityRepository.count();
-        CampaignEntity campaignEntity = new CampaignEntity("Campagne " + campaignCount);
-        QuestionnaireEntity questionnaireEntity = mapper.map(questionnaire, QuestionnaireEntity.class);
-        Date date = Calendar.getInstance().getTime();
-        
-        questionnaireEntity.setCampaign(campaignEntity);        
-        questionnaireEntity.setCreationDate(date);
-        questionnaireEntity.setUpdatedDate(date);
+        QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createFromModel("Campagne " + campaignCount, questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
-        return mapper.map(questionnaireEntity, Questionnaire.class);
+        return questionnaireEntity.toModel();
     }
 
     @Override
     public Questionnaire updateQuestionnaire(Questionnaire questionnaire) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.getId())
                 .orElseThrow(() -> new  RepositoryEntityNotFoundException("Questionnaire not found"));
-        QuestionnaireEntity mappedQuestionnaire = mapper.map(questionnaire, QuestionnaireEntity.class);
 
-        mappedQuestionnaire.setCampaign(questionnaireEntity.getCampaign());
-        mappedQuestionnaire.setUpdatedDate(Calendar.getInstance().getTime());
-        questionnaireEntity = questionnaireEntityRepository.save(mappedQuestionnaire);
-        return mapper.map(questionnaireEntity, Questionnaire.class);
+        questionnaireEntity.update(questionnaire);
+        questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
+        log.error(questionnaireEntity.getContext().toString());
+        return questionnaireEntity.toModel();
+    }
+
+    @Override
+    public void deleteQuestionnaire(Long id) {
+        questionnaireEntityRepository.deleteById(id);
     }
 
     @Override
     public List<Mode> getModes() {
-        List<ModeEntity> modesEntity = modeEntityRepository.findAll();
-        return mapList(modesEntity, Mode.class);
+        return modeEntityRepository.findAll().stream().map(ModeEntity::toModel).collect(Collectors.toList());
     }
 
     @Override
     public List<Context> getContexts() {
-        List<ContextEntity> contextsEntity = contextEntityRepository.findAll();
-        return mapList(contextsEntity, Context.class);
+        return contextEntityRepository.findAll().stream().map(ContextEntity::toModel).collect(Collectors.toList());
     }
 
     @Override
     public Context getContext(Long id) {
         ContextEntity contextEntity = contextEntityRepository.findById(id).orElseThrow(() -> new  RepositoryEntityNotFoundException("Context not found"));
-        return mapper.map(contextEntity, Context.class);
+        return contextEntity.toModel();
     }
 
     @Override
     public Mode getMode(Long id) {
         ModeEntity modeEntity = modeEntityRepository.findById(id).orElseThrow(() -> new  RepositoryEntityNotFoundException("Mode not found"));
-        return mapper.map(modeEntity, Mode.class);
+        return modeEntity.toModel();
     }
 
     
     @Override
     public Mode getModeByName(String name) {
         ModeEntity modeEntity = modeEntityRepository.findByName(name).orElseThrow(() -> new  RepositoryEntityNotFoundException("Mode not found"));
-        return mapper.map(modeEntity, Mode.class);
+        return modeEntity.toModel();
     }
-
-    /**
-     * 
-     * @param <S>
-     * @param <T>
-     * @param source
-     * @param targetClass
-     * @return the mapping of source to List<TargetClass>
-     */
-    private <S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
-        return source
-          .stream()
-          .map(element -> mapper.map(element, targetClass))
-          .collect(Collectors.toList());
-    }
-
 } 
