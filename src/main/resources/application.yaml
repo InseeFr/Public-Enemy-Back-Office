@@ -1,0 +1,66 @@
+# Configuration des urls
+server:
+  error:
+    include-binding-errors: always
+    include-exception: true
+    include-message: always
+    include-stacktrace: always
+
+# LOGGING
+logging:
+  file:
+    path: /home/xxx/logs
+    name: publicenemy/publicenemy.log
+    maxHistory: 365
+  level:
+    root: WARN
+    org:
+      springframework:
+        boot: INFO
+      hibernate:
+        SQL: ERROR
+    fr:
+      insee:
+        publicenemy: INFO
+    reactor:
+      netty:
+        http:
+          client: DEBUG
+
+spring:
+  # DB
+  datasource:
+    url: jdbc:postgresql://localhost:53941/public-enemy
+    username: stromae
+    password: stromaePassword
+    hikari.maximumPoolSize: 5
+  # LIQUIBASE
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  banner:
+    location: banner.txt
+  # Uploads
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+  jpa:
+    open-in-view: false
+  codec:
+    max-in-memory-size: 5000KB
+  # to make springfox work
+  mvc:
+    pathmatch:
+      matching-strategy: ANT_PATH_MATCHER
+springfox:
+  documentation:
+    enabled: true
+
+application:
+  proxy:
+    enable: false
+    url:
+    port:
+  pogues:
+    url: https://pogues-url.insee.fr
