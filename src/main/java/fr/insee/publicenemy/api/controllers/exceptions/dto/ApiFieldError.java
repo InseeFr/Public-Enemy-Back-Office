@@ -2,8 +2,14 @@ package fr.insee.publicenemy.api.controllers.exceptions.dto;
 
 import java.io.Serializable;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+/**
+ * Subfield Error object returned as JSON response to client
+ */
+@Data
+@AllArgsConstructor
 public class ApiFieldError implements Serializable {
-    private static final long serialVersionUID = 1L;
     private String field;
     private String message;
     
@@ -20,11 +26,6 @@ public class ApiFieldError implements Serializable {
     }
 
     public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public ApiFieldError(String field, String message) {
-        this.field = field;
         this.message = message;
     }
 

@@ -1,7 +1,6 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -24,12 +23,12 @@ public class QuestionnaireUseCase {
     /**
      * Add questionnaire
      * @param questionnaireId
-     * @param contextId
+     * @param context
      * @param csvContent
      * @return the saved questionnaire
      */
-    public Questionnaire addQuestionnaire(String questionnaireId, Long contextId, byte[] csvContent) {
-        return questionnairePort.addQuestionnaire(getQuestionnaire(questionnaireId, contextId, csvContent));
+    public Questionnaire addQuestionnaire(String questionnaireId, Context context, byte[] csvContent) {
+        return questionnairePort.addQuestionnaire(getQuestionnaire(questionnaireId, context, csvContent));
     }
 
     /**
@@ -43,7 +42,6 @@ public class QuestionnaireUseCase {
 
     /**
      * Get questionnaire list
-     * @param questionnaireId
      * @return the questionnaire list
      */
     public List<Questionnaire> getQuestionnaires() {
@@ -51,56 +49,38 @@ public class QuestionnaireUseCase {
     }
 
     /**
-     * get modes
-     * @return all modes
-     */
-    public List<Mode> getModes() {
-        return questionnairePort.getModes();
-    }
-
-    /**
-     * Get contexts
-     * @return all contexts
-     */
-    public List<Context> getContexts() {
-        return questionnairePort.getContexts();
-    }
-
-    /**
      * delete questionnaire
-     * @param questionnaireId
+     * @param id
      */
     public void deleteQuestionnaire(Long id) {
         questionnairePort.deleteQuestionnaire(id);
     }
 
-        /**
+    /**
      * Save questionnaire
-     * @param questionnaireId
-     * @param contextId
+     * @param id
+     * @param context
      * @param surveyUnitData
      * @return the saved questionnaire
      */
-    public Questionnaire saveQuestionnaire(Long id, Long contextId, byte[] surveyUnitData) {
-        Questionnaire questionnaire = new Questionnaire(id, contextId, surveyUnitData);
+    public Questionnaire saveQuestionnaire(Long id, Context context, byte[] surveyUnitData) {
+        Questionnaire questionnaire = new Questionnaire(id, context, surveyUnitData);
         return questionnairePort.updateQuestionnaire(questionnaire);
     }
 
     /**
      * Get questionnaire model
      * @param questionnaireId
-     * @param contextId
+     * @param context
      * @param csvContent
      * @return the questionnaire model
      */
-    private Questionnaire getQuestionnaire(String questionnaireId, Long contextId, byte[] csvContent) {
-        Context context = questionnairePort.getContext(contextId);        
+    private Questionnaire getQuestionnaire(String questionnaireId, Context context, byte[] csvContent) {
         Ddi ddi = ddiUseCase.getDdi(questionnaireId);
         List<String> modesString = ddi.getModes();
 
         List<Mode> modes = modesString.stream()
-                .map(questionnairePort::getModeByName)
-                .collect(Collectors.toList());  
+                .map(Mode::valueOf).toList();  
         return new Questionnaire(questionnaireId, ddi.getLabel(), context, modes, csvContent);
     }
 }

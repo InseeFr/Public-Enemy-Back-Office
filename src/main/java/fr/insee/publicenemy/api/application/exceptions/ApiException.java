@@ -1,13 +1,13 @@
 package fr.insee.publicenemy.api.application.exceptions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiFieldError;
 import lombok.Getter;
 import lombok.Setter;
-
+/**
+ * This class is used to return non specific API Exceptions
+ */
 @Getter
 @Setter
 public class ApiException extends RuntimeException {
@@ -16,11 +16,11 @@ public class ApiException extends RuntimeException {
     private final List<String> messages;
 
     public ApiException(int statusCode, String message) {
-        this(statusCode, new ArrayList<>(Arrays.asList(message)));
+        this(statusCode, List.of(message));
     }
 
     public ApiException(int statusCode, String message, List<ApiFieldError> errors) {
-        this(statusCode, new ArrayList<>(Arrays.asList(message)), errors);
+        this(statusCode, List.of(message), errors);
     }
 
     public ApiException(int statusCode, List<String> messages) {
@@ -35,16 +35,6 @@ public class ApiException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        if (messages == null) {
-            return null;
-        }
-        StringBuilder messageBuilder = new StringBuilder();
-        for (int index = 0; index < messages.size(); index++) {
-            messageBuilder.append(messages.get(index));
-            if (index != messages.size() - 1) {
-                messageBuilder.append(" | ");
-            }
-        }
-        return messageBuilder.toString();
+        return messages != null ? String.join(" | ", messages) : null;
     }
 }

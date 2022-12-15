@@ -40,9 +40,9 @@ public class Questionnaire {
         this.surveyUnitData = csvContent;
     }
 
-    public Questionnaire(Long id, Long contextId, byte[] surveyUnitData) {
+    public Questionnaire(Long id, Context context, byte[] surveyUnitData) {
         this.id = id;
-        this.context = new Context(contextId);
+        this.context = context;
         this.surveyUnitData = surveyUnitData;
     }
 }

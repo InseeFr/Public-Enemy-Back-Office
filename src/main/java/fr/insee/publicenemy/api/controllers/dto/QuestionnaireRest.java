@@ -1,14 +1,13 @@
 package fr.insee.publicenemy.api.controllers.dto;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+import fr.insee.publicenemy.api.application.domain.model.Context;
+import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class QuestionnaireRest {
 
     private Long id;
@@ -17,18 +16,17 @@ public class QuestionnaireRest {
 
     private String label;
 
-    private ContextRest context;
+    private Context context;
 
-    private List<ModeRest> modes;
+    private List<Mode> modes;
 
     public static QuestionnaireRest createFromModel(Questionnaire questionnaire) {
         QuestionnaireRest questionnaireRest = new QuestionnaireRest();
         questionnaireRest.setId(questionnaire.getId());
         questionnaireRest.setLabel(questionnaire.getLabel());
         questionnaireRest.setQuestionnaireId(questionnaire.getQuestionnaireId());
-        List<ModeRest> modes = questionnaire.getModes().stream().map(mode -> ModeRest.createFromModel(mode)).collect(Collectors.toList());
-        questionnaireRest.setModes(modes);
-        questionnaireRest.setContext(ContextRest.createFromModel(questionnaire.getContext()));    
+        questionnaireRest.setModes(questionnaire.getModes());
+        questionnaireRest.setContext(questionnaire.getContext());    
         
         return questionnaireRest;
     }

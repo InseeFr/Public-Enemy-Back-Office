@@ -13,7 +13,6 @@ import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
-import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
@@ -22,12 +21,10 @@ public class EnoServiceImpl implements EnoServicePort {
 
     private final WebClient webClient;
     private final String enoUrl;
-    private final I18nMessagePort i18nService;
 
-    public EnoServiceImpl(I18nMessagePort i18nService, WebClient webClient, @Value("${application.eno.url}") String enoUrl) {
+    public EnoServiceImpl(WebClient webClient, @Value("${application.eno.url}") String enoUrl) {
         this.webClient = webClient; 
         this.enoUrl = enoUrl;
-        this.i18nService = i18nService;
     }
 
     @Override
@@ -37,7 +34,7 @@ public class EnoServiceImpl implements EnoServicePort {
         Resource ddiResource = new FileNameAwareByteArrayResource("resource.json", ddi.getContent(), "description");
         resourceBuilder.part("in", ddiResource);
         
-        byte[] lunaticJsonBytes = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}", context.getValue(), mode.getValue())
+        byte[] lunaticJsonBytes = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}", context.name(), mode.name())
             .accept(MediaType.APPLICATION_OCTET_STREAM)
             .contentType(MediaType.MULTIPART_FORM_DATA)
             .body(BodyInserters.fromMultipartData(resourceBuilder.build()))

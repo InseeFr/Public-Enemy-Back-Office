@@ -62,5 +62,7 @@ application:
     enable: false
     url:
     port:
+  cors:
+    allowed-origins:
   pogues:
     url: https://pogues-url.insee.fr

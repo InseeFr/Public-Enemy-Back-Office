@@ -23,7 +23,7 @@ public class DDIUseCase {
     }
 
     /**
-     * Get DDI from questionnaire Id
+     * Get DDI as XML format from questionnaire Id
      * @param questionnaireId
      * @return DDI
      */
@@ -32,7 +32,7 @@ public class DDIUseCase {
     }
 
     /**
-     * Get JSON Lunatic
+     * Get DDI as JSON Lunatic format
      * @param questionnaireId
      * @param context
      * @param mode

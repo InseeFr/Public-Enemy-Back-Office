@@ -7,11 +7,11 @@ import fr.insee.publicenemy.api.application.domain.model.Mode;
 
 public interface EnoServicePort {
     /**
-     * Get JSON Lunatic
+     * Retrieve content as JSON Lunatic format from ENO 
      * @param ddi
      * @param context
      * @param mode
      * @return Json Lunatic
      */
-    public JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode);
+    JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode);
 }

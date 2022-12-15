@@ -284,7 +284,7 @@ public class ApiExceptionHandler {
             RepositoryEntityNotFoundException ex,
             WebRequest request) {
         Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        return errorComponent.buildErrorObject(attributes, request, HttpStatus.NOT_FOUND);
+        return errorComponent.buildErrorObject(attributes, request, HttpStatus.NOT_FOUND, ex);
     }
 
     /**
@@ -303,6 +303,14 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getStatusCode()));
     }
 
+    /**
+     * Build ApiError object
+     * @param request
+     * @param status
+     * @param ex
+     * @param message
+     * @return error object used as json response 
+     */
     private ApiError buildErrorObject(WebRequest request, HttpStatus status, Exception ex, String message) {
         Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
         return errorComponent.buildErrorObject(attributes, request, status, ex, message);

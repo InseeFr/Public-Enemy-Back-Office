@@ -7,7 +7,7 @@ import org.springframework.lang.Nullable;
  * Permits to upload content through webclient as if it was a file
  */
 public class FileNameAwareByteArrayResource extends ByteArrayResource {
-    private String fileName;
+    private final String fileName;
 
     public FileNameAwareByteArrayResource(String fileName, byte[] byteArray, String description) {
         super(byteArray, description);

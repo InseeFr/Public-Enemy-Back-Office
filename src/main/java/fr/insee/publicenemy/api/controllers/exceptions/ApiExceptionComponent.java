@@ -22,8 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 
 /**
- *
- * @author vagrant
+ * Component used to build APIError objects 
  */
 @Component
 public class ApiExceptionComponent {
@@ -34,15 +33,39 @@ public class ApiExceptionComponent {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * 
+     * @param attributes
+     * @param request
+     * @param status
+     * @return error object used for JSON response
+     */
     public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, HttpStatus status) {
         return buildErrorObject(attributes, request, status, null);
     }
 
+    /**
+     * 
+     * @param attributes
+     * @param request
+     * @param status
+     * @param ex
+     * @return error object used for JSON response
+     */
     public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, HttpStatus status,
             Exception ex) {
         return buildErrorObject(attributes, request, status, ex, null);
     }
 
+    /**
+     * 
+     * @param attributes
+     * @param request
+     * @param status
+     * @param ex
+     * @param errorMessage
+     * @return error object used for JSON response
+     */
     public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, HttpStatus status,
             Exception ex, String errorMessage) {
 
@@ -71,6 +94,13 @@ public class ApiExceptionComponent {
         return errorObject;
     }
 
+    /**
+     * 
+     * @param attributes
+     * @param request
+     * @param ex
+     * @return error object used for JSON response
+     */
     public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, ApiException ex) {
         ApiError errorObject = buildErrorObject(attributes, request, HttpStatus.valueOf(ex.getStatusCode()), ex);
         errorObject.setFieldErrors(ex.getErrors());
@@ -78,6 +108,15 @@ public class ApiExceptionComponent {
         return errorObject;
     }
 
+    /**
+     * Build error response directly
+     * @param request
+     * @param response
+     * @param status
+     * @param ex
+     * @param errorMessage
+     * @throws IOException
+     */
     public void buildErrorResponse(HttpServletRequest request, HttpServletResponse response, HttpStatus status,
             Exception ex, String errorMessage) throws IOException {
         response.setStatus(status.value());
