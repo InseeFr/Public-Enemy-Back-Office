@@ -32,7 +32,7 @@ public class DDIUseCase {
     }
 
     /**
-     * Get DDI as JSON Lunatic format
+     * Convert DDI with given identifier to a Lunatic questionnaire (json format)
      * @param questionnaireId
      * @param context
      * @param mode
