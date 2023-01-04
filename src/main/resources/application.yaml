@@ -9,7 +9,7 @@ server:
 # LOGGING
 logging:
   file:
-    path: /home/xxx/logs
+    path: /var/log
     name: publicenemy/publicenemy.log
     maxHistory: 365
   level:
@@ -88,3 +88,24 @@ application:
       -
         name: Loi_informatique
         value: https://www.legifrance.gouv.fr/affichTexte.do?cidTexte=JORFTEXT000000886460
+
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: info,health
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: db, diskSpace
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
