@@ -1,0 +1,57 @@
+name: V2 Build Docker
+
+on: push
+
+env:
+  PE_BRANCH: feature/ci
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      release-version: ${{ steps.version-step.outputs.pe-version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Get current version
+        id: version-step
+        run: echo "::set-output name=pe-version::$(mvn -f pom.xml help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
+      - name: Print PE Version
+        run: echo ${{ steps.version-step.outputs.pe-version }}
+
+      - name: Build PE
+        run: mvn package --no-transfer-progress
+
+      - name: Upload PE jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: pe-jar
+          path: target/*.jar
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download PE jar
+        uses: actions/download-artifact@v3
+        with:
+          name: pe-jar
+          path: target/
+
+      - name: Publish to Docker Hub
+        uses: elgohr/Publish-Docker-Github-Action@v5
+        with:
+          name: inseefr/public-enemy-back-office
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          default_branch: feature/ci
+          tags: ${{ needs.build.outputs.release-version }}
