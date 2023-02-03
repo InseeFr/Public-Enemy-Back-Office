@@ -35,7 +35,7 @@ public class QueenSynchronizationUseCase {
                         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
                         queenService.createQuestionnaireModel(questionnaireModelId, ddi, jsonLunatic);
                         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_CAMPAIGN.name());
-                        queenService.createCampaign(questionnaireModelId, ddi);
+                        queenService.createCampaign(questionnaireModelId, questionnaire, ddi);
                         questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
                 });
             questionnaire.setSynchronized(true);

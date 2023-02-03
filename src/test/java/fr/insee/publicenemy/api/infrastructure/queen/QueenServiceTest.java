@@ -2,7 +2,9 @@ package fr.insee.publicenemy.api.infrastructure.queen;
 
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.configuration.MetadataProps;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -14,23 +16,27 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.client.*;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class QueenServiceTest {
     private static MockWebServer mockWebServer;
-    private final String queenUrl = "http://localhost:8080";
+    @Mock
+    private Questionnaire questionnaire;
     @Mock
     private JsonLunatic jsonLunatic;
     @Mock
     private Ddi ddi;
+    @Mock
+    private MetadataProps metadataProps;
     private final WebClient webClient = WebClient.create();
-    private QueenServiceImpl service = new QueenServiceImpl(webClient, queenUrl);
+    private QueenServiceImpl service;
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -47,7 +53,7 @@ class QueenServiceTest {
     public void init() {
         String baseUrl = String.format("http://localhost:%s",
                 mockWebServer.getPort());
-        service = new QueenServiceImpl(webClient, baseUrl);
+        service = new QueenServiceImpl(webClient, baseUrl, metadataProps);
 
     }
 
@@ -68,13 +74,13 @@ class QueenServiceTest {
     @Test
     void onCreateCampaignWhenApiResponseErrorThrowsServiceException() {
         createMockResponseError();
-        assertThrows(ServiceException.class, () -> service.createCampaign("l8wwljbo-CAPI", ddi));
+        assertThrows(ServiceException.class, () -> service.createCampaign("l8wwljbo-CAPI", questionnaire, ddi));
     }
 
     @Test
     void onCreateCampaignWhenApiResponseSuccessful() {
         createMockResponseSuccess();
-        assertAll(() -> service.createCampaign("l8wwljbo-CAPI", ddi));
+        assertAll(() -> service.createCampaign("l8wwljbo-CAPI", questionnaire, ddi));
     }
 
     @Test
