@@ -7,6 +7,7 @@ import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
+import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,14 +91,14 @@ class QuestionnaireControllerTest {
 
     @Test
     void onAddQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
-        QuestionnaireAddRest questionnaireRest =  new QuestionnaireAddRest( "l8wwljbo",  Context.BUSINESS);
+        QuestionnaireAddRest questionnaireRest =  new QuestionnaireAddRest( "l8wwljbo",  new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = "test".getBytes();
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
 
-        when(questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), questionnaireRest.context(), surveyUnitData)).thenReturn(questionnaire1);
+        when(questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(questionnaire1);
 
         questionnaireMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)

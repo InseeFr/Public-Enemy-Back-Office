@@ -1,15 +1,14 @@
 package fr.insee.publicenemy.api.controllers;
 
-import java.util.Arrays;
-import java.util.List;
-
+import fr.insee.publicenemy.api.application.domain.model.Context;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.controllers.dto.ContextRest;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/contexts")

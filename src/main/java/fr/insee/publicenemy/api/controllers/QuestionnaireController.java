@@ -1,25 +1,19 @@
 package fr.insee.publicenemy.api.controllers;
 
-import java.io.IOException;
-import java.util.List;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
+import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/questionnaires")
@@ -29,9 +23,12 @@ public class QuestionnaireController {
     private final QuestionnaireUseCase questionnaireUseCase;
     private final DDIUseCase ddiUseCase;
 
-    public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, DDIUseCase ddiUseCase) {
+    private final QuestionnaireComponent questionnaireComponent;
+
+    public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, DDIUseCase ddiUseCase, QuestionnaireComponent questionnaireComponent) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.ddiUseCase = ddiUseCase;
+        this.questionnaireComponent = questionnaireComponent;
     }
 
     /**
@@ -41,7 +38,7 @@ public class QuestionnaireController {
     @GetMapping("")
     public List<QuestionnaireRest> getQuestionnaires() {
         return questionnaireUseCase.getQuestionnaires().stream()
-                .map(QuestionnaireRest::createFromModel)
+                .map(questionnaireComponent::createFromModel)
                 .toList();      
     }
 
@@ -53,7 +50,7 @@ public class QuestionnaireController {
     @GetMapping("/{id}")
     public QuestionnaireRest getQuestionnaire(@PathVariable Long id) {        
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(id);
-        return QuestionnaireRest.createFromModel(questionnaire);
+        return questionnaireComponent.createFromModel(questionnaire);
     }
 
     /**
@@ -64,7 +61,7 @@ public class QuestionnaireController {
     @GetMapping("/pogues/{poguesId}")
     public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {        
         Questionnaire questionnaire = ddiUseCase.getQuestionnaire(poguesId);
-        return QuestionnaireRest.createFromModel(questionnaire);
+        return questionnaireComponent.createFromModel(questionnaire);
     }
 
     /**
@@ -79,8 +76,8 @@ public class QuestionnaireController {
             @RequestPart(name = "surveyUnitData") MultipartFile surveyUnitData) throws IOException {
         
         byte[] csvContent = surveyUnitData.getBytes();
-        Questionnaire questionnaire = questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), questionnaireRest.context(), csvContent);
-        return QuestionnaireRest.createFromModel(questionnaire);
+        Questionnaire questionnaire = questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), ContextRest.toModel(questionnaireRest.context()), csvContent);
+        return questionnaireComponent.createFromModel(questionnaire);
     }
 
     /**
@@ -101,7 +98,7 @@ public class QuestionnaireController {
             csvContent = surveyUnitData.getBytes(); 
         }
         Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(id, context, csvContent);
-        return QuestionnaireRest.createFromModel(questionnaire);
+        return questionnaireComponent.createFromModel(questionnaire);
     }
 
     /**
