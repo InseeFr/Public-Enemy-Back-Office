@@ -43,7 +43,7 @@ class QueenSynchronizationUseCaseTest {
         QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
         when(questionnaire.getQuestionnaireModes()).thenReturn(List.of(questionnaireMode));
         queenUseCase.synchronizeCreate(ddi, context, questionnaire);
-        verify(queenServicePort).createCampaign(any(), eq(ddi));
+        verify(queenServicePort).createCampaign(any(), eq(questionnaire), eq(ddi));
     }
 
     @Test
@@ -66,7 +66,7 @@ class QueenSynchronizationUseCaseTest {
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
         queenUseCase.synchronizeCreate(ddi, context, questionnaire);
-        verify(queenServicePort, times(modes.size())).createCampaign(any(), eq(ddi));
+        verify(queenServicePort, times(modes.size())).createCampaign(any(), eq(questionnaire), eq(ddi));
     }
 
     @Test
@@ -77,7 +77,7 @@ class QueenSynchronizationUseCaseTest {
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
         queenUseCase.synchronizeCreate(ddi, context, questionnaire);
-        verify(queenServicePort, times(2)).createCampaign(any(), eq(ddi));
+        verify(queenServicePort, times(2)).createCampaign(any(), eq(questionnaire), eq(ddi));
     }
 
     @Test
@@ -90,14 +90,10 @@ class QueenSynchronizationUseCaseTest {
         List<QuestionnaireMode> questionnaireModes = modes.stream().map(QuestionnaireMode::new).toList();
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
-        modes.forEach(mode -> {
-            when(ddiUseCase.getJsonLunatic(ddi, context, mode)).thenReturn(map.get(mode));
-        });
+        modes.forEach(mode -> when(ddiUseCase.getJsonLunatic(ddi, context, mode)).thenReturn(map.get(mode)));
 
         queenUseCase.synchronizeCreate(ddi, context, questionnaire);
-        modes.forEach(mode -> {
-            verify(queenServicePort).createQuestionnaireModel(any(), eq(ddi), eq(map.get(mode)));
-        });
+        modes.forEach(mode -> verify(queenServicePort).createQuestionnaireModel(any(), eq(ddi), eq(map.get(mode))));
     }
 
     @Test
