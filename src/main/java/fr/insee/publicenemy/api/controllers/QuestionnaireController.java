@@ -1,6 +1,5 @@
 package fr.insee.publicenemy.api.controllers;
 
-import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
@@ -90,14 +89,14 @@ public class QuestionnaireController {
     @PostMapping(path = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public QuestionnaireRest saveQuestionnaire(
             @PathVariable Long id,
-            @RequestPart(name = "context") Context context,
+            @RequestPart(name = "context") ContextRest context,
             @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException {        
         
         byte[] csvContent = null;
         if(surveyUnitData != null) {
             csvContent = surveyUnitData.getBytes(); 
         }
-        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(id, context, csvContent);
+        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(id, ContextRest.toModel(context), csvContent);
         return questionnaireComponent.createFromModel(questionnaire);
     }
 

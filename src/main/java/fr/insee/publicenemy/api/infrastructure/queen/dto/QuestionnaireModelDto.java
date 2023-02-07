@@ -1,4 +1,4 @@
-package fr.insee.publicenemy.api.infrastructure.queen;
+package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRawValue;

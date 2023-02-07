@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
+import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,9 +20,11 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-class QueenSynchronizationUseCaseTest {
+class QueenUseCaseTest {
     @Mock
     private QueenServicePort queenServicePort;
+    @Mock
+    private SurveyUnitCsvPort surveyUnitServicePort;
     @Mock
     private DDIUseCase ddiUseCase;
     @Mock
@@ -30,11 +33,11 @@ class QueenSynchronizationUseCaseTest {
     private Questionnaire questionnaire;
     @Mock
     private JsonLunatic jsonLunatic;
-    private QueenSynchronizationUseCase queenUseCase;
+    private QueenUseCase queenUseCase;
 
     @BeforeEach
     public void init() {
-        queenUseCase = new QueenSynchronizationUseCase(ddiUseCase, queenServicePort);
+        queenUseCase = new QueenUseCase(ddiUseCase, queenServicePort, surveyUnitServicePort);
     }
 
     @Test

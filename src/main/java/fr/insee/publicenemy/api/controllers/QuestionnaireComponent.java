@@ -21,6 +21,10 @@ public class QuestionnaireComponent {
         this.messageService = messageService;
     }
 
+    /**
+     * @param questionnaire rest questionnaire
+     * @return the model for this rest questionnaire
+     */
     public QuestionnaireRest createFromModel(@NonNull Questionnaire questionnaire) {
         List<ModeRest> modesRest = questionnaire.getQuestionnaireModes().stream()
                 .map(QuestionnaireMode::getMode)
@@ -30,8 +34,8 @@ public class QuestionnaireComponent {
 
         ContextRest contextRest = null;
         if(questionnaire.getContext() != null) {
-            String contextName = questionnaire.getContext().name().toLowerCase();
-            contextRest = new ContextRest(contextName, messageService.getMessage("context." + contextName));
+            String contextName = questionnaire.getContext().name();
+            contextRest = new ContextRest(contextName, messageService.getMessage("context." + contextName.toLowerCase()));
         }
 
         return new QuestionnaireRest(questionnaire.getId(), questionnaire.getPoguesId(), questionnaire.getLabel(),

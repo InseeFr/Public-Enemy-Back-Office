@@ -1,23 +1,25 @@
 package fr.insee.publicenemy.api.application.usecase;
 
-import java.util.List;
-
-import fr.insee.publicenemy.api.application.domain.model.*;
+import fr.insee.publicenemy.api.application.domain.model.Context;
+import fr.insee.publicenemy.api.application.domain.model.Ddi;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
 public class QuestionnaireUseCase {
     private final QuestionnairePort questionnairePort;
 
-    private final QueenSynchronizationUseCase queenUseCase;
+    private final QueenUseCase queenUseCase;
 
     private final DDIUseCase ddiUseCase;
 
-    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenSynchronizationUseCase queenUseCase) {
+    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase) {
         this.questionnairePort = questionnairePort;
         this.ddiUseCase = ddiUseCase;
         this.queenUseCase = queenUseCase;
@@ -39,7 +41,7 @@ public class QuestionnaireUseCase {
             queenUseCase.synchronizeCreate(ddi, context, questionnaire);
         } catch(ServiceException ex) {
             // fail silently as the questionnaire is already created
-            log.error(ex.toString());
+            log.error("An exception has occurred", ex);
         }
 
         // update questionnaire to save the synchronisation state (unsuccessful in case of throwed ServiceException)
