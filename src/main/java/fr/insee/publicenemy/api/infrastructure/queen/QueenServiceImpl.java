@@ -3,13 +3,19 @@ package fr.insee.publicenemy.api.infrastructure.queen;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.CampaignDto;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.QuestionnaireMetadataDto;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.QuestionnaireModelDto;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.SurveyUnitDto;
+import fr.insee.publicenemy.api.infrastructure.queen.exceptions.SurveyUnitsNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -19,6 +25,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -95,5 +102,43 @@ public class QueenServiceImpl implements QueenServicePort {
                 )
                 .toBodilessEntity()
                 .block();
+    }
+
+    public void createSurveyUnits(@NotNull String questionnaireModelId, @NotNull List<SurveyUnit> surveyUnits) {
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(queenUrl)
+                .path("/api/campaign/{id}/survey-unit")
+                .build(questionnaireModelId);
+
+        List<SurveyUnitDto> surveyUnitsDto = surveyUnits.stream().map(SurveyUnitDto::fromModel).toList();
+        surveyUnitsDto.forEach(surveyUnit ->
+                webClient.post().uri(uri)
+                        .body(BodyInserters.fromValue(surveyUnit))
+                        .retrieve()
+                        .onStatus(
+                                HttpStatusCode::isError,
+                                response -> Mono.error(new ServiceException(response.statusCode().value(),
+                                        String.format("Error trying to create survey unit %s for campaign %s", surveyUnit.id(), questionnaireModelId)))
+                        )
+                        .toBodilessEntity()
+                        .block());
+    }
+
+    public List<SurveyUnit> getSurveyUnits(@NotNull String campaignId) {
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(queenUrl)
+                .path("/api/campaign/{id}/survey-units")
+                .build(campaignId);
+
+        return webClient.get().uri(uri)
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(response.statusCode().value(),
+                                String.format("Error trying to get survey units for campaign %s", campaignId)))
+                )
+                .bodyToMono(new ParameterizedTypeReference<List<SurveyUnit>>() {})
+                .blockOptional()
+                .orElseThrow(() -> new SurveyUnitsNotFoundException(campaignId));
     }
 }

@@ -3,6 +3,9 @@ package fr.insee.publicenemy.api.application.ports;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
+
+import java.util.List;
 
 public interface QueenServicePort {
 
@@ -27,4 +30,17 @@ public interface QueenServicePort {
      * @param campaignId campaign id
      */
     void deleteCampaign(String campaignId);
+
+    /**
+     * Create survey units for campaign
+     * @param questionnaireModelId questionnaire model id
+     * @param surveyUnits survey units to save
+     */
+    void createSurveyUnits(String questionnaireModelId, List<SurveyUnit> surveyUnits);
+
+    /**
+     * @param campaignId campaign id
+     * @return list of all survey units for a campaign
+     */
+    List<SurveyUnit> getSurveyUnits(String campaignId);
 }

@@ -1,12 +1,13 @@
 package fr.insee.publicenemy.api.application.ports;
 
-import java.util.List;
-
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+
+import java.util.List;
 
 public interface QuestionnairePort {
     /**
      * Add questionnaire
+     *
      * @param questionnaire questionnaire to save
      * @return saved questionnaire
      */
@@ -40,7 +41,7 @@ public interface QuestionnairePort {
 
     /**
      * update questionnaire synchronisation state
-     * @param questionnaire
+     * @param questionnaire questionnaire that needs state update
      */
     Questionnaire updateQuestionnaireState(Questionnaire questionnaire);
 }

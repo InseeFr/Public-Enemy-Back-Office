@@ -1,15 +1,14 @@
 package fr.insee.publicenemy.api.infrastructure.questionnaire;
 
-import java.util.List;
-
-import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
-
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.QuestionnaireEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Repository
 @Transactional
@@ -47,7 +46,8 @@ public class QuestionnaireRepository implements QuestionnairePort {
     public Questionnaire addQuestionnaire(Questionnaire questionnaire) {
         QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createEntity(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
-        return questionnaireEntity.toModel();
+        // add surveyUnitData to model as it is not retrieved in DB for perf reasons
+        return questionnaireEntity.toModel(questionnaire.getSurveyUnitData());
     }
 
     @Override

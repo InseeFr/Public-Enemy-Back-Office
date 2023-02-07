@@ -9,6 +9,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -85,7 +89,7 @@ public class Questionnaire {
                     ", label='" + label + '\'' +
                     ", context=" + context +
                     ", questionnaireModes=" + questionnaireModes +
-                    ", surveyUnitData=" + surveyUnitData +
+                    ", surveyUnitData=" + Arrays.toString(surveyUnitData) +
                     ", isSynchronized=" + isSynchronized +
                     '}';
         }

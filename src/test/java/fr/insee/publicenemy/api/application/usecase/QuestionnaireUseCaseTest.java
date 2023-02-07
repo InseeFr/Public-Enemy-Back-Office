@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 class QuestionnaireUseCaseTest {
 
     @Mock
-    private QueenSynchronizationUseCase queenUseCase;
+    private QueenUseCase queenUseCase;
     @Mock
     private QuestionnairePort questionnairePort;
     @Mock

@@ -80,6 +80,15 @@ public class QuestionnaireEntity implements Serializable {
     /**
      * @return application model of this questionnaire
      */
+    public Questionnaire toModel(byte[] surveyUnitData) {
+        return new Questionnaire(getId(), getPoguesId(), getLabel(),
+                getContext(), QuestionnaireModeEntity.toModel(modeEntities), surveyUnitData,
+                isSynchronized());
+    }
+
+    /**
+     * @return application model of this questionnaire
+     */
     public Questionnaire toModel() {
         return new Questionnaire(getId(), getPoguesId(), getLabel(),
                 getContext(), QuestionnaireModeEntity.toModel(modeEntities), null,
@@ -143,13 +152,15 @@ public class QuestionnaireEntity implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         QuestionnaireEntity that = (QuestionnaireEntity) o;
-        return isSynchronized == that.isSynchronized && Objects.equals(id, that.id)
+        return Objects.equals(id, that.id)
                 && Objects.equals(poguesId, that.poguesId)
-                && Objects.equals(label, that.label) && context == that.context
+                && Objects.equals(label, that.label)
+                && context == that.context
                 && Objects.equals(modeEntities, that.modeEntities)
                 && Objects.equals(creationDate, that.creationDate)
                 && Objects.equals(updatedDate, that.updatedDate)
-                && Arrays.equals(surveyUnitData, that.surveyUnitData);
+                && Arrays.equals(surveyUnitData, that.surveyUnitData)
+                && Objects.equals(isSynchronized, that.isSynchronized);
     }
 
     @Override
@@ -169,7 +180,7 @@ public class QuestionnaireEntity implements Serializable {
                 ", modeEntities=" + modeEntities +
                 ", creationDate=" + creationDate +
                 ", updatedDate=" + updatedDate +
-                ", surveyUnitData=" + surveyUnitData +
+                ", surveyUnitData=" + Arrays.toString(surveyUnitData) +
                 ", isSynchronized='" + isSynchronized + '\'' +
                 '}';
     }
