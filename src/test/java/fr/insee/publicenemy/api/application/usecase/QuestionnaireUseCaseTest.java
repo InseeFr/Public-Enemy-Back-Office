@@ -26,6 +26,7 @@ class QuestionnaireUseCaseTest {
     private Ddi ddi;
     @Mock
     private Questionnaire questionnaire;
+
     private QuestionnaireUseCase questionnaireUseCase;
 
     @BeforeEach

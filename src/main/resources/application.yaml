@@ -63,6 +63,8 @@ application:
     url: https://pogues-url.insee.fr
   queen:
     url: https://queen-url.insee.fr
+  eno:
+    url: https://eno-url.insee.fr
   questionnaire:
     metadata:
       -

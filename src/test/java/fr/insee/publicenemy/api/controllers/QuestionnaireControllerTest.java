@@ -8,7 +8,9 @@ import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
+import fr.insee.publicenemy.api.controllers.dto.ModeRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
+import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,11 +23,10 @@ import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -36,6 +37,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class QuestionnaireControllerTest {
     @MockBean
     private QuestionnaireUseCase questionnaireUseCase;
+
+    @MockBean
+    private QuestionnaireComponent questionnaireComponent;
+
     @MockBean
     private DDIUseCase ddiUseCase;
 
@@ -43,31 +48,38 @@ class QuestionnaireControllerTest {
     private MockMvc mockMvc;
     private List<Questionnaire> questionnaires;
 
-    private Questionnaire questionnaire1;
+    private Questionnaire questionnaire;
+
+    private QuestionnaireRest questionnaireRest;
 
     @BeforeEach
     public void init() {
         QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
         List<QuestionnaireMode> questionnaireModes = List.of(questionnaireMode);
+        List<ModeRest> modesRest = List.of(new ModeRest(Mode.CAPI.name(), Mode.CAWI.isWebMode()));
+        ContextRest contextRest = new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name());
 
+        questionnaires = new LinkedList<>();
+        List<QuestionnaireRest> questionnairesRest = new LinkedList<>();
+        for(long nbQuestionnaires=0; nbQuestionnaires<3; nbQuestionnaires++) {
+            Long id = nbQuestionnaires + 1;
+            Questionnaire q = new Questionnaire(id, "l8wwljbo"+id, "label"+id, Context.BUSINESS,
+                    questionnaireModes, "data".getBytes(),  false);
+            QuestionnaireRest qRest = new QuestionnaireRest(q.getId(), q.getPoguesId(),
+                    q.getLabel(), contextRest, modesRest, q.isSynchronized());
+            questionnaires.add(q);
+            questionnairesRest.add(qRest);
 
-        questionnaire1 = new Questionnaire(1L, "l8wwljbo", "label1", Context.BUSINESS,
-                questionnaireModes, "questionnaire1".getBytes(),  false);
-        Questionnaire questionnaire2 = new Questionnaire(2L, "l8wwljbo2", "label2", Context.BUSINESS,
-                questionnaireModes, null, true);
-        Questionnaire questionnaire3 = new Questionnaire(3L, "l8wwljbo3", "label3", Context.BUSINESS,
-                questionnaireModes, null, true);
-
-        questionnaires = new ArrayList<>();
-        questionnaires.add(questionnaire1);
-        questionnaires.add(questionnaire2);
-        questionnaires.add(questionnaire3);
+            when(questionnaireComponent.createFromModel(q)).thenReturn(qRest);
+        }
+        questionnaire = questionnaires.get(0);
+        questionnaireRest = questionnairesRest.get(0);
     }
 
     @Test
     void onGetQuestionnairesShouldFetchAllQuestionnaires() throws Exception {
 
-        given(questionnaireUseCase.getQuestionnaires()).willReturn(questionnaires);
+        when(questionnaireUseCase.getQuestionnaires()).thenReturn(questionnaires);
 
         mockMvc.perform(get("/api/questionnaires"))
                 .andExpect(status().isOk())
@@ -76,82 +88,84 @@ class QuestionnaireControllerTest {
 
     @Test
     void onGetQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
-        Long id = questionnaire1.getId();
-        when(questionnaireUseCase.getQuestionnaire(id)).thenReturn(questionnaire1);
+        Long id = questionnaire.getId();
+        when(questionnaireUseCase.getQuestionnaire(id)).thenReturn(questionnaire);
 
         mockMvc.perform(get("/api/questionnaires/{id}", id))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(questionnaire1.getId().intValue())))
-                .andExpect(jsonPath("$.poguesId", is(questionnaire1.getPoguesId())))
-                .andExpect(jsonPath("$.label", is(questionnaire1.getLabel())))
-                .andExpect(jsonPath("$.context", is(questionnaire1.getContext().name())))
-                .andExpect(jsonPath("$.modes.size()", is(questionnaire1.getQuestionnaireModes().size())))
-                .andExpect(jsonPath("$.isSynchronized", is(questionnaire1.isSynchronized())));
+                .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
+                .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
+                .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
+                .andExpect(jsonPath("$.context.name", is(questionnaireRest.context().name())))
+                .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
+                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
+                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
     }
 
     @Test
     void onAddQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
-        QuestionnaireAddRest questionnaireRest =  new QuestionnaireAddRest( "l8wwljbo",  new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
+        QuestionnaireAddRest questionnaireAddRest =  new QuestionnaireAddRest( "l8wwljbo",  new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = "test".getBytes();
         ObjectMapper Obj = new ObjectMapper();
-        String jsonQuestionnaire = Obj.writeValueAsString(questionnaireRest);
+        String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
 
-        when(questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(questionnaire1);
+        when(questionnaireUseCase.addQuestionnaire(questionnaireAddRest.poguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(questionnaire);
 
         questionnaireMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(questionnaire1.getId().intValue())))
-                .andExpect(jsonPath("$.poguesId", is(questionnaire1.getPoguesId())))
-                .andExpect(jsonPath("$.label", is(questionnaire1.getLabel())))
-                .andExpect(jsonPath("$.context", is(questionnaire1.getContext().name())))
-                .andExpect(jsonPath("$.modes.size()", is(questionnaire1.getQuestionnaireModes().size())))
-                .andExpect(jsonPath("$.isSynchronized", is(questionnaire1.isSynchronized())));
+                .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
+                .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
+                .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
+                .andExpect(jsonPath("$.context.name", is(questionnaireRest.context().name())))
+                .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
+                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
+                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
     }
 
     @Test
     void onGetQuestionnaireFromPoguesShouldFetchQuestionnaireAttributes() throws Exception {
-        String poguesId = questionnaire1.getPoguesId();
-        when(ddiUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire1);
+        String poguesId = questionnaire.getPoguesId();
+        when(ddiUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
 
         mockMvc.perform(get("/api/questionnaires/pogues/{poguesId}", poguesId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.poguesId", is(questionnaire1.getPoguesId())))
-                .andExpect(jsonPath("$.label", is(questionnaire1.getLabel())))
-                .andExpect(jsonPath("$.modes.size()", is(questionnaire1.getQuestionnaireModes().size())))
-        ;
+                .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
+                .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
+                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))        ;
     }
 
     @Test
     void onSaveQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
 
         ObjectMapper Obj = new ObjectMapper();
-        String jsonContext = Obj.writeValueAsString(questionnaire1.getContext());
-        MockPart contextMockPart = new MockPart("context", jsonContext.getBytes());
+        String jsonContext = Obj.writeValueAsString(questionnaireRest.context());
+        MockPart contextMockPart = new MockPart("context", jsonContext.getBytes() );
         contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire1.getSurveyUnitData());
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire.getSurveyUnitData());
 
-        Long id = questionnaire1.getId();
-        when(questionnaireUseCase.updateQuestionnaire(questionnaire1.getId(),
-                questionnaire1.getContext(), questionnaire1.getSurveyUnitData())).thenReturn(questionnaire1);
+        Long id = questionnaire.getId();
+        when(questionnaireUseCase.updateQuestionnaire(questionnaire.getId(),
+                questionnaire.getContext(), questionnaire.getSurveyUnitData())).thenReturn(questionnaire);
 
         mockMvc.perform(multipart("/api/questionnaires/{id}", id).part(contextMockPart).file(surveyUnitMockPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(questionnaire1.getId().intValue())))
-                .andExpect(jsonPath("$.poguesId", is(questionnaire1.getPoguesId())))
-                .andExpect(jsonPath("$.label", is(questionnaire1.getLabel())))
-                .andExpect(jsonPath("$.context", is(questionnaire1.getContext().name())))
-                .andExpect(jsonPath("$.modes.size()", is(questionnaire1.getQuestionnaireModes().size())))
-                .andExpect(jsonPath("$.isSynchronized", is(questionnaire1.isSynchronized())));
+                .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
+                .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
+                .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
+                .andExpect(jsonPath("$.context.name", is(questionnaireRest.context().name())))
+                .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
+                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
+                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
     }
 
     @Test
     void onDeleteQuestionnaireShouldReturnEmptyJsonObject() throws Exception {
-        Long id = questionnaire1.getId();
+        Long id = questionnaire.getId();
 
         mockMvc.perform(delete("/api/questionnaires/{id}/delete", id))
                 .andExpect(status().isOk())

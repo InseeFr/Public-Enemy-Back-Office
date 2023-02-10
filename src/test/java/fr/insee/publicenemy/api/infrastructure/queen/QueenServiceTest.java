@@ -1,10 +1,10 @@
 package fr.insee.publicenemy.api.infrastructure.queen;
 
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
-import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
+import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
+import fr.insee.publicenemy.api.infrastructure.queen.exceptions.SurveyUnitsNotFoundException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -19,6 +19,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,6 +57,22 @@ class QueenServiceTest {
                 mockWebServer.getPort());
         service = new QueenServiceImpl(webClient, baseUrl, metadataProps);
 
+        QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
+        List<QuestionnaireMode> questionnaireModes = List.of(questionnaireMode);
+        questionnaire = new Questionnaire(1L, "l8wwljbo", "label", Context.BUSINESS,
+                questionnaireModes, "data".getBytes(),  false);
+    }
+
+    @Test
+    void onCreateSurveyUnitsWhenApiResponseSuccessfulReturnNothing() {
+        SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
+        List<SurveyUnit> surveyUnits = new ArrayList<>();
+        // Create success response for each survey unit creation
+        for(long nbSurveyUnits=1; nbSurveyUnits<=4; nbSurveyUnits++) {
+            surveyUnits.add(new SurveyUnit("id"+nbSurveyUnits, "q"+nbSurveyUnits, data, SurveyUnitStateData.createInitialStateData()));
+            createMockResponseSuccess();
+        }
+        assertAll(() -> service.createSurveyUnits("12-CAWI", surveyUnits));
     }
 
     @Test
@@ -65,7 +83,7 @@ class QueenServiceTest {
     }
 
     @Test
-    void onCreateQuestionnaireModelWhenApiResponseSuccessful() {
+    void onCreateQuestionnaireModelWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
         when(jsonLunatic.jsonContent()).thenReturn("{}");
         assertAll(() -> service.createQuestionnaireModel("l8wwljbo", ddi, jsonLunatic));
@@ -78,7 +96,30 @@ class QueenServiceTest {
     }
 
     @Test
-    void onCreateCampaignWhenApiResponseSuccessful() {
+    void onCreateSurveyUnitsWhenApiResponseErrorThrowsServiceException() {
+        createMockResponseError();
+        SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
+        List<SurveyUnit> surveyUnits = new ArrayList<>();
+        surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        surveyUnits.add(new SurveyUnit("2", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        surveyUnits.add(new SurveyUnit("3", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        assertThrows(ServiceException.class, () -> service.createSurveyUnits("12-CAWI", surveyUnits));
+    }
+
+    @Test
+    void onGetSurveyUnitsWhenEmptyResponseThrowsSurveyUnitsNotFoundException() {
+        createMockEmptyResponse();
+        assertThrows(SurveyUnitsNotFoundException.class, () -> service.getSurveyUnits("1"));
+    }
+
+    @Test
+    void onGetSurveyUnitsWhenNotFoundResponseThrowsSurveyUnitsNotFoundException() {
+        createMockNotFoundResponse();
+        assertThrows(SurveyUnitsNotFoundException.class, () -> service.getSurveyUnits("1"));
+    }
+
+    @Test
+    void onCreateCampaignWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
         assertAll(() -> service.createCampaign("l8wwljbo-CAPI", questionnaire, ddi));
     }
@@ -90,7 +131,7 @@ class QueenServiceTest {
     }
 
     @Test
-    void onDeleteCampaignWhenApiResponseSuccessful() {
+    void onDeleteCampaignWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
         assertAll(() -> service.deleteCampaign("l8wwljbo-CAPI"));
     }
@@ -103,6 +144,7 @@ class QueenServiceTest {
                 new MockResponse()
                         .setResponseCode(200)
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("{}")
         );
     }
 
@@ -115,6 +157,28 @@ class QueenServiceTest {
                         .setResponseCode(500)
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                         .setBody("{}")
+        );
+    }
+
+    /**
+     * Create api response empty
+     */
+    private void createMockEmptyResponse() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        );
+    }
+
+    /**
+     * Create api response empty
+     */
+    private void createMockNotFoundResponse() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(404)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         );
     }
 }
