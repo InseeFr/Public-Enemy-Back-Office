@@ -12,7 +12,7 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class SurveyUnitCsvModel {
+public class SurveyUnitCsvLine {
     @CsvBindByName(column = "IdUe")
     private String idUnit;
 
@@ -24,7 +24,7 @@ public class SurveyUnitCsvModel {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SurveyUnitCsvModel that = (SurveyUnitCsvModel) o;
+        SurveyUnitCsvLine that = (SurveyUnitCsvLine) o;
         return Objects.equals(idUnit, that.idUnit) && Objects.equals(fields, that.fields);
     }
 

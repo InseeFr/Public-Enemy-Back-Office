@@ -1,27 +1,26 @@
 package fr.insee.publicenemy.api.infrastructure.ddi;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import fr.insee.publicenemy.api.application.domain.model.Ddi;
+import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
-import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
+import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.DdiNotFoundException;
+import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
-import fr.insee.publicenemy.api.application.domain.model.Mode;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import reactor.core.publisher.Mono;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -89,6 +88,11 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
         return webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}", questionnaireId)
                 .retrieve()
                 .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(questionnaireId)))
+                )
+                .onStatus(
                         HttpStatusCode::isError,
                         response -> response.bodyToMono(String.class)
                                 .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
@@ -107,6 +111,11 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
                 .body(BodyInserters.fromValue(jsonPogues))
                 .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new DdiNotFoundException(poguesId)))
+                )
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> response.bodyToMono(String.class)

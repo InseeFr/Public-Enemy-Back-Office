@@ -23,34 +23,34 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
     public List<SurveyUnit> initSurveyUnits(@NonNull Questionnaire questionnaire, @NonNull String questionnaireModelId) {
         Reader reader = new InputStreamReader(new ByteArrayInputStream(questionnaire.getSurveyUnitData()));
 
-        List<SurveyUnitCsvModel> surveyUnitsCsvModel = new CsvToBeanBuilder<SurveyUnitCsvModel>(reader)
+        List<SurveyUnitCsvLine> surveyUnitsCsvModel = new CsvToBeanBuilder<SurveyUnitCsvLine>(reader)
                 .withSkipLines(0)
                 .withSeparator(',')
                 .withIgnoreLeadingWhiteSpace(true)
                 .withStrictQuotes(true)
                 .withIgnoreQuotations(false)
-                .withType(SurveyUnitCsvModel.class)
+                .withType(SurveyUnitCsvLine.class)
                 .build().parse();
 
         List<SurveyUnit> surveyUnits = new ArrayList<>();
-        for(SurveyUnitCsvModel surveyUnitCsvModel : surveyUnitsCsvModel) {
-            surveyUnits.add(getSurveyUnit(surveyUnitCsvModel, questionnaireModelId));
+        for(SurveyUnitCsvLine surveyUnitCsvLine : surveyUnitsCsvModel) {
+            surveyUnits.add(getSurveyUnit(surveyUnitCsvLine, questionnaireModelId));
         }
         return surveyUnits;
     }
 
     /**
      *
-     * @param surveyUnitCsvModel csv line containing a survey unit
+     * @param surveyUnitCsvLine csv line containing a survey unit
      * @param questionnaireModelId questionnaire model id
      * @return a survey unit from a line in the csv file
      */
-    private SurveyUnit getSurveyUnit(@NonNull SurveyUnitCsvModel surveyUnitCsvModel, String questionnaireModelId) {
+    private SurveyUnit getSurveyUnit(@NonNull SurveyUnitCsvLine surveyUnitCsvLine, String questionnaireModelId) {
 
-        String surveyUnitId = String.format("%s-%s", questionnaireModelId, surveyUnitCsvModel.getIdUnit());
+        String surveyUnitId = String.format("%s-%s", questionnaireModelId, surveyUnitCsvLine.getIdUnit());
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
-        if(surveyUnitCsvModel.getFields() != null) {
-            csvFields = surveyUnitCsvModel.getFields().entries()
+        if(surveyUnitCsvLine.getFields() != null) {
+            csvFields = surveyUnitCsvLine.getFields().entries()
                     .stream()
                     .sorted(Map.Entry.comparingByKey())
                     .toList();
