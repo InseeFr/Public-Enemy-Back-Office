@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.2](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.1...2.1.0-beta.2) (2023-02-22)
+
+
+### Bug Fixes
+
+* semantic release giving wrong version number ([689431a](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/689431a00142e8a1d0bed4d336f7ec73ca675d77))
+
 ## [2.1.0-beta.1](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.0.0...2.1.0-beta.1) (2023-02-22)
 
 
