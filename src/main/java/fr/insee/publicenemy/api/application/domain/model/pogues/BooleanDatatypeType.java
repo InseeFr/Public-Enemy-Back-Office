@@ -20,7 +20,7 @@ public class BooleanDatatypeType extends DataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
         return DataTypeValidation.createErrorDataTypeValidation(
-                String.format("Value should contain one of the following values: %s", correctValues.toString()));
+                String.format("Value should contain one of the following values: %s", correctValues));
     }
 
     @Override

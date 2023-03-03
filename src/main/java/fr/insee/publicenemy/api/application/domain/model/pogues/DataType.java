@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 import java.util.Objects;
 @JsonTypeInfo(use = Id.NAME,
-        include = JsonTypeInfo.As.PROPERTY,
         property = "type",
         visible = true)
 @JsonSubTypes({
@@ -24,7 +23,7 @@ public abstract class DataType {
     private String type;
     private String typeName;
 
-    public DataType(String type, String typeName) {
+    protected DataType(String type, String typeName) {
         this.type = type;
         this.typeName = typeName;
     }

@@ -29,7 +29,7 @@ public class NumericDatatypeType extends DataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
 
-        BigDecimal numericValue = null;
+        BigDecimal numericValue;
 
         try {
             numericValue = new BigDecimal(fieldValue);
@@ -39,7 +39,7 @@ public class NumericDatatypeType extends DataType {
 
         StringBuilder errorMessage = new StringBuilder();
 
-        if(minimum != null && numericValue.compareTo(minimum) == -1) {
+        if(minimum != null && numericValue.compareTo(minimum) < 0) {
             errorMessage.append(String.format("Value should be < %s. ", minimum));
         }
 
@@ -72,6 +72,14 @@ public class NumericDatatypeType extends DataType {
 
     public void setMaximum(BigDecimal maximum) {
         this.maximum = maximum;
+    }
+
+    public Integer getDecimals() {
+        return decimals;
+    }
+
+    public void setDecimals(Integer decimals) {
+        this.decimals = decimals;
     }
 
     @Override
