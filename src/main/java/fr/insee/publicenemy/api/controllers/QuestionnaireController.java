@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.controllers;
 
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
@@ -61,6 +62,16 @@ public class QuestionnaireController {
     public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {        
         Questionnaire questionnaire = ddiUseCase.getQuestionnaire(poguesId);
         return questionnaireComponent.createFromModel(questionnaire);
+    }
+
+    /**
+     *
+     * @param poguesId pogues questionnaire id
+     * @return questionnaire informations from ddi
+     */
+    @GetMapping("/pogues/{poguesId}/variables")
+    public List<VariableType> getQuestionnaireVariablesFromPogues(@PathVariable String poguesId) {
+        return ddiUseCase.getQuestionnaireVariables(poguesId);
     }
 
     /**
