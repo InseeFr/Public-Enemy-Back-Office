@@ -1,15 +1,13 @@
 package fr.insee.publicenemy.api.application.usecase;
 
+import fr.insee.publicenemy.api.application.domain.model.*;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import fr.insee.publicenemy.api.application.ports.DdiServicePort;
+import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
-import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
-import fr.insee.publicenemy.api.application.domain.model.Mode;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.ports.DdiServicePort;
-import fr.insee.publicenemy.api.application.ports.EnoServicePort;
+import java.util.List;
 
 @Service
 @Transactional
@@ -50,5 +48,14 @@ public class DDIUseCase {
      */
     public JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode) {
         return enoService.getJsonLunatic(ddi, context, mode);
+    }
+
+    /**
+     * Get Json Pogues variables
+     * @param questionnaireId pogues questionnaire Id
+     * @return the json from pogues
+     */
+    public List<VariableType> getQuestionnaireVariables(String questionnaireId) {
+        return ddiService.getQuestionnaireVariables(questionnaireId);
     }
 }

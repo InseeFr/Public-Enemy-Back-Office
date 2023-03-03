@@ -1,9 +1,13 @@
 package fr.insee.publicenemy.api.infrastructure.ddi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.DdiNotFoundException;
@@ -99,6 +103,33 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 )
                 .bodyToMono(JsonNode.class)
                 .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(questionnaireId));
+    }
+
+    @Override
+    public List<VariableType> getQuestionnaireVariables(@NonNull String questionnaireId) {
+        String variablesString = webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}/variables", questionnaireId)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(questionnaireId)))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
+                )
+                .bodyToMono(String.class)
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(questionnaireId));
+
+        ObjectMapper mapper = new ObjectMapper();
+        log.error(variablesString);
+        try {
+            return mapper.readValue(variablesString, new TypeReference<List<VariableType>>(){});
+        } catch (JsonProcessingException e) {
+            log.error(String.format("Exception during variables deserialization of questionnaire id: %s", questionnaireId), e);
+            throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR.value(), String.format("Error retrieving variables from questionnaire id %s", questionnaireId));
+        }
     }
     
     /**
