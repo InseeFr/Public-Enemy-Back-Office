@@ -32,7 +32,7 @@ public class DateDatatypeType extends DataType {
         StringBuilder errorMessage = new StringBuilder();
 
         if(format == null || format.isEmpty()) {
-            errorMessage.append(String.format("The date format is empty, you should fill it in Pogues"));
+            errorMessage.append("The date format is empty, you should fill it in Pogues");
             return DataTypeValidation.createErrorDataTypeValidation(errorMessage.toString());
         }
 
