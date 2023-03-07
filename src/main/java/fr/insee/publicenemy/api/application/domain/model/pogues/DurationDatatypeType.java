@@ -5,17 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
-public class DurationDatatypeType extends DataType {
+public class DurationDatatypeType implements IDataType {
 
     private String minimum;
     private String maximum;
     private String format;
 
     @JsonCreator
-    public DurationDatatypeType(@JsonProperty(value="type") String type, @JsonProperty(value="typename") String typeName,
-                                @JsonProperty(value="minimum") String minimum, @JsonProperty(value="maximum") String maximum,
+    public DurationDatatypeType(@JsonProperty(value="minimum") String minimum, @JsonProperty(value="maximum") String maximum,
                                 @JsonProperty(value="format") String format) {
-        super(type, typeName);
         this.minimum = minimum;
         this.maximum = maximum;
         this.format = format;
@@ -23,7 +21,7 @@ public class DurationDatatypeType extends DataType {
 
     @Override
     public DataTypeValidation validate(String fieldValue) {
-        return null;
+        throw new IllegalArgumentException("Validate method is not yet implemented");
     }
 
     public String getMinimum() {

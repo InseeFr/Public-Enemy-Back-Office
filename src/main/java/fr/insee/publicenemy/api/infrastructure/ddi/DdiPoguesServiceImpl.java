@@ -123,7 +123,6 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(questionnaireId));
 
         ObjectMapper mapper = new ObjectMapper();
-        log.error(variablesString);
         try {
             return mapper.readValue(variablesString, new TypeReference<List<VariableType>>(){});
         } catch (JsonProcessingException e) {

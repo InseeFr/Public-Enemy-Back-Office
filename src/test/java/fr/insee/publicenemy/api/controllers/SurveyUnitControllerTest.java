@@ -4,6 +4,7 @@ import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.SurveyUnitData;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
+import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SurveyUnitControllerTest {
     @MockBean
     private QueenUseCase queenUseCase;
+
+    @MockBean
+    private SurveyUnitCsvUseCase csvUseCase;
 
     @Autowired
     private MockMvc mockMvc;
