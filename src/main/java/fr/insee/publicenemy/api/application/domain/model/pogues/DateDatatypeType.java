@@ -5,19 +5,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-public class DateDatatypeType extends DataType {
+public class DateDatatypeType implements IDataType {
     private String minimum;
     private String maximum;
-    private String format;
+    private DateFormatEnum format;
 
     @JsonCreator
-    public DateDatatypeType(@JsonProperty(value="type") String type, @JsonProperty(value="typename") String typeName,
-                            @JsonProperty(value="minimum") String minimum, @JsonProperty(value="maximum") String maximum,
-                            @JsonProperty(value="format") String format) {
-        super(type, typeName);
+    public DateDatatypeType(@JsonProperty(value="minimum") String minimum, @JsonProperty(value="maximum") String maximum,
+                            @JsonProperty(value="format") DateFormatEnum format) {
         this.minimum = minimum;
         this.maximum = maximum;
         this.format = format;
@@ -29,45 +31,51 @@ public class DateDatatypeType extends DataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
 
-        StringBuilder errorMessage = new StringBuilder();
+        List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
-        if(format == null || format.isEmpty()) {
-            errorMessage.append("The date format is empty, you should fill it in Pogues");
-            return DataTypeValidation.createErrorDataTypeValidation(errorMessage.toString());
+        if(format == null) {
+            return DataTypeValidation.createErrorDataTypeValidation(
+                    DataTypeValidationMessage.createMessage("datatype.error.date.format-empty")
+            );
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-        LocalDate date;
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                .appendPattern(format.value())
+                .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1)
+                .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+                .toFormatter();
 
+        LocalDate date;
         try {
             date = LocalDate.parse(fieldValue, formatter);
         } catch (DateTimeParseException dte) {
-            errorMessage.append(String.format("The date %s could not be parsed, this date is not in specified format: %s", fieldValue, format));
-            return DataTypeValidation.createErrorDataTypeValidation(errorMessage.toString());
+            return DataTypeValidation.createErrorDataTypeValidation(
+                    DataTypeValidationMessage.createMessage("datatype.error.date.format-incorrect", fieldValue, format.value())
+            );
         }
 
         try {
             LocalDate dateMinimum = LocalDate.parse(minimum, formatter);
             if(date.isBefore(dateMinimum)) {
-                errorMessage.append(String.format("The date %s is before the minimum date: %s", fieldValue, minimum));
+                errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.before-minimum", fieldValue, minimum));
             }
         } catch (DateTimeParseException dte) {
-            errorMessage.append(String.format("The minimum date %s could not be parsed, this date is not in specified format: %s", minimum, format));
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.format-minimum", minimum, format.value()));
         }
 
         try {
             LocalDate dateMaximum = LocalDate.parse(maximum, formatter);
             if(date.isAfter(dateMaximum)) {
-                errorMessage.append(String.format("The date %s is after the maximum date: %s", fieldValue, maximum));
+                errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.after-maximum", fieldValue, maximum));
             }
         } catch (DateTimeParseException dte) {
-            errorMessage.append(String.format("The maximum date %s could not be parsed, this date is not in specified format: %s", maximum, format));
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.format-maximum", maximum, format.value()));
         }
 
-        if(errorMessage.isEmpty()) {
+        if(errorMessages.isEmpty()) {
             return DataTypeValidation.createOkDataTypeValidation();
         }
-        return DataTypeValidation.createErrorDataTypeValidation(errorMessage.toString());
+        return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
     }
 
     public String getMinimum() {
@@ -86,11 +94,11 @@ public class DateDatatypeType extends DataType {
         this.maximum = maximum;
     }
 
-    public String getFormat() {
+    public DateFormatEnum getFormat() {
         return format;
     }
 
-    public void setFormat(String format) {
+    public void setFormat(DateFormatEnum format) {
         this.format = format;
     }
 
@@ -100,7 +108,7 @@ public class DateDatatypeType extends DataType {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         DateDatatypeType that = (DateDatatypeType) o;
-        return Objects.equals(minimum, that.minimum) && Objects.equals(maximum, that.maximum) && Objects.equals(format, that.format);
+        return Objects.equals(minimum, that.minimum) && Objects.equals(maximum, that.maximum) && format == that.format;
     }
 
     @Override
@@ -110,10 +118,10 @@ public class DateDatatypeType extends DataType {
 
     @Override
     public String toString() {
-        return "DateDataType{" +
+        return "DateDatatypeType{" +
                 "minimum='" + minimum + '\'' +
                 ", maximum='" + maximum + '\'' +
-                ", format='" + format + '\'' +
+                ", format=" + format +
                 '}';
     }
 }

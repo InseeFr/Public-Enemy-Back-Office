@@ -24,8 +24,8 @@ public interface DdiServicePort {
     /**
      * Get Json Pogues variables
      *
-     * @param questionnaireId pogues questionnaire Id
+     * @param poguesId pogues questionnaire Id
      * @return the json from pogues
      */
-    List<VariableType> getQuestionnaireVariables(String questionnaireId);
+    List<VariableType> getQuestionnaireVariables(String poguesId);
 }

@@ -3,16 +3,16 @@ package fr.insee.publicenemy.api.application.domain.model.pogues;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-public class TextDatatypeType extends DataType {
+public class TextDatatypeType implements IDataType {
     private Integer maxLength;
     private String pattern;
 
     @JsonCreator
-    public TextDatatypeType(@JsonProperty(value="type") String type, @JsonProperty(value="typename") String typeName,
-                            @JsonProperty(value="maxLength") Integer maxLength, @JsonProperty(value="pattern") String pattern) {
-        super(type, typeName);
+    public TextDatatypeType(@JsonProperty(value="maxLength") Integer maxLength, @JsonProperty(value="pattern") String pattern) {
         this.maxLength = maxLength;
         this.pattern = pattern;
     }
@@ -23,20 +23,20 @@ public class TextDatatypeType extends DataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
 
-        StringBuilder errorMessage = new StringBuilder();
+        List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
-        if(maxLength != null && fieldValue.length() < maxLength) {
-            errorMessage.append(String.format("Value should be < to %s characters (%s at this time). ", maxLength, fieldValue.length()));
+        if(maxLength != null && fieldValue.length() > maxLength) {
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.superior-maxlength", maxLength.toString(), fieldValue.length()+""));
         }
 
         if(pattern != null && !fieldValue.matches(pattern)) {
-            errorMessage.append(String.format("Value should have the following pattern: %s.", pattern));
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.format-pattern", pattern));
         }
 
-        if(errorMessage.isEmpty()) {
+        if(errorMessages.isEmpty()) {
             return DataTypeValidation.createOkDataTypeValidation();
         }
-        return DataTypeValidation.createErrorDataTypeValidation(errorMessage.toString());
+        return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
     }
 
     public Integer getMaxLength() {

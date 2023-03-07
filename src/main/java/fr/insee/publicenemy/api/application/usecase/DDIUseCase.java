@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,8 @@ public class DDIUseCase {
      * @return the json from pogues
      */
     public List<VariableType> getQuestionnaireVariables(String questionnaireId) {
-        return ddiService.getQuestionnaireVariables(questionnaireId);
+        List<VariableType> variables = ddiService.getQuestionnaireVariables(questionnaireId);
+        // return only external variables types (may be extended later)
+        return variables.stream().filter(variable -> variable.type() == VariableTypeEnum.EXTERNAL).toList();
     }
 }

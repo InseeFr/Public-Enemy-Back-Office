@@ -4,20 +4,21 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
-public class NumericDatatypeType extends DataType {
+public class NumericDatatypeType implements IDataType {
 
     private BigDecimal minimum;
     private BigDecimal maximum;
     private Integer decimals;
 
     @JsonCreator
-    public NumericDatatypeType(@JsonProperty(value="type") String type, @JsonProperty(value="typename") String typeName,
-                               @JsonProperty(value="minimum") BigDecimal minimum, @JsonProperty(value="maximum") BigDecimal maximum,
+    public NumericDatatypeType(@JsonProperty(value="minimum") BigDecimal minimum,
+                               @JsonProperty(value="maximum") BigDecimal maximum,
                                @JsonProperty(value="decimals") Integer decimals) {
-        super(type, typeName);
         this.minimum = minimum;
         this.maximum = maximum;
         this.decimals = decimals;
@@ -29,33 +30,39 @@ public class NumericDatatypeType extends DataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
 
+        fieldValue = fieldValue.replace(',','.');
+
         BigDecimal numericValue;
 
         try {
             numericValue = new BigDecimal(fieldValue);
         } catch (NumberFormatException nfe) {
-            return DataTypeValidation.createErrorDataTypeValidation("Value is not in numeric format");
+            return DataTypeValidation.createErrorDataTypeValidation(
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.format"));
         }
 
-        StringBuilder errorMessage = new StringBuilder();
+        List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
         if(minimum != null && numericValue.compareTo(minimum) < 0) {
-            errorMessage.append(String.format("Value should be < %s. ", minimum));
+            errorMessages.add(
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.inferior-minimum", minimum.toString()));
         }
 
-        if(maximum != null && numericValue.compareTo(minimum) >= 0) {
-            errorMessage.append(String.format("Value should be >= %s. ", maximum));
+        if(maximum != null && numericValue.compareTo(maximum) >= 0) {
+            errorMessages.add(
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.superior-maximum", maximum.toString()));
         }
 
         int scale =  numericValue.stripTrailingZeros().scale();
         if(decimals != null && scale > decimals) {
-            errorMessage.append(String.format("Value should have a precision decimal value of %s (%s at this time). ", decimals, scale));
+            errorMessages.add(
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.decimals-precision", decimals.toString()));
         }
 
-        if(errorMessage.isEmpty()) {
+        if(errorMessages.isEmpty()) {
             return DataTypeValidation.createOkDataTypeValidation();
         }
-        return DataTypeValidation.createErrorDataTypeValidation(errorMessage.toString());
+        return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
     }
 
     public BigDecimal getMinimum() {
