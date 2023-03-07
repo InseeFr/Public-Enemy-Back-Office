@@ -4,6 +4,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.SurveyUnitData;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -59,5 +58,32 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
         SurveyUnitData surveyUnitData = new SurveyUnitData(csvFields);
         surveyUnitData.addAttribute("IdUe", surveyUnitId);
         return new SurveyUnit(surveyUnitId, questionnaireModelId, surveyUnitData, SurveyUnitStateData.createInitialStateData());
+    }
+
+    @Override
+    public SurveyUnitCsvHeaderLine getSurveyUnitsCsvHeaders(List<VariableType> variablesType) {
+        Set<String> csvHeaders = new LinkedHashSet<>();
+        csvHeaders.add("IdUe");
+        variablesType.forEach(
+                variableType -> csvHeaders.addAll(getCsvHeaders(variableType)));
+        return new SurveyUnitCsvHeaderLine(csvHeaders);
+    }
+
+    /**
+     * Get CSV Headers for a specific variable type
+     * @param variableType variable type
+     */
+    private Set<String> getCsvHeaders(VariableType variableType) {
+        Set<String> csvHeaders = new LinkedHashSet<>();
+        if(!variableType.hasMultipleValues()) {
+            csvHeaders.add(variableType.name());
+            return csvHeaders;
+        }
+
+        // if variable type is an iteration, generate 2 headers
+        for(int index = 1; index <= 2; index++ ) {
+            csvHeaders.add(variableType.name() + "_" + index);
+        }
+        return csvHeaders;
     }
 }

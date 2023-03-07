@@ -7,7 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record VariableType(
         VariableTypeEnum type,
         String name,
+        String scope,
         @JsonProperty("datatype")
-        DataType dataType) {
+        IDataType dataType) {
 
+        public boolean hasMultipleValues() {
+                return this.scope != null && !this.scope.isEmpty();
+        }
 }
