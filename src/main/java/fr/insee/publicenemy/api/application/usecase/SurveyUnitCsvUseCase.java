@@ -19,6 +19,11 @@ public class SurveyUnitCsvUseCase {
         this.ddiUseCase = ddiUseCase;
     }
 
+    /**
+     *
+     * @param poguesId pogues questionnaire id
+     * @return Headers for csv file
+     */
     public SurveyUnitCsvHeaderLine getHeadersLine(String poguesId) {
         List<VariableType> variables = ddiUseCase.getQuestionnaireVariables(poguesId);
         return surveyUnitCsvService.getSurveyUnitsCsvHeaders(variables);

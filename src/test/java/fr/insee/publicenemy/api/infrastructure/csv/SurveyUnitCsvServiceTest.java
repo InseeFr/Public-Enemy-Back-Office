@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,6 +59,17 @@ class SurveyUnitCsvServiceTest {
         assertEquals(String.format("%s-%s", questionnaireModelId, "EF000051"), surveyUnit.id());
         assertEquals("1", attributes.get("Numfa"));
         assertEquals("CS 70058", attributes.get("ComplementAdresse"));
+    }
+
+    @Test
+    void onGetSurveyUnitsWhenQuestionnaireNullThrowsNullPointerException() {
+        String questionnaireModelId = "13-CAPI";
+        assertThrows(NullPointerException.class, () -> service.initSurveyUnits(null, questionnaireModelId));
+    }
+
+    @Test
+    void onGetSurveyUnitsWhenQuestionnaireModelIdNullThrowsNullPointerException() {
+        assertThrows(NullPointerException.class, () -> service.initSurveyUnits(questionnaire, null));
     }
 
     @Test

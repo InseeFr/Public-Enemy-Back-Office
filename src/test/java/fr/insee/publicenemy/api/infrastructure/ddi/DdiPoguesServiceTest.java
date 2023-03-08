@@ -3,6 +3,8 @@ package fr.insee.publicenemy.api.infrastructure.ddi;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.DdiNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
@@ -21,8 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.io.IOException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class DdiPoguesServiceTest {
@@ -137,6 +138,85 @@ class DdiPoguesServiceTest {
         createMockResponseError();
 
         assertThrows(ServiceException.class, () -> service.getDdi(poguesId));
+    }
+
+    @Test
+    void onGetDdiWhenPoguesIdNullThrowsException() {
+        assertThrows(NullPointerException.class, () -> service.getDdi(null));
+    }
+
+    @Test
+    void onGetQuestionnaireWhenPoguesIdNullThrowsException() {
+        assertThrows(NullPointerException.class, () -> service.getQuestionnaire(null));
+    }
+
+    @Test
+    void onGetQuestionnaireVariablesWhenPoguesIdNullThrowsException() {
+        assertThrows(NullPointerException.class, () -> service.getQuestionnaireVariables(null));
+    }
+
+    @Test
+    void onGetQuestionnaireVariablesWhenQuestionnaireNotFoundThrowsError() {
+        createMockNotFoundResponse();
+        assertThrows(PoguesJsonNotFoundException.class, () -> service.getQuestionnaireVariables(poguesId));
+    }
+
+    @Test
+    void onGetQuestionnaireVariablesWhenErrorResponseThrowsError() {
+        createMockResponseError();
+        assertThrows(ServiceException.class, () -> service.getQuestionnaireVariables(poguesId));
+    }
+
+    @Test
+    void onGetQuestionnaireVariablesWhenContentResponseIncorrectThrowsError() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("{ incorrect content }")
+        );
+        assertThrows(ServiceException.class, () -> service.getQuestionnaireVariables(poguesId));
+    }
+
+    @Test
+    void onGetQuestionnaireVariablesReturnVariables() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("[\n" +
+                                "  {\n" +
+                                "    \"type\": \"ExternalVariableType\",\n" +
+                                "    \"datatype\": {\n" +
+                                "      \"type\": \"TextDatatypeType\",\n" +
+                                "      \"typeName\": \"TEXT\",\n" +
+                                "      \"maxLength\": 249,\n" +
+                                "      \"pattern\": \"\"\n" +
+                                "    },\n" +
+                                "    \"name\": \"ADMINISTRATION1\",\n" +
+                                "    \"scope\": \"l8oatijq\" \n" +
+                                "  },\n" +
+                                "  {\n" +
+                                "    \"type\": \"CalculatedVariableType\",\n" +
+                                "    \"datatype\": {\n" +
+                                "      \"type\": \"TextDatatypeType\",\n" +
+                                "      \"typeName\": \"TEXT\",\n" +
+                                "      \"maxLength\": 249,\n" +
+                                "      \"pattern\": \"\"\n" +
+                                "    },\n" +
+                                "    \"name\": \"ADMINISTRATION2\",\n" +
+                                "    \"scope\": null\n" +
+                                "  }]")
+        );
+
+        List<VariableType> variables = service.getQuestionnaireVariables(poguesId);
+        assertEquals(2, variables.size());
+        assertEquals("ADMINISTRATION1", variables.get(0).name());
+        assertEquals("l8oatijq", variables.get(0).scope());
+        assertEquals(VariableTypeEnum.EXTERNAL, variables.get(0).type());
+        assertEquals("ADMINISTRATION2", variables.get(1).name());
+        assertNull(variables.get(1).scope());
+        assertEquals(VariableTypeEnum.CALCULATED, variables.get(1).type());
     }
 
     /**

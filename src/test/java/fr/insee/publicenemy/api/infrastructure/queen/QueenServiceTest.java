@@ -119,6 +119,12 @@ class QueenServiceTest {
     }
 
     @Test
+    void onGetSurveyUnitsWhenErrordResponseThrowsServiceException() {
+        createMockResponseError();
+        assertThrows(ServiceException.class, () -> service.getSurveyUnits("1"));
+    }
+
+    @Test
     void onCreateCampaignWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
         assertAll(() -> service.createCampaign("l8wwljbo-CAPI", questionnaire, ddi));

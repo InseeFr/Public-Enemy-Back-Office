@@ -14,6 +14,10 @@ import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -138,14 +142,17 @@ class QuestionnaireControllerTest {
                 .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))        ;
     }
 
-    @Test
-    void onSaveQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
+    @ParameterizedTest
+    @EmptySource
+    @NullSource
+    @ValueSource(strings = {"filecontent"})
+    void onSaveQuestionnaireShouldFetchQuestionnaireAttributes(String surveyUnitData) throws Exception {
 
         ObjectMapper Obj = new ObjectMapper();
         String jsonContext = Obj.writeValueAsString(questionnaireRest.context());
         MockPart contextMockPart = new MockPart("context", jsonContext.getBytes() );
         contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire.getSurveyUnitData());
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", surveyUnitData, MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire.getSurveyUnitData());
 
         Long id = questionnaire.getId();
         when(questionnaireUseCase.updateQuestionnaire(questionnaire.getId(),
