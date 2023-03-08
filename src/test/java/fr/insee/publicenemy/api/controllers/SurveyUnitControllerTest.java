@@ -5,6 +5,7 @@ import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.SurveyUnitData;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
+import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,11 +16,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,6 +46,8 @@ class SurveyUnitControllerTest {
     @Mock
     private List<SurveyUnit> surveyUnits;
 
+
+
     @BeforeEach
     public void init() {
         SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
@@ -60,5 +67,20 @@ class SurveyUnitControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.surveyUnits.size()", is(surveyUnits.size())))
                 .andExpect(jsonPath("$.questionnaireModelId", is(questionnaireModelId)));
+    }
+
+    @Test
+    void onGetCsvSchemaReturnsCSVHeaders() throws Exception {
+        String poguesId = "l8wwljbo";
+        Set<String> headers = new HashSet<>();
+        headers.add("Header1");
+        headers.add("Header2");
+        headers.add("Header3");
+        SurveyUnitCsvHeaderLine headerLine = new SurveyUnitCsvHeaderLine(headers);
+        when(csvUseCase.getHeadersLine(poguesId)).thenReturn(headerLine);
+        MvcResult result = mockMvc.perform(get("/api/questionnaires/{poguesId}/csv", poguesId))
+                .andExpect(status().isOk())
+                .andReturn();
+        assertEquals("\"Header1\",\"Header2\",\"Header3\"\n", result.getResponse().getContentAsString());
     }
 }

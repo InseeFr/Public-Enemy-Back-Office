@@ -128,4 +128,11 @@ class QueenUseCaseTest {
         queenUseCase.synchronizeDelete(questionnaire);
         verify(queenServicePort, times(modes.size())).deleteCampaign(any());
     }
+
+    @Test
+    void onGetSurveyUnitsReturnSurveyUnits() {
+        String questionnaireModelId = "13-CAWI";
+        queenUseCase.getSurveyUnits(questionnaireModelId);
+        verify(queenServicePort, times(1)).getSurveyUnits(questionnaireModelId);
+    }
 }
