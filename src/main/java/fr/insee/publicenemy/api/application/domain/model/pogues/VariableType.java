@@ -11,6 +11,10 @@ public record VariableType(
         @JsonProperty("datatype")
         IDataType dataType) {
 
+        /**
+         * The scope is indicating if the current variable is an array
+         * @return true if variable has multiple values, false otherwise
+         */
         public boolean hasMultipleValues() {
                 return this.scope != null && !this.scope.isEmpty();
         }

@@ -2,10 +2,12 @@ package fr.insee.publicenemy.api.application.domain.model.pogues;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.ToString;
 
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@ToString
 public class BooleanDatatypeType implements IDataType {
     @JsonCreator
     public BooleanDatatypeType() {
@@ -24,10 +26,5 @@ public class BooleanDatatypeType implements IDataType {
         }
         return DataTypeValidation.createErrorDataTypeValidation(
                 new DataTypeValidationMessage("datatype.error.boolean.incorrect-value", correctValues.toArray(String[]::new)));
-    }
-
-    @Override
-    public String toString() {
-        return "BooleanDatatypeType{}";
     }
 }

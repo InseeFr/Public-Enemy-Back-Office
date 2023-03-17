@@ -8,6 +8,7 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -18,6 +19,12 @@ import java.util.*;
 @Service
 @Slf4j
 public class SurveyUnitCsvService implements SurveyUnitCsvPort {
+    private final Integer iterationHeaderCount;
+
+    public SurveyUnitCsvService(@Value("${application.csv.iteration-header-count}") Integer iterationHeaderCount) {
+        this.iterationHeaderCount = iterationHeaderCount;
+    }
+
     @Override
     public List<SurveyUnit> initSurveyUnits(@NonNull Questionnaire questionnaire, @NonNull String questionnaireModelId) {
         Reader reader = new InputStreamReader(new ByteArrayInputStream(questionnaire.getSurveyUnitData()));
@@ -80,8 +87,8 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
             return csvHeaders;
         }
 
-        // if variable type is an iteration, generate 2 headers
-        for(int index = 1; index <= 2; index++ ) {
+        // if variable type is an iteration, generate a specific number of headers
+        for(int index = 1; index <= iterationHeaderCount; index++ ) {
             csvHeaders.add(variableType.name() + "_" + index);
         }
         return csvHeaders;
