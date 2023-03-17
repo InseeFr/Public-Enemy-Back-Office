@@ -1,5 +1,13 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.3](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.2...2.1.0-beta.3) (2023-03-17)
+
+
+### Features
+
+* generate csv schema ([0fe742c](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/0fe742c285536763517cc1ee736482a9adf76a1a))
+* retrieving variables from pogues ([551727f](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/551727fb1c0e93a0110fb6755325dc8926c44c13))
+
 ## [2.1.0-beta.2](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.1...2.1.0-beta.2) (2023-02-22)
 
 
