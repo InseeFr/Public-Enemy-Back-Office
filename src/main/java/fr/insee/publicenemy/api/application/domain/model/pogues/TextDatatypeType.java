@@ -24,6 +24,7 @@ public class TextDatatypeType implements IDataType {
     /**
      * used to check that a field value has this specific pattern
      */
+
     private String pattern;
 
     @JsonCreator

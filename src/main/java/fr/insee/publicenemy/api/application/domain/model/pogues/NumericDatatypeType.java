@@ -55,6 +55,7 @@ public class NumericDatatypeType implements IDataType {
         fieldValue = fieldValue
                 .replace(',','.')
                 .replaceAll("\\s","");
+        fieldValue = fieldValue.replace(',','.');
 
         BigDecimal numericValue;
 
