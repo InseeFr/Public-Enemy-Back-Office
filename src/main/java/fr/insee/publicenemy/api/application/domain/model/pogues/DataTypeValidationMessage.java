@@ -4,10 +4,19 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public record DataTypeValidationMessage(String code, String[] arguments) {
+    /**
+     * @param code message code used for i18n
+     * @return an error validation message
+     */
     public static DataTypeValidationMessage createMessage(String code) {
         return new DataTypeValidationMessage(code, null);
     }
 
+    /**
+     * @param code message code used for i18n
+     * @param arguments params to use for this message (field value, ...)
+     * @return an error validation message
+     */
     public static DataTypeValidationMessage createMessage(String code, String... arguments) {
         return new DataTypeValidationMessage(code, arguments);
     }
