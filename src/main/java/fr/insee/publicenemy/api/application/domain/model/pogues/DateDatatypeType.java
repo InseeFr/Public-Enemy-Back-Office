@@ -2,6 +2,10 @@ package fr.insee.publicenemy.api.application.domain.model.pogues;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -10,11 +14,25 @@ import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 public class DateDatatypeType implements IDataType {
+    /**
+     * used to check that a field value is equals or greater to that minimum field
+     */
     private String minimum;
+
+    /**
+     * used to check that a field value is less or equals to that maximum field
+     */
     private String maximum;
+
+    /**
+     * used to check that a field value/minimum/maximum has this specific format
+     */
     private DateFormatEnum format;
 
     @JsonCreator
@@ -25,7 +43,10 @@ public class DateDatatypeType implements IDataType {
         this.format = format;
     }
 
-    @Override
+    /**
+     * @param fieldValue field value to validate
+     * @return data validation object validation success ii successful, object validation failure otherwise
+     */
     public DataTypeValidation validate(String fieldValue) {
         if(fieldValue == null || fieldValue.isEmpty()) {
             return DataTypeValidation.createOkDataTypeValidation();
@@ -76,53 +97,6 @@ public class DateDatatypeType implements IDataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
         return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
-    }
-
-    public String getMinimum() {
-        return minimum;
-    }
-
-    public void setMinimum(String minimum) {
-        this.minimum = minimum;
-    }
-
-    public String getMaximum() {
-        return maximum;
-    }
-
-    public void setMaximum(String maximum) {
-        this.maximum = maximum;
-    }
-
-    public DateFormatEnum getFormat() {
-        return format;
-    }
-
-    public void setFormat(DateFormatEnum format) {
-        this.format = format;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        DateDatatypeType that = (DateDatatypeType) o;
-        return Objects.equals(minimum, that.minimum) && Objects.equals(maximum, that.maximum) && format == that.format;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), minimum, maximum, format);
-    }
-
-    @Override
-    public String toString() {
-        return "DateDatatypeType{" +
-                "minimum='" + minimum + '\'' +
-                ", maximum='" + maximum + '\'' +
-                ", format=" + format +
-                '}';
     }
 }
 

@@ -1,7 +1,6 @@
 package fr.insee.publicenemy.api.controllers;
 
 import com.opencsv.CSVWriter;
-import com.opencsv.ICSVWriter;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
@@ -58,11 +57,7 @@ public class SurveyUnitController {
                 "attachment; filename=\"" + filename + "\"");
 
         // create a csv writer
-        CSVWriter writer = new CSVWriter(response.getWriter(),
-                ICSVWriter.DEFAULT_SEPARATOR,
-                ICSVWriter.DEFAULT_QUOTE_CHARACTER,
-                ICSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                ICSVWriter.DEFAULT_LINE_END);
+        CSVWriter writer = new CSVWriter(response.getWriter());
 
         SurveyUnitCsvHeaderLine headersLine = csvUseCase.getHeadersLine(poguesId);
         // write all employees to csv file

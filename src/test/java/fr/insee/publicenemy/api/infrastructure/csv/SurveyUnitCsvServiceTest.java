@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SurveyUnitCsvServiceTest {
 
-    private final SurveyUnitCsvService service = new SurveyUnitCsvService();
+    private final SurveyUnitCsvService service = new SurveyUnitCsvService(2);
 
     @Mock
     private Questionnaire questionnaire;

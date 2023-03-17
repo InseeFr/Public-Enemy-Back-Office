@@ -54,7 +54,7 @@ public class DDIUseCase {
     /**
      * Get Json Pogues variables
      * @param questionnaireId pogues questionnaire Id
-     * @return the json from pogues
+     * @return variables type for a questionnaire. It only returns external variables right now
      */
     public List<VariableType> getQuestionnaireVariables(String questionnaireId) {
         List<VariableType> variables = ddiService.getQuestionnaireVariables(questionnaireId);
