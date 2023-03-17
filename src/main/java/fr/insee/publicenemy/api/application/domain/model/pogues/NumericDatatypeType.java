@@ -2,17 +2,34 @@ package fr.insee.publicenemy.api.application.domain.model.pogues;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 public class NumericDatatypeType implements IDataType {
 
+    /**
+     * used to check that a field value is equals or greater to that minimum field
+     */
     private BigDecimal minimum;
+
+    /**
+     * used to check that a field value is less or equals to that maximum field
+     */
     private BigDecimal maximum;
+
+    /**
+     * used to calculate the number of decimals allowed in a field value
+     */
     private Integer decimals;
 
     @JsonCreator
@@ -24,13 +41,20 @@ public class NumericDatatypeType implements IDataType {
         this.decimals = decimals;
     }
 
-    @Override
+    /**
+     * @param fieldValue field value to validate
+     * @return data validation object validation success ii successful, object validation failure otherwise
+     */
     public DataTypeValidation validate(String fieldValue) {
         if(fieldValue == null || fieldValue.isEmpty()) {
             return DataTypeValidation.createOkDataTypeValidation();
         }
 
-        fieldValue = fieldValue.replace(',','.');
+        // replace decimal separator in a more javaish way,
+        // handle the thousand separator and trim
+        fieldValue = fieldValue
+                .replace(',','.')
+                .replaceAll("\\s","");
 
         BigDecimal numericValue;
 
@@ -48,7 +72,7 @@ public class NumericDatatypeType implements IDataType {
                     DataTypeValidationMessage.createMessage("datatype.error.numeric.inferior-minimum", minimum.toString()));
         }
 
-        if(maximum != null && numericValue.compareTo(maximum) >= 0) {
+        if(maximum != null && numericValue.compareTo(maximum) > 0) {
             errorMessages.add(
                     DataTypeValidationMessage.createMessage("datatype.error.numeric.superior-maximum", maximum.toString()));
         }
@@ -63,53 +87,6 @@ public class NumericDatatypeType implements IDataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
         return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
-    }
-
-    public BigDecimal getMinimum() {
-        return minimum;
-    }
-
-    public void setMinimum(BigDecimal minimum) {
-        this.minimum = minimum;
-    }
-
-    public BigDecimal getMaximum() {
-        return maximum;
-    }
-
-    public void setMaximum(BigDecimal maximum) {
-        this.maximum = maximum;
-    }
-
-    public Integer getDecimals() {
-        return decimals;
-    }
-
-    public void setDecimals(Integer decimals) {
-        this.decimals = decimals;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        NumericDatatypeType that = (NumericDatatypeType) o;
-        return Objects.equals(minimum, that.minimum) && Objects.equals(maximum, that.maximum) && Objects.equals(decimals, that.decimals);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), minimum, maximum, decimals);
-    }
-
-    @Override
-    public String toString() {
-        return "NumericDataType{" +
-                "minimum=" + minimum +
-                ", maximum=" + maximum +
-                ", decimals=" + decimals +
-                '}';
     }
 }
 

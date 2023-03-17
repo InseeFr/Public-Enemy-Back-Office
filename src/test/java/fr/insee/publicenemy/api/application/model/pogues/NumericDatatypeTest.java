@@ -23,7 +23,7 @@ class NumericDatatypeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"54,134", "52,0", "1478,0", "1478.1234"})
+    @ValueSource(strings = {"0", "10000", "10000.0000", "42", "42,0", "42,1234", "42,12340000"," 9 000.00 "})
     void onValidateWhenFieldValueIsInCorrectFormatReturnOkValidationObject(String fieldValue) {
         NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("0"),new BigDecimal("10000"),4);
         DataTypeValidation validation = numericType.validate(fieldValue);

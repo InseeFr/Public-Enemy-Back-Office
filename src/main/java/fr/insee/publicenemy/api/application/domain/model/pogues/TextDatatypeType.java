@@ -2,13 +2,28 @@ package fr.insee.publicenemy.api.application.domain.model.pogues;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 public class TextDatatypeType implements IDataType {
+
+    /**
+     * used to check that a field value length is less or equals to that maximum length
+     */
     private Integer maxLength;
+
+    /**
+     * used to check that a field value has this specific pattern
+     */
     private String pattern;
 
     @JsonCreator
@@ -37,44 +52,6 @@ public class TextDatatypeType implements IDataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
         return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
-    }
-
-    public Integer getMaxLength() {
-        return maxLength;
-    }
-
-    public void setMaxLength(Integer maxLength) {
-        this.maxLength = maxLength;
-    }
-
-    public String getPattern() {
-        return pattern;
-    }
-
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        TextDatatypeType that = (TextDatatypeType) o;
-        return Objects.equals(maxLength, that.maxLength) && Objects.equals(pattern, that.pattern);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), maxLength, pattern);
-    }
-
-    @Override
-    public String toString() {
-        return "TextDataType{" +
-                "maxLength=" + maxLength +
-                ", pattern='" + pattern + '\'' +
-                '}';
     }
 }
 

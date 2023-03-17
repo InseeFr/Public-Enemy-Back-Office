@@ -2,13 +2,30 @@ package fr.insee.publicenemy.api.application.domain.model.pogues;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.util.Objects;
-
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 public class DurationDatatypeType implements IDataType {
 
+    /**
+     * used to check that a field value is equals or greater to that minimum field
+     */
     private String minimum;
+
+    /**
+     * used to check that a field value is less or equals to that maximum field
+     */
     private String maximum;
+
+    /**
+     * used to check that a field value/minimum/maximum has this specific format
+     */
     private String format;
 
     @JsonCreator
@@ -22,53 +39,6 @@ public class DurationDatatypeType implements IDataType {
     @Override
     public DataTypeValidation validate(String fieldValue) {
         throw new IllegalArgumentException("Validate method is not yet implemented");
-    }
-
-    public String getMinimum() {
-        return minimum;
-    }
-
-    public void setMinimum(String minimum) {
-        this.minimum = minimum;
-    }
-
-    public String getMaximum() {
-        return maximum;
-    }
-
-    public void setMaximum(String maximum) {
-        this.maximum = maximum;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public void setFormat(String format) {
-        this.format = format;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        DurationDatatypeType that = (DurationDatatypeType) o;
-        return Objects.equals(minimum, that.minimum) && Objects.equals(maximum, that.maximum) && Objects.equals(format, that.format);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), minimum, maximum, format);
-    }
-
-    @Override
-    public String toString() {
-        return "DurationDataType{" +
-                "minimum='" + minimum + '\'' +
-                ", maximum='" + maximum + '\'' +
-                ", format='" + format + '\'' +
-                '}';
     }
 }
 

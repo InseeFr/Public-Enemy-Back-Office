@@ -65,6 +65,9 @@ application:
     url: https://queen-url.insee.fr
   eno:
     url: https://eno-url.insee.fr
+  # when generating csv headers for csv schema, indicate the number of headers to generate for array variables
+  csv:
+    iteration-header-count: 1
   questionnaire:
     metadata:
       -
