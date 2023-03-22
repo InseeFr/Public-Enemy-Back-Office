@@ -1,4 +1,4 @@
-package fr.insee.publicenemy.api.application.domain.model;
+package fr.insee.publicenemy.api.application.domain.model.surveyunit;
 
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 

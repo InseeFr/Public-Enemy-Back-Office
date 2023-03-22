@@ -3,7 +3,7 @@ package fr.insee.publicenemy.api.infrastructure.queen;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.configuration.MetadataProps;

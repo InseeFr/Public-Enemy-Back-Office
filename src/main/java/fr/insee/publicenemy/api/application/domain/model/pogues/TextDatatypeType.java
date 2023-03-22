@@ -41,11 +41,11 @@ public class TextDatatypeType implements IDataType {
         List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
         if(maxLength != null && fieldValue.length() > maxLength) {
-            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.superior-maxlength", maxLength.toString(), fieldValue.length()+""));
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.superior-maxlength", fieldValue, maxLength.toString(), fieldValue.length()+""));
         }
 
-        if(pattern != null && !fieldValue.matches(pattern)) {
-            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.format-pattern", pattern));
+        if(pattern != null && !pattern.isEmpty() && !fieldValue.matches(pattern)) {
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.format-pattern", fieldValue, pattern));
         }
 
         if(errorMessages.isEmpty()) {

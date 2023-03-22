@@ -30,7 +30,7 @@ class BooleanDatatypeTypeTest {
     void onValidateWhenFieldValueIncorrectReturnErrorValidationObject() {
         DataTypeValidation validation = booleanType.validate("plop");
         assertFalse(validation.isValid());
-        assertTrue(validation.errorMessages().stream().anyMatch(message -> message.code().equals("datatype.error.boolean.incorrect-value")));
+        assertTrue(validation.errorMessages().stream().anyMatch(message -> message.getCode().equals("datatype.error.boolean.incorrect-value")));
     }
 
     @Test

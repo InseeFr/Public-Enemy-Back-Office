@@ -87,6 +87,6 @@ class DateDatatypeTypeTest {
     }
 
     private Boolean hasValidationMessage(List<DataTypeValidationMessage> messages, String code) {
-        return messages.stream().anyMatch(message -> message.code().equals(code));
+        return messages.stream().anyMatch(message -> message.getCode().equals(code));
     }
 }
