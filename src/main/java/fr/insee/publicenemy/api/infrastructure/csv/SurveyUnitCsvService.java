@@ -1,10 +1,10 @@
 package fr.insee.publicenemy.api.infrastructure.csv;
 
 import com.opencsv.bean.CsvToBeanBuilder;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnitData;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
+import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +26,8 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
     }
 
     @Override
-    public List<SurveyUnit> initSurveyUnits(@NonNull Questionnaire questionnaire, @NonNull String questionnaireModelId) {
-        Reader reader = new InputStreamReader(new ByteArrayInputStream(questionnaire.getSurveyUnitData()));
+    public List<SurveyUnit> initSurveyUnits(byte[] surveyUnitData, @NonNull String questionnaireModelId) {
+        Reader reader = new InputStreamReader(new ByteArrayInputStream(surveyUnitData));
 
         List<SurveyUnitCsvLine> surveyUnitsCsvModel = new CsvToBeanBuilder<SurveyUnitCsvLine>(reader)
                 .withSkipLines(0)
@@ -39,21 +39,22 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
                 .build().parse();
 
         List<SurveyUnit> surveyUnits = new ArrayList<>();
-        for(SurveyUnitCsvLine surveyUnitCsvLine : surveyUnitsCsvModel) {
-            surveyUnits.add(getSurveyUnit(surveyUnitCsvLine, questionnaireModelId));
+        for(int id = 1; id <= surveyUnitsCsvModel.size(); id++) {
+            SurveyUnitCsvLine surveyUnitCsvLine = surveyUnitsCsvModel.get(id-1);
+            surveyUnits.add(initSurveyUnit(id, surveyUnitCsvLine, questionnaireModelId));
         }
         return surveyUnits;
     }
 
     /**
-     *
+     * @param surveyUnitId survey unit id
      * @param surveyUnitCsvLine csv line containing a survey unit
      * @param questionnaireModelId questionnaire model id
      * @return a survey unit from a line in the csv file
      */
-    private SurveyUnit getSurveyUnit(@NonNull SurveyUnitCsvLine surveyUnitCsvLine, String questionnaireModelId) {
+    private SurveyUnit initSurveyUnit(int surveyUnitId, @NonNull SurveyUnitCsvLine surveyUnitCsvLine, String questionnaireModelId) {
 
-        String surveyUnitId = String.format("%s-%s", questionnaireModelId, surveyUnitCsvLine.getIdUnit());
+        String surveyUnitIdForQueen = IdentifierGenerationUtils.generateSurveyUnitIdentifierForQueen(questionnaireModelId, surveyUnitId);
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
         if(surveyUnitCsvLine.getFields() != null) {
             csvFields = surveyUnitCsvLine.getFields().entries()
@@ -63,14 +64,12 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
         }
 
         SurveyUnitData surveyUnitData = new SurveyUnitData(csvFields);
-        surveyUnitData.addAttribute("IdUe", surveyUnitId);
-        return new SurveyUnit(surveyUnitId, questionnaireModelId, surveyUnitData, SurveyUnitStateData.createInitialStateData());
+        return new SurveyUnit(surveyUnitIdForQueen, questionnaireModelId, surveyUnitData, SurveyUnitStateData.createInitialStateData());
     }
 
     @Override
     public SurveyUnitCsvHeaderLine getSurveyUnitsCsvHeaders(List<VariableType> variablesType) {
         Set<String> csvHeaders = new LinkedHashSet<>();
-        csvHeaders.add("IdUe");
         variablesType.forEach(
                 variableType -> csvHeaders.addAll(getCsvHeaders(variableType)));
         return new SurveyUnitCsvHeaderLine(csvHeaders);

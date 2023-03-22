@@ -3,7 +3,7 @@ package fr.insee.publicenemy.api.infrastructure.csv;
 import java.util.Set;
 
 /**
- * Line headers for Survey Units CSV File
+ * Attributes used for a survey unit
  * @param headers
  */
 public record SurveyUnitCsvHeaderLine(Set<String> headers) {

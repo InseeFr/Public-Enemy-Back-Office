@@ -1,12 +1,12 @@
 package fr.insee.publicenemy.api.infrastructure.csv;
 
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.ISurveyUnitObjectData;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitStringData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
@@ -16,15 +16,11 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SurveyUnitCsvServiceTest {
 
     private final SurveyUnitCsvService service = new SurveyUnitCsvService(2);
-
-    @Mock
-    private Questionnaire questionnaire;
 
     @Test
     void onGetSurveyUnitsReturnCorrectCountNumber() throws IOException {
@@ -33,10 +29,7 @@ class SurveyUnitCsvServiceTest {
         String resourcePath = "src/test/resources/survey-unit-data.csv";
         File file = new File(resourcePath);
         byte[] surveyUnitData = Files.readAllBytes(file.toPath());
-
-        when(questionnaire.getSurveyUnitData()).thenReturn(surveyUnitData);
-
-        List<SurveyUnit> surveyUnits = service.initSurveyUnits(questionnaire, questionnaireModelId);
+        List<SurveyUnit> surveyUnits = service.initSurveyUnits(surveyUnitData, questionnaireModelId);
 
         assertEquals(10, surveyUnits.size());
     }
@@ -49,16 +42,16 @@ class SurveyUnitCsvServiceTest {
         File file = new File(resourcePath);
         byte[] surveyUnitData = Files.readAllBytes(file.toPath());
 
-        when(questionnaire.getSurveyUnitData()).thenReturn(surveyUnitData);
-
-        List<SurveyUnit> surveyUnits = service.initSurveyUnits(questionnaire, questionnaireModelId);
+        List<SurveyUnit> surveyUnits = service.initSurveyUnits(surveyUnitData, questionnaireModelId);
 
         SurveyUnit surveyUnit = surveyUnits.get(0);
-        Map<String, Object> attributes = surveyUnit.data().getAttributes();
+        Map<String, ISurveyUnitObjectData> attributes = surveyUnit.data().getAttributes();
 
-        assertEquals(String.format("%s-%s", questionnaireModelId, "EF000051"), surveyUnit.id());
-        assertEquals("1", attributes.get("Numfa"));
-        assertEquals("CS 70058", attributes.get("ComplementAdresse"));
+        assertEquals(String.format("%s-%s", questionnaireModelId, "1"), surveyUnit.id());
+        SurveyUnitStringData numfa = new SurveyUnitStringData("1");
+        SurveyUnitStringData complement = new SurveyUnitStringData("CS 70058");
+        assertEquals(numfa, attributes.get("Numfa"));
+        assertEquals(complement, attributes.get("ComplementAdresse"));
     }
 
     @Test
@@ -69,7 +62,8 @@ class SurveyUnitCsvServiceTest {
 
     @Test
     void onGetSurveyUnitsWhenQuestionnaireModelIdNullThrowsNullPointerException() {
-        assertThrows(NullPointerException.class, () -> service.initSurveyUnits(questionnaire, null));
+        byte[] surveyUnitData = null;
+        assertThrows(NullPointerException.class, () -> service.initSurveyUnits(surveyUnitData, null));
     }
 
     @Test
@@ -81,8 +75,7 @@ class SurveyUnitCsvServiceTest {
         SurveyUnitCsvHeaderLine headersLine = service.getSurveyUnitsCsvHeaders(variablesType);
         Set<String> csvHeaders = headersLine.headers();
         Iterator<String> iterator = csvHeaders.iterator();
-        assertEquals(3, csvHeaders.size());
-        assertEquals("IdUe", iterator.next());
+        assertEquals(2, csvHeaders.size());
         assertEquals("TEXT-TEST", iterator.next());
         assertEquals("NUMERIC-TEST", iterator.next());
     }
@@ -97,8 +90,7 @@ class SurveyUnitCsvServiceTest {
         SurveyUnitCsvHeaderLine headersLine = service.getSurveyUnitsCsvHeaders(variablesType);
         Set<String> csvHeaders = headersLine.headers();
         Iterator<String> iterator = csvHeaders.iterator();
-        assertEquals(6, csvHeaders.size());
-        assertEquals("IdUe", iterator.next());
+        assertEquals(5, csvHeaders.size());
         assertEquals("TEXT-TEST_1", iterator.next());
         assertEquals("TEXT-TEST_2", iterator.next());
         assertEquals("NUMERIC-TEST", iterator.next());

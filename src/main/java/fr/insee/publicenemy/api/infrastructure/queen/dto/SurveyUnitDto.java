@@ -1,8 +1,8 @@
 package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnitData;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 @JsonSerialize(using = SurveyUnitSerializer.class)
 public record SurveyUnitDto (

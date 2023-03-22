@@ -1,6 +1,6 @@
 package fr.insee.publicenemy.api.controllers.dto;
 
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 
 import java.util.List;
 

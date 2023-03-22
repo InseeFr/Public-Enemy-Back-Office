@@ -1,6 +1,8 @@
 package fr.insee.publicenemy.api.infrastructure.queen;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
