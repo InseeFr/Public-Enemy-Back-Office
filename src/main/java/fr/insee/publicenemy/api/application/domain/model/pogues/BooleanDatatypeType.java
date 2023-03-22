@@ -24,7 +24,11 @@ public class BooleanDatatypeType implements IDataType {
         if(correctValues.contains(fieldValue)) {
             return DataTypeValidation.createOkDataTypeValidation();
         }
+
+        String delimiter = ", ";
+        String correctValuesString = String.join(delimiter, correctValues);
+
         return DataTypeValidation.createErrorDataTypeValidation(
-                new DataTypeValidationMessage("datatype.error.boolean.incorrect-value", correctValues.toArray(String[]::new)));
+                DataTypeValidationMessage.createMessage("datatype.error.boolean.incorrect-value", fieldValue, correctValuesString));
     }
 }

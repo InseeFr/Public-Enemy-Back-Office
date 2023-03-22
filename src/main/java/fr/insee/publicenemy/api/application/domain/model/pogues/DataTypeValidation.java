@@ -8,7 +8,7 @@ import java.util.List;
  * @param isValid return true if the validation returning this object is true
  * @param errorMessages message list specified when objet is not valid
  */
-public record DataTypeValidation(Boolean isValid, List<DataTypeValidationMessage> errorMessages) {
+public record DataTypeValidation(boolean isValid, List<DataTypeValidationMessage> errorMessages) {
     /**
      * @return a datatype validation object indicating the validation was successful
      */

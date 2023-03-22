@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
@@ -45,7 +46,7 @@ public class QueenUseCase {
                     questionnaireMode.setSynchronisationState(SynchronisationState.INIT_CAMPAIGN.name());
                     queenService.createCampaign(questionnaireModelId, questionnaire, ddi);
                     questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
-                    List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire, questionnaireModelId);
+                    List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
                     queenService.createSurveyUnits(questionnaireModelId, surveyUnits);
             });
         questionnaire.setSynchronized(true);

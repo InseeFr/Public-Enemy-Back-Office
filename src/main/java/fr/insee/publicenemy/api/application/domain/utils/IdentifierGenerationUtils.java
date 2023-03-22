@@ -22,6 +22,25 @@ public class IdentifierGenerationUtils {
     }
 
     /**
+     *
+     * @param surveyUnitIdentifier survey unit id
+     * @param questionnaireModelId questionnaire model id
+     * @return a survey unit identifier for queen
+     */
+    public static String generateSurveyUnitIdentifierForQueen(String questionnaireModelId, int surveyUnitIdentifier) {
+        return String.format("%s-%s", questionnaireModelId, surveyUnitIdentifier);
+    }
+
+
+    /**
+     * @param surveyUnitId survey unit id
+     * @return survey unit identifier without the questionnaire id part
+     */
+    public static String generateSurveyUnitIdentifierFromQueen(String surveyUnitId) {
+        return surveyUnitId.substring(surveyUnitId.lastIndexOf('-') + 1);
+    }
+
+    /**
      * @return a generated random identifier
      */
     public static String generateRandomIdentifier() {

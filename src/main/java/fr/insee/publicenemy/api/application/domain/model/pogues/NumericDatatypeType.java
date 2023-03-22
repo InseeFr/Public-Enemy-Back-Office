@@ -69,18 +69,18 @@ public class NumericDatatypeType implements IDataType {
 
         if(minimum != null && numericValue.compareTo(minimum) < 0) {
             errorMessages.add(
-                    DataTypeValidationMessage.createMessage("datatype.error.numeric.inferior-minimum", minimum.toString()));
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.inferior-minimum", fieldValue, minimum.toString()));
         }
 
         if(maximum != null && numericValue.compareTo(maximum) > 0) {
             errorMessages.add(
-                    DataTypeValidationMessage.createMessage("datatype.error.numeric.superior-maximum", maximum.toString()));
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.superior-maximum", fieldValue, maximum.toString()));
         }
 
         int scale =  numericValue.stripTrailingZeros().scale();
         if(decimals != null && scale > decimals) {
             errorMessages.add(
-                    DataTypeValidationMessage.createMessage("datatype.error.numeric.decimals-precision", decimals.toString()));
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.decimals-precision", fieldValue, decimals.toString(), scale+""));
         }
 
         if(errorMessages.isEmpty()) {

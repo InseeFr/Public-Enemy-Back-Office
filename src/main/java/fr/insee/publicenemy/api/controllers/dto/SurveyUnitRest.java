@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.controllers.dto;
 
-import fr.insee.publicenemy.api.application.domain.model.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 
 public record SurveyUnitRest(String id, String displayableId) {
     /**
@@ -11,7 +12,7 @@ public record SurveyUnitRest(String id, String displayableId) {
     public static SurveyUnitRest fromModel(SurveyUnit surveyUnit) {
         String surveyUnitId= surveyUnit.id();
         // split the id to get rid of the questionnaire id part for frontend
-        String surveyUnitIdWithoutQuestionnaireId = surveyUnitId.substring(surveyUnitId.lastIndexOf("-") + 1);
+        String surveyUnitIdWithoutQuestionnaireId = IdentifierGenerationUtils.generateSurveyUnitIdentifierFromQueen(surveyUnitId);
         return new SurveyUnitRest(surveyUnitId, surveyUnitIdWithoutQuestionnaireId);
     }
 }
