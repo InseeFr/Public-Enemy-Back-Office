@@ -1,13 +1,12 @@
 package fr.insee.publicenemy.api.infrastructure.i18n;
 
-import java.util.Locale;
-
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
-import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import java.util.Locale;
 
 @Component
 public class I18nMessageServiceImpl implements I18nMessagePort {
@@ -19,10 +18,10 @@ public class I18nMessageServiceImpl implements I18nMessagePort {
     }
 
     public String getMessage(String id) {
-        return getMessage(id, null);
+        return getMessage(id, (Object)null);
     }
 
-    public String getMessage(String id, Object[] args) {
+    public String getMessage(String id, Object... args) {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(id, args, locale);
     }

@@ -14,6 +14,8 @@ import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationExce
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
+import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorCode;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +61,9 @@ class SurveyUnitControllerTest {
     private SurveyUnitMessagesComponent messageComponent;
 
     @MockBean
+    private ApiExceptionComponent errorComponent;
+
+    @MockBean
     private I18nMessagePort messageService;
 
     @Autowired
@@ -66,7 +71,6 @@ class SurveyUnitControllerTest {
 
     @Mock
     private List<SurveyUnit> surveyUnits;
-
 
 
     @BeforeEach
@@ -99,7 +103,7 @@ class SurveyUnitControllerTest {
         headers.add("Header3");
         SurveyUnitCsvHeaderLine headerLine = new SurveyUnitCsvHeaderLine(headers);
         when(csvUseCase.getHeadersLine(poguesId)).thenReturn(headerLine);
-        MvcResult result = mockMvc.perform(get("/api/questionnaires/csv/{poguesId}", poguesId))
+        MvcResult result = mockMvc.perform(get("/api/questionnaires/{poguesId}/csv", poguesId))
                 .andExpect(status().isOk())
                 .andReturn();
         assertEquals("\"Header1\",\"Header2\",\"Header3\"\n", result.getResponse().getContentAsString());
@@ -112,7 +116,7 @@ class SurveyUnitControllerTest {
 
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenReturn(new ArrayList<>());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/csv/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -129,7 +133,7 @@ class SurveyUnitControllerTest {
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenReturn(messages);
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/csv/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -139,19 +143,21 @@ class SurveyUnitControllerTest {
     @Test
     void onCheckInCorrectCsvSchemaReturnGlobalErrorMessages() throws Exception {
         String poguesId = "l8wwljbo";
-        byte[] surveyUnitData = "".getBytes();
+        byte[] surveyUnitData = "dsfgsdgfs".getBytes();
         List<ValidationErrorMessage> messages = new ArrayList<>();
-        String code = "warning.code";
+        String code = "error.code";
         messages.add(new ValidationErrorMessage(code, "plop"));
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
-        when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(new SurveyUnitsGlobalValidationException(messages));
+        SurveyUnitsGlobalValidationException surveyUnitsValidationException = new SurveyUnitsGlobalValidationException(messages);
+        when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(surveyUnitsValidationException);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/csv/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        assertEquals("[\""+code+"\"]", result.getResponse().getContentAsString());
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(ApiErrorCode.SURVEY_UNITS_GLOBAL_ERRORS.getValue()),
+                eq(surveyUnitsValidationException.getMessage()), any());
 
     }
 
@@ -175,7 +181,7 @@ class SurveyUnitControllerTest {
 
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(ex);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        mockMvc.perform(multipart("/api/questionnaires/csv/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andReturn();
