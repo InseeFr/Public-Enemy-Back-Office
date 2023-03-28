@@ -1,81 +1,111 @@
 package fr.insee.publicenemy.api.controllers.exceptions;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Date;
-import java.util.Map;
-
+import fr.insee.publicenemy.api.controllers.dto.SurveyUnitErrors;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.*;
+import lombok.NonNull;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 
-import fr.insee.publicenemy.api.application.exceptions.ApiException;
-import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 
 /**
- * Component used to build APIError objects 
+ * Component used to build APIError objects
  */
 @Component
 public class ApiExceptionComponent {
 
-    /**
-     * 
-     * @param attributes attributes
-     * @param request origin request
-     * @param status status from exception
-     * @param ex origin exception
-     * @return error object used for JSON response
-     */
-    public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, HttpStatus status,
-            Exception ex) {
-        return buildErrorObject(attributes, request, status, ex, null);
+    private final ErrorAttributes errorAttributes;
+
+    public ApiExceptionComponent(ErrorAttributes errorAttributes) {
+        this.errorAttributes = errorAttributes;
     }
 
     /**
-     * 
-     * @param attributes attributes
+     *
      * @param request origin request
      * @param status status from exception
-     * @param ex origin exception
+     * @return error object used for JSON response
+     */
+    public ApiError buildApiErrorObject(WebRequest request, HttpStatus status) {
+        return buildApiErrorObject(request, status, null);
+    }
+
+    /**
+     *
+     * @param request origin request
+     * @param status status from exception
      * @param errorMessage error message
      * @return error object used for JSON response
      */
-    public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, HttpStatus status,
-            Exception ex, String errorMessage) {
-
-        String path = ((ServletWebRequest) request).getRequest().getRequestURI();
-        Date timestamp = ((Date) attributes.get("timestamp"));
-
-        if (errorMessage == null || errorMessage.isEmpty()) {
-            errorMessage = status.getReasonPhrase();
-        }
-
-        if (ex == null) {
-            return new ApiError(status.value(), path, errorMessage, timestamp);
-        }
-
-        // Adding exception
-        StringWriter stackTrace = new StringWriter();
-        ex.printStackTrace(new PrintWriter(stackTrace));
-        stackTrace.flush();
-
-        return new ApiError(status.value(), path, errorMessage, stackTrace.toString(), ex.getClass().getName(),
-                ex.getLocalizedMessage(), timestamp);
+    public ApiError buildApiErrorObject(WebRequest request, HttpStatus status, String errorMessage) {
+        String path = getPath(request);
+        Date timestamp = getTimeStamp(request);
+        return new ApiError(status, path, timestamp,  errorMessage);
     }
 
     /**
-     * 
-     * @param attributes attributes
-     * @param request origin request
-     * @param ex origin exception
+     *
+     * @param status status from exception
+     * @param errorMessage error message
+     * @param errors fields errors objects
      * @return error object used for JSON response
      */
-    public ApiError buildErrorObject(Map<String, Object> attributes, WebRequest request, ApiException ex) {
-        ApiError errorObject = buildErrorObject(attributes, request, HttpStatus.valueOf(ex.getStatusCode()), ex);
-        errorObject.addFieldErrors(ex.getErrors());
-        return errorObject;
+    public ApiErrorWithFields buildApiErrorWithFields(WebRequest request, HttpStatus status,
+                                                      String errorMessage, @NonNull List<ApiFieldError> errors) {
+        Date timestamp = getTimeStamp(request);
+        String path = getPath(request);
+        return new ApiErrorWithFields(status, path, timestamp, errorMessage, errors);
+    }
+
+    /**
+     *
+     * @param request request origin
+     * @param errors fields errors objects
+     * @return error object used for JSON response
+     */
+    public ApiErrorWithSurveyUnits buildApiErrorWithSurveyUnits(WebRequest request, int code, String errorMessage,
+                                                                @NonNull List<SurveyUnitErrors> errors) {
+        String path = getPath(request);
+        Date timestamp = getTimeStamp(request);
+        return new ApiErrorWithSurveyUnits(code, path, timestamp, errorMessage, errors);
+    }
+
+    /**
+     *
+     * @param request web request origin
+     * @param errorMessage error message
+     * @param errors fields errors objects
+     * @return error object used for JSON response
+     */
+    public ApiErrorWithMessages buildApiErrorWithMessages(WebRequest request, int code, String errorMessage, @NonNull List<String> errors) {
+        String path = getPath(request);
+        Date timestamp = getTimeStamp(request);
+        return new ApiErrorWithMessages(code, path, timestamp, errorMessage, errors);
+    }
+
+
+    /**
+     * @param request origin request
+     * @return get timestamp from error attributes
+     */
+    private Date getTimeStamp(WebRequest request) {
+        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
+        return ((Date) attributes.get("timestamp"));
+    }
+
+    /**
+     *
+     * @param request origin request
+     * @return get path from origin request
+     */
+    private String getPath(WebRequest request) {
+        return ((ServletWebRequest) request).getRequest().getRequestURI();
     }
 }
-

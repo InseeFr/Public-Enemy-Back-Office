@@ -1,41 +1,53 @@
 package fr.insee.publicenemy.api.controllers.exceptions.dto;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.springframework.http.HttpStatus;
+
+import java.util.Date;
 
 /**
- * Error object returned as JSON response to client
+ * Default API Error object returned as JSON response to client
  */
-public record ApiError(
-    Integer status,
-    String path,
-    List<String> messages,
-    @JsonIgnore
-    String debugMessage,
-    @JsonIgnore
-    String exceptionName,
-    @JsonInclude(Include.NON_NULL)
-    List<ApiFieldError> fieldErrors,
-    @JsonIgnore
-    String stackTrace,
+@Data
+@AllArgsConstructor
+public class ApiError {
+    private Integer code;
+    private String path;
+    private String message;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy hh:mm:ss")
-    Date timestamp) {
+    private Date timestamp;
 
-    public ApiError(int status, String path, String errorMessage, Date timestamp) {
-        this(status, path, List.of(errorMessage), null, null,  new ArrayList<>(), null, timestamp);
+    /**
+     * @param code error code
+     * @param path origin request path
+     * @param timestamp timestamp of the generated error
+     * @param errorMessage error message
+     */
+    public ApiError (int code, String path, Date timestamp,
+                     String errorMessage) {
+        createApiError(code, path, timestamp, errorMessage);
     }
 
-    public ApiError(int status, String path, String errorMessage, String stacktrace, String exceptionName, String debugMessage, Date timestamp) {
-        this(status, path, List.of(errorMessage), debugMessage, exceptionName, new ArrayList<>(), stacktrace, timestamp);
+    /**
+     * @param status http status for this error
+     * @param path origin request path
+     * @param timestamp timestamp of the generated error
+     * @param errorMessage error message
+     */
+    public ApiError (HttpStatus status, String path, Date timestamp, String errorMessage) {
+        if (errorMessage == null || errorMessage.isEmpty()) {
+            errorMessage = status.getReasonPhrase();
+        }
+        createApiError(status.value(), path, timestamp, errorMessage);
     }
 
-    public void addFieldErrors(List<ApiFieldError> fieldErrors) {
-        this.fieldErrors.addAll(fieldErrors);
+    private void createApiError(int code, String path, Date timestamp, String errorMessage) {
+        this.code = code;
+        this.path = path;
+        this.message = errorMessage;
+        this.timestamp = timestamp;
     }
 }

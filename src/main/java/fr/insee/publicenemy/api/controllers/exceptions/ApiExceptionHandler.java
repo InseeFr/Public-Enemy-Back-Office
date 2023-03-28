@@ -1,14 +1,17 @@
 package fr.insee.publicenemy.api.controllers.exceptions;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import fr.insee.publicenemy.api.application.exceptions.ApiException;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithFields;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiFieldError;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.LunaticJsonNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
-import org.springframework.boot.web.error.ErrorAttributeOptions;
-import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import fr.insee.publicenemy.api.infrastructure.i18n.I18nMessageServiceImpl;
+import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,14 +30,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import fr.insee.publicenemy.api.application.exceptions.ApiException;
-import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
-import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiFieldError;
-import fr.insee.publicenemy.api.infrastructure.i18n.I18nMessageServiceImpl;
-import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handle API exceptions for project
@@ -44,15 +41,12 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    private final ApiExceptionComponent errorComponent;
-
-    private final ErrorAttributes errorAttributes;
+    private final fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent errorComponent;
 
     private final I18nMessageServiceImpl messageService;
 
-    public ApiExceptionHandler(ApiExceptionComponent errorComponent, ErrorAttributes errorAttributes, I18nMessageServiceImpl messageService) {
+    public ApiExceptionHandler(ApiExceptionComponent errorComponent, I18nMessageServiceImpl messageService) {
         this.errorComponent = errorComponent;
-        this.errorAttributes = errorAttributes;
         this.messageService = messageService;
     }
 
@@ -78,10 +72,7 @@ public class ApiExceptionHandler {
      * @return the apierror object with associated status code
      */
     private ResponseEntity<ApiError> processException(Exception ex, HttpStatus status, WebRequest request) {
-        log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        ApiError error = errorComponent.buildErrorObject(attributes, request, status, ex, ex.getMessage());
-        return new ResponseEntity<>(error, status);
+        return processException(ex, status, request, null);
     }
 
     /** Global method to process the catched exception
@@ -93,12 +84,11 @@ public class ApiExceptionHandler {
      */
     private ResponseEntity<ApiError> processException(Exception ex, HttpStatus status, WebRequest request, String overrideErrorMessage) {
         log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
         String errorMessage = ex.getMessage();
         if(overrideErrorMessage != null) {
             errorMessage = overrideErrorMessage;
         }
-        ApiError error = errorComponent.buildErrorObject(attributes, request, status, ex, errorMessage);
+        ApiError error = errorComponent.buildApiErrorObject(request, status, errorMessage);
         return new ResponseEntity<>(error, status);
     }
 
@@ -156,9 +146,7 @@ public class ApiExceptionHandler {
             ApiException ex,
             WebRequest request) {
         log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        ApiError error = errorComponent.buildErrorObject(attributes, request, ex);
-        return new ResponseEntity<>(error, HttpStatus.valueOf(ex.getStatusCode()));
+        return processException(ex, ex.getStatusCode(), request);
     }
 
     /**
@@ -206,12 +194,10 @@ public class ApiExceptionHandler {
             MethodArgumentNotValidException ex,
             WebRequest request) {
         log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
-        ApiError apiError = buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
-                messageService.getMessage(VALIDATION_EXCEPTION_KEY));
 
         List<ApiFieldError> errors = new ArrayList<>();
+        List<String> messages = new ArrayList<>();
 
-        List<String> messages = apiError.messages();
         for (ObjectError bindingError : ex.getBindingResult().getGlobalErrors()) {
             messages.add(messageService.getMessage(bindingError));
         }
@@ -222,9 +208,8 @@ public class ApiExceptionHandler {
             errors.add(fieldError);
         }
 
-        apiError.addFieldErrors(errors);
-
-        return apiError;
+        return errorComponent.buildApiErrorWithFields(request, HttpStatus.BAD_REQUEST,
+                messageService.getMessage(VALIDATION_EXCEPTION_KEY), errors);
     }
 
     /**
@@ -237,18 +222,18 @@ public class ApiExceptionHandler {
      */
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
-    protected ApiError handleConstraintViolation(
+    protected ApiErrorWithFields handleConstraintViolation(
             jakarta.validation.ConstraintViolationException ex,
             WebRequest request) {
         log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
-        ApiError error = buildErrorObject(request, HttpStatus.BAD_REQUEST, ex,
-                messageService.getMessage(VALIDATION_EXCEPTION_KEY));
+
         List<ApiFieldError> violations = new ArrayList<>();
         for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
             violations.add(new ApiFieldError(violation.getPropertyPath().toString(), violation.getMessage()));
         }
-        error.addFieldErrors(violations);
-        return error;
+
+        return errorComponent.buildApiErrorWithFields(request, HttpStatus.BAD_REQUEST,
+                messageService.getMessage(VALIDATION_EXCEPTION_KEY), violations);
     }
 
     /**
@@ -319,10 +304,10 @@ public class ApiExceptionHandler {
             WebRequest request) {
         log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
         if (ex.getCause() instanceof ConstraintViolationException) {
-            return buildErrorObject(request, HttpStatus.CONFLICT, ex,
+            return errorComponent.buildApiErrorObject(request, HttpStatus.CONFLICT,
                     messageService.getMessage(INTERNAL_EXCEPTION_KEY));
         }
-        return buildErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR, ex,
+        return errorComponent.buildApiErrorObject(request, HttpStatus.INTERNAL_SERVER_ERROR,
                 messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
@@ -370,18 +355,5 @@ public class ApiExceptionHandler {
             RepositoryEntityNotFoundException ex,
             WebRequest request) {
         return processException(ex, HttpStatus.NOT_FOUND, request);
-    }
-
-    /**
-     * Build ApiError object
-     * @param request WebRequest object
-     * @param status exception status
-     * @param ex Exception
-     * @param message error message
-     * @return error object used as json response 
-     */
-    private ApiError buildErrorObject(WebRequest request, HttpStatus status, Exception ex, String message) {
-        Map<String, Object> attributes = errorAttributes.getErrorAttributes(request, ErrorAttributeOptions.defaults());
-        return errorComponent.buildErrorObject(attributes, request, status, ex, message);
     }
 }
