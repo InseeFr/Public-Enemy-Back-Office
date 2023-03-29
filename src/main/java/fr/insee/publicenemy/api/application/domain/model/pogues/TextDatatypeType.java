@@ -27,7 +27,7 @@ public class TextDatatypeType implements IDataType {
     private String pattern;
 
     @JsonCreator
-    public TextDatatypeType(@JsonProperty(value="maxLength") Integer maxLength, @JsonProperty(value="pattern") String pattern) {
+    public TextDatatypeType(@JsonProperty(value="MaxLength") Integer maxLength, @JsonProperty(value="Pattern") String pattern) {
         this.maxLength = maxLength;
         this.pattern = pattern;
     }

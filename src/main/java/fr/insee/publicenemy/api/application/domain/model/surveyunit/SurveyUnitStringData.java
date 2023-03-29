@@ -2,13 +2,17 @@ package fr.insee.publicenemy.api.application.domain.model.surveyunit;
 
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidation;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
+@Data
+@NoArgsConstructor
 public class SurveyUnitStringData implements ISurveyUnitObjectData {
-    private final String value;
+    private String value;
 
     public SurveyUnitStringData(String value) {
         this.value = value;

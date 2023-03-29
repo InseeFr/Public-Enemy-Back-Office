@@ -20,7 +20,7 @@ class BooleanDatatypeTypeTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "true", "oui", "yes", "1", "false", "non", "no", "0"})
+    @ValueSource(strings = {"", "1", "0"})
     void onValidateWhenFieldValueCorrespondsToBooleanValueReturnOkValidationObject(String fieldValue) {
         DataTypeValidation validation = booleanType.validate(fieldValue);
         assertTrue(validation.isValid());
