@@ -33,9 +33,9 @@ public class NumericDatatypeType implements IDataType {
     private Integer decimals;
 
     @JsonCreator
-    public NumericDatatypeType(@JsonProperty(value="minimum") BigDecimal minimum,
-                               @JsonProperty(value="maximum") BigDecimal maximum,
-                               @JsonProperty(value="decimals") Integer decimals) {
+    public NumericDatatypeType(@JsonProperty(value="Minimum") BigDecimal minimum,
+                               @JsonProperty(value="Maximum") BigDecimal maximum,
+                               @JsonProperty(value="Decimals") Integer decimals) {
         this.minimum = minimum;
         this.maximum = maximum;
         this.decimals = decimals;

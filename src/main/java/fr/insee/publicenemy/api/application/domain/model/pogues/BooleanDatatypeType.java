@@ -20,7 +20,7 @@ public class BooleanDatatypeType implements IDataType {
             return DataTypeValidation.createOkDataTypeValidation();
         }
 
-        List<String> correctValues = List.of("", "true", "oui", "yes", "1", "false", "non", "no", "0");
+        List<String> correctValues = List.of("", "1", "0");
         if(correctValues.contains(fieldValue)) {
             return DataTypeValidation.createOkDataTypeValidation();
         }

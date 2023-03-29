@@ -36,8 +36,8 @@ public class DateDatatypeType implements IDataType {
     private DateFormatEnum format;
 
     @JsonCreator
-    public DateDatatypeType(@JsonProperty(value="minimum") String minimum, @JsonProperty(value="maximum") String maximum,
-                            @JsonProperty(value="format") DateFormatEnum format) {
+    public DateDatatypeType(@JsonProperty(value="Minimum") String minimum, @JsonProperty(value="Maximum") String maximum,
+                            @JsonProperty(value="Format") DateFormatEnum format) {
         this.minimum = minimum;
         this.maximum = maximum;
         this.format = format;
@@ -61,7 +61,7 @@ public class DateDatatypeType implements IDataType {
         }
 
         DateTimeFormatter formatter = new DateTimeFormatterBuilder()
-                .appendPattern(format.value())
+                .appendPattern(format.getInternalFormat())
                 .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1)
                 .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
                 .toFormatter();
@@ -71,7 +71,7 @@ public class DateDatatypeType implements IDataType {
             date = LocalDate.parse(fieldValue, formatter);
         } catch (DateTimeParseException dte) {
             return DataTypeValidation.createErrorDataTypeValidation(
-                    DataTypeValidationMessage.createMessage("datatype.error.date.format-incorrect", fieldValue, format.value())
+                    DataTypeValidationMessage.createMessage("datatype.error.date.format-incorrect", fieldValue, format.getInternalFormat())
             );
         }
 
@@ -81,7 +81,7 @@ public class DateDatatypeType implements IDataType {
                 errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.before-minimum", fieldValue, minimum));
             }
         } catch (DateTimeParseException dte) {
-            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.format-minimum", minimum, format.value()));
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.format-minimum", minimum, format.getInternalFormat()));
         }
 
         try {
@@ -90,7 +90,7 @@ public class DateDatatypeType implements IDataType {
                 errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.after-maximum", fieldValue, maximum));
             }
         } catch (DateTimeParseException dte) {
-            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.format-maximum", maximum, format.value()));
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.date.format-maximum", maximum, format.getInternalFormat()));
         }
 
         if(errorMessages.isEmpty()) {

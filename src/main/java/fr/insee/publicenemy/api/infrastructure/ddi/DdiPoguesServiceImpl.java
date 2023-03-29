@@ -107,7 +107,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
 
     @Override
     public List<VariableType> getQuestionnaireVariables(@NonNull String questionnaireId) {
-        String variablesString = webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}/variables", questionnaireId)
+        String variablesString = webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}/vars", questionnaireId)
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
@@ -124,7 +124,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(variablesString, new TypeReference<>(){});
+            return mapper.readValue(variablesString, new TypeReference<List<VariableType>>(){});
         } catch (JsonProcessingException e) {
             log.error(String.format("Exception during variables deserialization of questionnaire id: %s", questionnaireId), e);
             throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR.value(), String.format("Error retrieving variables from questionnaire id %s", questionnaireId));

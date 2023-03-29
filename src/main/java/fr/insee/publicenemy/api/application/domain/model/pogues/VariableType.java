@@ -6,9 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record VariableType(
         VariableTypeEnum type,
+        @JsonProperty("Name")
         String name,
+        @JsonProperty("Scope")
         String scope,
-        @JsonProperty("datatype")
+        @JsonProperty("Datatype")
         IDataType dataType) {
 
         /**
