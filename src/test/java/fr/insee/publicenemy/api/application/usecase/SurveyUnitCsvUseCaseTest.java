@@ -130,7 +130,7 @@ class SurveyUnitCsvUseCaseTest {
         List<SurveyUnit> surveyUnits = new ArrayList<>();
 
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
-        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect","true"));
+        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect","1"));
         csvFields.add(new AbstractMap.SimpleEntry<>("nonExistingAttribute","test"));
         SurveyUnitData data = new SurveyUnitData(csvFields);
 

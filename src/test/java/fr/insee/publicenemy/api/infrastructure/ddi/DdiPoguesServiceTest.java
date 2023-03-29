@@ -184,29 +184,30 @@ class DdiPoguesServiceTest {
                 new MockResponse()
                         .setResponseCode(200)
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .setBody("[\n" +
-                                "  {\n" +
-                                "    \"type\": \"ExternalVariableType\",\n" +
-                                "    \"datatype\": {\n" +
-                                "      \"type\": \"TextDatatypeType\",\n" +
-                                "      \"typeName\": \"TEXT\",\n" +
-                                "      \"maxLength\": 249,\n" +
-                                "      \"pattern\": \"\"\n" +
-                                "    },\n" +
-                                "    \"name\": \"ADMINISTRATION1\",\n" +
-                                "    \"scope\": \"l8oatijq\" \n" +
-                                "  },\n" +
-                                "  {\n" +
-                                "    \"type\": \"CalculatedVariableType\",\n" +
-                                "    \"datatype\": {\n" +
-                                "      \"type\": \"TextDatatypeType\",\n" +
-                                "      \"typeName\": \"TEXT\",\n" +
-                                "      \"maxLength\": 249,\n" +
-                                "      \"pattern\": \"\"\n" +
-                                "    },\n" +
-                                "    \"name\": \"ADMINISTRATION2\",\n" +
-                                "    \"scope\": null\n" +
-                                "  }]")
+                        .setBody("""
+                                [
+                                  {
+                                    "type": "ExternalVariableType",
+                                    "Datatype": {
+                                      "type": "TextDatatypeType",
+                                      "typeName": "TEXT",
+                                      "MaxLength": 249,
+                                      "Pattern": ""
+                                    },
+                                    "Name": "ADMINISTRATION1",
+                                    "Scope": "l8oatijq"\s
+                                  },
+                                  {
+                                    "type": "CalculatedVariableType",
+                                    "Datatype": {
+                                      "type": "TextDatatypeType",
+                                      "typeName": "TEXT",
+                                      "MaxLength": 249,
+                                      "Pattern": ""
+                                    },
+                                    "Name": "ADMINISTRATION2",
+                                    "Scope": null
+                                  }]""")
         );
 
         List<VariableType> variables = service.getQuestionnaireVariables(poguesId);

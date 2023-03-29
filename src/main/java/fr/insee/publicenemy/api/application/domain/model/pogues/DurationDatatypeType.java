@@ -29,8 +29,8 @@ public class DurationDatatypeType implements IDataType {
     private String format;
 
     @JsonCreator
-    public DurationDatatypeType(@JsonProperty(value="minimum") String minimum, @JsonProperty(value="maximum") String maximum,
-                                @JsonProperty(value="format") String format) {
+    public DurationDatatypeType(@JsonProperty(value="Minimum") String minimum, @JsonProperty(value="Maximum") String maximum,
+                                @JsonProperty(value="Format") String format) {
         this.minimum = minimum;
         this.maximum = maximum;
         this.format = format;
