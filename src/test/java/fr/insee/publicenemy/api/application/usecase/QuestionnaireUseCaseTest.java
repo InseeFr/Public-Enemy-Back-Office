@@ -3,6 +3,7 @@ package fr.insee.publicenemy.api.application.usecase;
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,10 @@ class QuestionnaireUseCaseTest {
     private QuestionnairePort questionnairePort;
     @Mock
     private DDIUseCase ddiUseCase;
+
+    @Mock
+    private I18nMessagePort messageService;
+
     @Mock
     private Ddi ddi;
     @Mock
@@ -31,7 +36,7 @@ class QuestionnaireUseCaseTest {
 
     @BeforeEach
     public void init() {
-        questionnaireUseCase = new QuestionnaireUseCase(questionnairePort, ddiUseCase, queenUseCase);
+        questionnaireUseCase = new QuestionnaireUseCase(questionnairePort, ddiUseCase, queenUseCase, messageService);
     }
 
     @Test

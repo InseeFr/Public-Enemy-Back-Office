@@ -4,6 +4,7 @@ import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,10 +20,14 @@ public class QuestionnaireUseCase {
 
     private final DDIUseCase ddiUseCase;
 
-    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase) {
+    private final I18nMessagePort messageService;
+
+    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase,
+                                I18nMessagePort messagePort) {
         this.questionnairePort = questionnairePort;
         this.ddiUseCase = ddiUseCase;
         this.queenUseCase = queenUseCase;
+        this.messageService = messagePort;
     }
 
     /**
@@ -41,7 +46,7 @@ public class QuestionnaireUseCase {
             queenUseCase.synchronizeCreate(ddi, context, questionnaire);
         } catch(ServiceException ex) {
             // fail silently as the questionnaire is already created
-            log.error("An exception has occurred", ex);
+            log.warn(messageService.getMessage("exception.occurred"), ex);
         }
 
         // update questionnaire to save the synchronisation state (unsuccessful in case of throwed ServiceException)
@@ -85,6 +90,7 @@ public class QuestionnaireUseCase {
      */
     public Questionnaire updateQuestionnaire(Long id, Context context, byte[] surveyUnitData) {
         Questionnaire questionnaire = new Questionnaire(id, context, surveyUnitData);
+
         return questionnairePort.updateQuestionnaire(questionnaire);
     }
 }

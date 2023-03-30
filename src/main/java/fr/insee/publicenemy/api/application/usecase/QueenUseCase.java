@@ -40,13 +40,14 @@ public class QueenUseCase {
             .forEach(questionnaireMode -> {
                     Mode mode = questionnaireMode.getMode();
                     String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
+                    List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
+
                     JsonLunatic jsonLunatic = ddiUseCase.getJsonLunatic(ddi, context, mode);
                     questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
                     queenService.createQuestionnaireModel(questionnaireModelId, ddi, jsonLunatic);
                     questionnaireMode.setSynchronisationState(SynchronisationState.INIT_CAMPAIGN.name());
                     queenService.createCampaign(questionnaireModelId, questionnaire, ddi);
                     questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
-                    List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
                     queenService.createSurveyUnits(questionnaireModelId, surveyUnits);
             });
         questionnaire.setSynchronized(true);

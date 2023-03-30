@@ -148,7 +148,7 @@ class SurveyUnitControllerTest {
         String code = "error.code";
         messages.add(new ValidationErrorMessage(code, "plop"));
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
-        SurveyUnitsGlobalValidationException surveyUnitsValidationException = new SurveyUnitsGlobalValidationException(messages);
+        SurveyUnitsGlobalValidationException surveyUnitsValidationException = new SurveyUnitsGlobalValidationException("main error message", messages);
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(surveyUnitsValidationException);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
@@ -177,7 +177,7 @@ class SurveyUnitControllerTest {
         attributesValidations.add(new SurveyUnitAttributeValidation("att2", typeValidation));
         surveyUnitValidations.add(new SurveyUnitValidation("1", attributesValidations));
         surveyUnitValidations.add(new SurveyUnitValidation("2", attributesValidations));
-        SurveyUnitsValidationException ex = new SurveyUnitsValidationException(surveyUnitValidations);
+        SurveyUnitsValidationException ex = new SurveyUnitsValidationException("main error message", surveyUnitValidations);
 
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(ex);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
