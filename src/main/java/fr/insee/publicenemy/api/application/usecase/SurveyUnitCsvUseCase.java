@@ -1,28 +1,45 @@
 package fr.insee.publicenemy.api.application.usecase;
 
-import fr.insee.publicenemy.api.application.domain.model.pogues.*;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationErrorMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.ISurveyUnitObjectData;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitAttributeValidation;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitValidation;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class SurveyUnitCsvUseCase {
 
     private final SurveyUnitCsvPort surveyUnitCsvService;
 
+    private final QuestionnaireUseCase questionnaireUseCase;
+
     private final DDIUseCase ddiUseCase;
 
-    public SurveyUnitCsvUseCase(SurveyUnitCsvPort surveyUnitCsvService, DDIUseCase ddiUseCase) {
+    private final I18nMessagePort messageService;
+
+    private static final String VALIDATION_ERROR = "validation.errors";
+
+    public SurveyUnitCsvUseCase(SurveyUnitCsvPort surveyUnitCsvService, DDIUseCase ddiUseCase,
+                                QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort) {
         this.surveyUnitCsvService = surveyUnitCsvService;
         this.ddiUseCase = ddiUseCase;
+        this.questionnaireUseCase = questionnaireUseCase;
+        this.messageService = messagePort;
     }
 
     /**
@@ -38,6 +55,17 @@ public class SurveyUnitCsvUseCase {
     /**
      * Check data from survey units against variables type from a specific questionnaire
      * @param surveyUnitData survey units data
+     * @param questionnaireId id questionnaire id
+     * @return validation errors for all survey units in survey units data
+     */
+    public List<ValidationWarningMessage> validateSurveyUnits(byte[] surveyUnitData, Long questionnaireId) throws SurveyUnitsGlobalValidationException, SurveyUnitsValidationException {
+        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
+        return validateSurveyUnits(surveyUnitData, questionnaire.getPoguesId());
+    }
+
+    /**
+     * Check data from survey units against variables type from a specific questionnaire
+     * @param surveyUnitData survey units data
      * @param poguesId questionnaire id from pogues
      * @return validation errors for all survey units in survey units data
      */
@@ -47,19 +75,19 @@ public class SurveyUnitCsvUseCase {
 
         if(surveyUnits.isEmpty()) {
             ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.no-exist");
-            throw new SurveyUnitsGlobalValidationException(errorMessage);
+            throw new SurveyUnitsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), errorMessage);
         }
 
         int maxSurveyUnitsToAdd = 10;
         if(surveyUnits.size() > maxSurveyUnitsToAdd) {
             ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.max-size", maxSurveyUnitsToAdd+"");
-            throw new SurveyUnitsGlobalValidationException(errorMessage);
+            throw new SurveyUnitsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), errorMessage);
         }
 
         SurveyUnit su = surveyUnits.get(0);
         List<ValidationErrorMessage> missingVariablesMessages = getMissingVariablesMessages(su, variablesType);
         if(!missingVariablesMessages.isEmpty()) {
-            throw new SurveyUnitsGlobalValidationException(missingVariablesMessages);
+            throw new SurveyUnitsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), missingVariablesMessages);
         }
 
         // retrieve validation objects with attributes errors
@@ -69,7 +97,7 @@ public class SurveyUnitCsvUseCase {
                 .toList();
 
         if(!surveyUnitsErrors.isEmpty()) {
-            throw new SurveyUnitsValidationException(surveyUnitsErrors);
+            throw new SurveyUnitsValidationException(messageService.getMessage(VALIDATION_ERROR), surveyUnitsErrors);
         }
 
         return getAdditionalAttributesMessages(su, variablesType);
