@@ -1,10 +1,12 @@
 package fr.insee.publicenemy.api.application.usecase;
 
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.*;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvService;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,14 +31,23 @@ class SurveyUnitCsvUseCaseTest {
     private DDIUseCase ddiUseCase;
 
     @Mock
+    private QuestionnaireUseCase questionnaireUseCase;
+
+    @Mock
     private SurveyUnitCsvService surveyUnitService;
+
+    @Mock
+    private I18nMessagePort messageService;
 
     @Mock
     private List<VariableType> variables;
 
+    @Mock
+    Questionnaire questionnaire;
+
     @BeforeEach
     void init() {
-        usecase = new SurveyUnitCsvUseCase(surveyUnitService, ddiUseCase);
+        usecase = new SurveyUnitCsvUseCase(surveyUnitService, ddiUseCase, questionnaireUseCase, messageService);
     }
 
     @Test
@@ -145,5 +155,32 @@ class SurveyUnitCsvUseCaseTest {
         List<ValidationWarningMessage> messages = usecase.validateSurveyUnits(surveyUnitDataByte, poguesId);
 
         assertEquals("validation.attribute.not-exist", messages.get(0).getCode());
+    }
+
+    @Test
+    void onValidateSurveyWhenSurveyUnitsAttributeValidReturnNothing() throws SurveyUnitsGlobalValidationException, SurveyUnitsValidationException {
+        Long questionnaireId = 1L;
+        String poguesId = "l8wwljbo";
+        when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
+        when(questionnaire.getPoguesId()).thenReturn(poguesId);
+
+        byte[] surveyUnitDataByte = "data".getBytes();
+        List<SurveyUnit> surveyUnits = new ArrayList<>();
+
+        List<Map.Entry<String, String>> csvFields = new ArrayList<>();
+        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect","1"));
+        SurveyUnitData data = new SurveyUnitData(csvFields);
+
+        surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        surveyUnits.add(new SurveyUnit("2", "q1", data, SurveyUnitStateData.createInitialStateData()));
+
+        List<VariableType> variablesTypes = new ArrayList<>();
+        variablesTypes.add(new VariableType(VariableTypeEnum.EXTERNAL, "isCorrect", null, new BooleanDatatypeType()));
+        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
+        when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, poguesId)).thenReturn(surveyUnits);
+
+        List<ValidationWarningMessage> messages = usecase.validateSurveyUnits(surveyUnitDataByte, questionnaireId);
+
+        assertTrue(messages.isEmpty());
     }
 }
