@@ -10,6 +10,7 @@ import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.DdiServicePort;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.DdiNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
 import lombok.NonNull;
@@ -33,14 +34,19 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
     private final WebClient webClient;
     private final String poguesUrl;
 
+    private final I18nMessagePort messageService;
+
+    private static final String QUESTIONNAIRE_NOT_FOUND_ERROR = "questionnaire.notfound";
+
     /**
      * Constructor
      * @param webClient webclient
      * @param poguesUrl pogues url
      */
-    public DdiPoguesServiceImpl(WebClient webClient, @Value("${application.pogues.url}") String poguesUrl) {
+    public DdiPoguesServiceImpl(WebClient webClient, @Value("${application.pogues.url}") String poguesUrl, I18nMessagePort messagePort) {
         this.webClient = webClient; 
         this.poguesUrl = poguesUrl;
+        this.messageService = messagePort;
     }
 
     @Override
@@ -94,7 +100,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
                         response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(questionnaireId)))
+                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR))))
                 )
                 .onStatus(
                         HttpStatusCode::isError,
@@ -102,7 +108,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                                 .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
                 )
                 .bodyToMono(JsonNode.class)
-                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(questionnaireId));
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
     }
 
     @Override
@@ -112,7 +118,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
                         response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(questionnaireId)))
+                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR))))
                 )
                 .onStatus(
                         HttpStatusCode::isError,
@@ -120,7 +126,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                                 .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
                 )
                 .bodyToMono(String.class)
-                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(questionnaireId));
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
 
         ObjectMapper mapper = new ObjectMapper();
         try {
