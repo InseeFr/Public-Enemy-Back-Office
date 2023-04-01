@@ -11,7 +11,7 @@ import lombok.ToString;
 @ToString
 @Data
 @NoArgsConstructor
-public class SurveyUnitStringData implements ISurveyUnitObjectData {
+public class SurveyUnitStringData implements ISurveyUnitObjectData<String> {
     private String value;
 
     public SurveyUnitStringData(String value) {

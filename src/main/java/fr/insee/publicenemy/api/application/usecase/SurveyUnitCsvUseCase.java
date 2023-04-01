@@ -109,7 +109,7 @@ public class SurveyUnitCsvUseCase {
      * @return messages about the missing variables on the survey unit
      */
     private List<ValidationErrorMessage> getMissingVariablesMessages(SurveyUnit surveyUnit, List<VariableType> variablesType) {
-        Map<String, ISurveyUnitObjectData> attributes = surveyUnit.data().getAttributes();
+        Map<String, ISurveyUnitObjectData<?>> attributes = surveyUnit.data().getAttributes();
         Set<String> attributesKeys = attributes.keySet();
 
         // check if questionnaire variables are missing in a survey unit data
@@ -121,7 +121,7 @@ public class SurveyUnitCsvUseCase {
     }
 
     private List<ValidationWarningMessage> getAdditionalAttributesMessages(SurveyUnit surveyUnit, List<VariableType> variablesType) {
-        Map<String, ISurveyUnitObjectData> attributes = surveyUnit.data().getAttributes();
+        Map<String, ISurveyUnitObjectData<?>> attributes = surveyUnit.data().getAttributes();
         Set<String> attributesKeys = attributes.keySet();
         List<String> variablesName = variablesType.stream().map(VariableType::name).toList();
 
@@ -140,12 +140,12 @@ public class SurveyUnitCsvUseCase {
      */
     private SurveyUnitValidation getSurveyUnitErrors(SurveyUnit surveyUnit, List<VariableType> variablesType) {
         List<SurveyUnitAttributeValidation> attributesErrors = new ArrayList<>();
-        Map<String, ISurveyUnitObjectData> attributes = surveyUnit.data().getAttributes();
+        Map<String, ISurveyUnitObjectData<?>> attributes = surveyUnit.data().getAttributes();
 
         // validate variables in survey units data
-        for (Map.Entry<String, ISurveyUnitObjectData> entry : attributes.entrySet()) {
+        for (Map.Entry<String, ISurveyUnitObjectData<?>> entry : attributes.entrySet()) {
             String attributeKey = entry.getKey();
-            ISurveyUnitObjectData attributeObjectData = entry.getValue();
+            ISurveyUnitObjectData<?> attributeObjectData = entry.getValue();
 
             SurveyUnitAttributeValidation attributeValidationObject = validateAttribute(attributeKey, attributeObjectData, variablesType);
 
@@ -163,7 +163,7 @@ public class SurveyUnitCsvUseCase {
      * @param variablesType list of variables from a questionnaire
      * @return a validation object containing errors message for the attribute specified
      */
-    private SurveyUnitAttributeValidation validateAttribute(String attributeKey, ISurveyUnitObjectData attributeObjectData, List<VariableType> variablesType) {
+    private SurveyUnitAttributeValidation validateAttribute(String attributeKey, ISurveyUnitObjectData<?> attributeObjectData, List<VariableType> variablesType) {
         return variablesType.stream()
                 .filter(variable -> variable.name().equalsIgnoreCase(attributeKey))
                 .findFirst()
