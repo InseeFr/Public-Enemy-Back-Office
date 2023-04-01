@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum DateFormatEnum {
 
-    YYYY_MM_DD("yyyy-mm-dd", "yyyy-MM-dd"),
-    YYYY_MM("yyyy-mm", "yyyy-MM"),
-    YYYY("yyyy", "yyyy");
+    YYYY_MM_DD("YYYY-MM-DD", "yyyy-MM-dd"),
+    YYYY_MM("YYYY-MM", "yyyy-MM"),
+    YYYY("YYYY", "yyyy");
     private final String questionnaireFormat;
 
     private final String internalFormat;

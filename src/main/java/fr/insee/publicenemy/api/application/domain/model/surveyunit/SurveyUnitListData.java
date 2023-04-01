@@ -4,20 +4,20 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidati
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @EqualsAndHashCode
 @ToString
-public class SurveyUnitListData implements ISurveyUnitObjectData {
-    private final Set<String> values;
+@Getter
+public class SurveyUnitListData implements ISurveyUnitObjectData<List<String>> {
+    private final List<String> values;
 
     public SurveyUnitListData() {
-        this.values = new HashSet<>();
+        this.values = new ArrayList<>();
     }
 
 
@@ -47,5 +47,9 @@ public class SurveyUnitListData implements ISurveyUnitObjectData {
      */
     public void addValue(String value) {
         values.add(value);
+    }
+
+    public List<String> getValue() {
+        return values;
     }
 }
