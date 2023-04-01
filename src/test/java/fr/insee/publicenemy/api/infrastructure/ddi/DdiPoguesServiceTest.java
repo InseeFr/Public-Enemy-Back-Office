@@ -6,6 +6,7 @@ import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.DdiNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
 import okhttp3.mockwebserver.MockResponse;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -39,6 +41,9 @@ class DdiPoguesServiceTest {
 
     private final String ddiContent = "<xml></xml>";
 
+    @Mock
+    private I18nMessagePort messageService;
+
     @BeforeAll
     static void setUp() throws IOException {
         mockWebServer = new MockWebServer();
@@ -54,7 +59,7 @@ class DdiPoguesServiceTest {
     public void init() {
         String poguesUrl = String.format("http://localhost:%s",
                 mockWebServer.getPort());
-        service = new DdiPoguesServiceImpl(webClient, poguesUrl);
+        service = new DdiPoguesServiceImpl(webClient, poguesUrl, messageService);
 
 
     }
