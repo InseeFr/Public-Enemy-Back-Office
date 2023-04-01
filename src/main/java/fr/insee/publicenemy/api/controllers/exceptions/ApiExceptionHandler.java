@@ -117,7 +117,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handlePoguesJsonNotFoundException(
             PoguesJsonNotFoundException ex,
             WebRequest request) {
-        return processException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request);
+        return processException(ex, HttpStatus.NOT_FOUND, request);
     }
 
     /**

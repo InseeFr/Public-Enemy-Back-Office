@@ -57,7 +57,7 @@ class ApiExceptionHandlerTest {
         ApiError apiError = new ApiError(404, "/", exception.getMessage(), Calendar.getInstance().getTime());
         simulateProcessException(apiError);
         ResponseEntity<ApiError> response = handler.handlePoguesJsonNotFoundException(exception, request);
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getStatusCode().value());
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCode().value());
         assertEquals(apiError, response.getBody());
     }
 
