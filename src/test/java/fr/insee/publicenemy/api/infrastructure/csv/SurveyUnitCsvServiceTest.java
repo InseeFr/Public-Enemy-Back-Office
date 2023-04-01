@@ -45,7 +45,7 @@ class SurveyUnitCsvServiceTest {
         List<SurveyUnit> surveyUnits = service.initSurveyUnits(surveyUnitData, questionnaireModelId);
 
         SurveyUnit surveyUnit = surveyUnits.get(0);
-        Map<String, ISurveyUnitObjectData> attributes = surveyUnit.data().getAttributes();
+        Map<String, ISurveyUnitObjectData<?>> attributes = surveyUnit.data().getAttributes();
 
         assertEquals(String.format("%s-%s", questionnaireModelId, "1"), surveyUnit.id());
         SurveyUnitStringData numfa = new SurveyUnitStringData("1");

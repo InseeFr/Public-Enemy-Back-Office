@@ -1,17 +1,18 @@
 package fr.insee.publicenemy.api.application.domain.model.surveyunit;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+@Data
+@AllArgsConstructor
 public class SurveyUnitData {
 
-    private final Map<String, ISurveyUnitObjectData> attributes;
-
-    public Map<String, ISurveyUnitObjectData> getAttributes() {
-        return attributes;
-    }
+    private final Map<String, ISurveyUnitObjectData<?>> attributes;
 
     public SurveyUnitData (List<Map.Entry<String, String>> fields) {
         this.attributes = getAttributesFromFields(fields);
@@ -24,8 +25,8 @@ public class SurveyUnitData {
      * @param fields containging names and values for each field
      * @return attributes map corresponding
      */
-    private Map<String, ISurveyUnitObjectData> getAttributesFromFields(List<Map.Entry<String, String>> fields) {
-        Map<String, ISurveyUnitObjectData> attrs = new HashMap<>();
+    private Map<String, ISurveyUnitObjectData<?>> getAttributesFromFields(List<Map.Entry<String, String>> fields) {
+        Map<String, ISurveyUnitObjectData<?>> attrs = new HashMap<>();
         Map<String, SurveyUnitListData> fieldsList = new TreeMap<>();
         var sortedFields = fields
                 .stream()
