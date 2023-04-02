@@ -18,10 +18,10 @@ public class I18nMessageServiceImpl implements I18nMessagePort {
     }
 
     public String getMessage(String id) {
-        return getMessage(id, (Object)null);
+        return getMessage(id, (String)null);
     }
 
-    public String getMessage(String id, Object... args) {
+    public String getMessage(String id, String... args) {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(id, args, locale);
     }
@@ -31,7 +31,7 @@ public class I18nMessageServiceImpl implements I18nMessagePort {
         return messageSource.getMessage(msr, locale);
     }
 
-    public String getMessage(String id, Object[] args, String defaultMessage) {
+    public String getMessage(String id, String[] args, String defaultMessage) {
         Locale locale = LocaleContextHolder.getLocale();
         return messageSource.getMessage(id, args, defaultMessage, locale);
     }

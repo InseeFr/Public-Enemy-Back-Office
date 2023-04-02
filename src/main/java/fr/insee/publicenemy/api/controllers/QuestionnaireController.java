@@ -1,6 +1,9 @@
 package fr.insee.publicenemy.api.controllers;
 
 import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvMalformedLineException;
+import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
+import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
@@ -142,31 +145,15 @@ public class QuestionnaireController {
     /**
      * @return generic errors when csv parsing errors
      */
-    @ExceptionHandler(SurveyUnitsGlobalValidationException.class)
+    @ExceptionHandler({SurveyUnitsGlobalValidationException.class,
+            CsvException.class,
+            CsvRuntimeException.class,
+            SurveyUnitsValidationException.class,
+            CsvMultilineLimitBrokenException.class,
+            CsvMalformedLineException.class
+    })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleSurveyUnitsGlobalValidationException(WebRequest request) {
-        return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST,
-                messageService.getMessage(VALIDATION_ERROR));
-    }
-
-    /**
-     *
-     * @return generic errors when csv parsing errors
-     */
-    @ExceptionHandler(CsvException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleSurveyUnitsGlobalCSVValidationException(WebRequest request) {
-        return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST,
-                messageService.getMessage(VALIDATION_ERROR));
-    }
-
-    /**
-     *
-     * @return generic errors when csv parsing errors
-     */
-    @ExceptionHandler(SurveyUnitsValidationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleSurveyUnitsValidationException(WebRequest request) {
+    public ApiError handleCsvValidationException(WebRequest request) {
         return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST,
                 messageService.getMessage(VALIDATION_ERROR));
     }

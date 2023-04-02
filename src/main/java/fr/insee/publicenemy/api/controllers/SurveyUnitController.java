@@ -2,6 +2,9 @@ package fr.insee.publicenemy.api.controllers;
 
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
+import com.opencsv.exceptions.CsvMalformedLineException;
+import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
+import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
@@ -46,6 +49,8 @@ public class SurveyUnitController {
     private final SurveyUnitMessagesComponent messageComponent;
 
     private final ApiExceptionComponent errorComponent;
+
+    private static final String CSV_ERROR_MESSAGE= "CSV Error: ";
 
     public SurveyUnitController(QueenUseCase queenUseCase, SurveyUnitCsvUseCase surveyUnitUseCase,
                                 I18nMessagePort messageService, SurveyUnitMessagesComponent messageComponent,
@@ -144,6 +149,32 @@ public class SurveyUnitController {
         String line = String.join(",", csvException.getLine());
         String message = messageService.getMessage("validation.csv.error.message", csvException.getMessage(),
                 csvException.getLineNumber()+"", line);
+        log.warn(CSV_ERROR_MESSAGE, csvException);
+        return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(CsvRuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleSurveyUnitsGlobalCSVValidationException(
+            CsvRuntimeException csvException, WebRequest request) {
+        log.warn(CSV_ERROR_MESSAGE, csvException);
+        return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST, csvException.getMessage());
+    }
+
+    @ExceptionHandler(CsvMultilineLimitBrokenException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleSurveyUnitsGlobalCSVValidationException(
+            CsvMultilineLimitBrokenException csvException, WebRequest request) {
+        log.warn(CSV_ERROR_MESSAGE, csvException);
+        return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST, csvException.getMessage());
+    }
+
+    @ExceptionHandler(CsvMalformedLineException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleSurveyUnitsGlobalCSVValidationException(
+            CsvMalformedLineException csvException, WebRequest request) {
+        log.warn(CSV_ERROR_MESSAGE, csvException);
+        String message = messageService.getMessage("validation.csv.malform.error", csvException.getLineNumber()+"", csvException.getMessage());
         return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST, message);
     }
 
