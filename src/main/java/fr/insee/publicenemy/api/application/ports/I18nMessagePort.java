@@ -14,7 +14,7 @@ public interface I18nMessagePort {
      * @param args parameters for the message
      * @return message in default language
      */
-    String getMessage(String id, Object... args);
+    String getMessage(String id, String... args);
 
     /**
      * 
@@ -23,5 +23,5 @@ public interface I18nMessagePort {
      * @param defaultMessage failback message
      * @return message in default language
      */
-    String getMessage(String id, Object[] args, String defaultMessage);
+    String getMessage(String id, String[] args, String defaultMessage);
 }
