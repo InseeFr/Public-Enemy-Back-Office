@@ -32,12 +32,14 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -123,6 +125,19 @@ class QuestionnaireControllerTest {
                 .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
                 .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
                 .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
+    }
+
+    @Test
+    void onGetSurveyUnitsDataReturnCSV() throws Exception {
+        Long id = 1L;
+        byte[] data = "\"att1\",\"att2\"".getBytes();
+        when(questionnaireUseCase.getSurveyUnitData(id)).thenReturn(data);
+
+        MvcResult result = mockMvc.perform(get("/api/questionnaires/{id}/data", id))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertEquals(new String(data), result.getResponse().getContentAsString());
     }
 
     @Test

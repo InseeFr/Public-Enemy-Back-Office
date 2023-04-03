@@ -43,6 +43,13 @@ public class QuestionnaireRepository implements QuestionnairePort {
     }
 
     @Override
+    public byte[] getSurveyUnitData(Long questionnaireId) {
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaireId)
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+        return questionnaireEntity.getSurveyUnitData();
+    }
+
+    @Override
     public Questionnaire addQuestionnaire(Questionnaire questionnaire) {
         QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createEntity(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
