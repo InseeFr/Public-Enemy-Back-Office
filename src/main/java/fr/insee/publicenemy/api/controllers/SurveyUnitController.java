@@ -82,11 +82,11 @@ public class SurveyUnitController {
     public void getCsvSchema(HttpServletResponse response, @PathVariable String poguesId) throws IOException {
 
         // set file name and content type
-        String filename = "schema-" + poguesId + ".csv";
+        String filename = String.format("schema-%s.csv", poguesId);
 
         response.setContentType("text/csv");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=\"" + filename + "\"");
+                String.format("attachment; filename=\"%s\"", filename));
 
         CSVWriter writer = new CSVWriter(response.getWriter());
         SurveyUnitCsvHeaderLine attributes = surveyUnitUseCase.getHeadersLine(poguesId);

@@ -44,4 +44,11 @@ public interface QuestionnairePort {
      * @param questionnaire questionnaire that needs state update
      */
     Questionnaire updateQuestionnaireState(Questionnaire questionnaire);
+
+    /**
+     * Get questionnaire
+     * @param questionnaireId questionnaire id
+     * @return survey units csv data
+     */
+    byte[] getSurveyUnitData(Long questionnaireId);
 }
