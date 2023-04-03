@@ -52,9 +52,10 @@ class QuestionnaireRepositoryTest {
     }
 
     @Test
-    void onUpdateQuestionnaireStateWhenQuestionnaireNotExistsThrowRepositoryEntityNotFoundException() {
+    void onGetSurveyUnitDataWhenQuestionnaireNotExistsThrowRepositoryEntityNotFoundException() {
+        Long questionnaireId = 1L;
         Optional<QuestionnaireEntity> emptyQuestionnaire = Optional.empty();
-        when(questionnaireEntityRepository.findById(questionnaire.getId())).thenReturn(emptyQuestionnaire);
-        assertThrows(RepositoryEntityNotFoundException.class, () -> repository.updateQuestionnaireState(questionnaire));
+        when(questionnaireEntityRepository.findById(questionnaireId)).thenReturn(emptyQuestionnaire);
+        assertThrows(RepositoryEntityNotFoundException.class, () -> repository.getSurveyUnitData(questionnaireId));
     }
 }

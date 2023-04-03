@@ -17,8 +17,10 @@ import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
@@ -74,6 +76,22 @@ public class QuestionnaireController {
     public QuestionnaireRest getQuestionnaire(@PathVariable Long id) {
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(id);
         return questionnaireComponent.createFromModel(questionnaire);
+    }
+
+    /**
+     * @param id questionnaire id
+     * @return questionnaire
+     */
+    @GetMapping(value = "/{id}/data", produces = "text/csv")
+    public ResponseEntity<byte[]> getSurveyUnitData(@PathVariable Long id) {
+        String filename = String.format("questionnaire-%s-data.csv", id);
+
+        byte[] surveyUnitsData = questionnaireUseCase.getSurveyUnitData(id);
+
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
+                .body(surveyUnitsData);
     }
 
     /**
