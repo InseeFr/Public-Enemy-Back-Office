@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @Transactional
 public class DDIUseCase {
-    
+
     private final DdiServicePort ddiService;
     private final EnoServicePort enoService;
 
@@ -24,6 +24,7 @@ public class DDIUseCase {
 
     /**
      * Get questionnaire
+     *
      * @param poguesId pogues questionnaire id
      * @return the questionnaire
      */
@@ -33,6 +34,7 @@ public class DDIUseCase {
 
     /**
      * Get DDI as XML format from questionnaire Id
+     *
      * @param poguesId pogues questionnaire id
      * @return DDI
      */
@@ -42,9 +44,10 @@ public class DDIUseCase {
 
     /**
      * Convert DDI with given identifier to a Lunatic questionnaire (json format)
-     * @param ddi Ddi
+     *
+     * @param ddi     Ddi
      * @param context insee context
-     * @param mode questionnaire mode
+     * @param mode    questionnaire mode
      * @return Json Lunatic
      */
     public JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode) {
@@ -53,6 +56,7 @@ public class DDIUseCase {
 
     /**
      * Get Json Pogues variables
+     *
      * @param questionnaireId pogues questionnaire Id
      * @return variables type for a questionnaire. It only returns external variables right now
      */

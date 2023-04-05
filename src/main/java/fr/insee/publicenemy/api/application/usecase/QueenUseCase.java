@@ -6,13 +6,18 @@ import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUti
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
+import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Slf4j
+/**
+ * Handle synchronisation with queen
+ */
 public class QueenUseCase {
 
     private final QueenServicePort queenService;
@@ -28,56 +33,194 @@ public class QueenUseCase {
     }
 
     /**
+     * @param questionnaireModelId questionnaire model id
+     * @return all survey units linked to the campaign
+     */
+    public List<SurveyUnit> getSurveyUnits(String questionnaireModelId) {
+        return queenService.getSurveyUnits(questionnaireModelId);
+    }
+
+    /**
      * Create campaign in queen, with one questionnaire-model for each mode
-     * @param ddi DDI for the questionnaire
-     * @param context insee context
+     *
+     * @param ddi           DDI for the questionnaire
      * @param questionnaire questionnaire
      */
-    public void synchronizeCreate(Ddi ddi, Context context, Questionnaire questionnaire) {
-        // Create questionnaire in queen for the different modes
+    public void synchronizeCreate(Ddi ddi, Questionnaire questionnaire) {
         questionnaire.getQuestionnaireModes().stream()
-            .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
-            .forEach(questionnaireMode -> {
-                    Mode mode = questionnaireMode.getMode();
-                    String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
-                    List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
+                .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
+                .forEach(questionnaireMode -> createQueenCampaign(ddi, questionnaire, questionnaireMode));
+    }
 
-                    JsonLunatic jsonLunatic = ddiUseCase.getJsonLunatic(ddi, context, mode);
-                    questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
-                    queenService.createQuestionnaireModel(questionnaireModelId, ddi, jsonLunatic);
-                    questionnaireMode.setSynchronisationState(SynchronisationState.INIT_CAMPAIGN.name());
-                    queenService.createCampaign(questionnaireModelId, questionnaire, ddi);
-                    questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
-                    queenService.createSurveyUnits(questionnaireModelId, surveyUnits);
-            });
-        questionnaire.setSynchronized(true);
+    /**
+     * Update questionnaire in queen
+     * This update is used for
+     * - simply updating a questionnaire (context/survey unit data)
+     * - for updating a not well synchronized questionnaire (problems during previous sync, questionnaire changed in pogues, ...)
+     *
+     * @param ddi           DDI for the questionnaire
+     * @param questionnaire questionnaire
+     */
+    public void synchronizeUpdate(Ddi ddi, Questionnaire questionnaire) {
+
+        List<Mode> ddiModes = ddi.modes();
+        List<QuestionnaireMode> questionnaireModes = new ArrayList<>(questionnaire.getQuestionnaireModes());
+
+        // retrieve questionnaire modes not in DDI (these modes need to be deleted) and delete them
+        questionnaire.getQuestionnaireModes().stream()
+                .filter(questionnaireMode -> !ddiModes.contains(questionnaireMode.getMode()))
+                .forEach(questionnaireModeToDelete -> {
+                    log.debug("Mode to delete: " + questionnaireModeToDelete.getMode().name());
+                    questionnaireModes.remove(questionnaireModeToDelete);
+                    if (questionnaireModeToDelete.getMode().isWebMode()) {
+                        String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireModeToDelete.getMode());
+                        deleteQueenCampaign(questionnaireModelId);
+                    }
+                });
+
+        List<Mode> modesFromQuestionnaire = questionnaireModes.stream()
+                .map(QuestionnaireMode::getMode)
+                .toList();
+
+        // get modes that exist in DDI but not in questionnaire (these modes need to be added)
+        ddiModes.stream()
+                .filter(mode -> !modesFromQuestionnaire.contains(mode))
+                .forEach(mode -> {
+                    log.debug("Mode to add: " + mode.name());
+                    questionnaireModes.add(
+                            new QuestionnaireMode(questionnaire.getId(), mode, SynchronisationState.INIT_QUESTIONNAIRE.name()));
+                });
+
+        // synchronize created/updated questionnaire web modes
+        // created modes will be processed like updated questionnaire modes, as synchronisation with API can cause unexpected errors
+        // Often it will cause unnecessary checks for created modes, but synchronisation is safer this way
+        questionnaireModes.stream()
+                .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
+                .forEach(questionnaireMode -> {
+                    log.debug("Mode to update: " + questionnaireMode.getMode().name());
+                    updateQueenCampaign(ddi, questionnaire, questionnaireMode);
+                });
+        questionnaire.setQuestionnaireModes(questionnaireModes);
     }
 
     /**
      * Delete questionnaire in queen
+     *
      * @param questionnaire questionnaire to delete
      */
     public void synchronizeDelete(Questionnaire questionnaire) {
         // Delete questionnaire in queen for the different modes
         questionnaire.getQuestionnaireModes().stream()
-            .map(QuestionnaireMode::getMode)
-            .filter(Mode::isWebMode)
-            .forEach(mode -> {
-                try {
-                    queenService.deleteCampaign(IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode));
-                } catch (ServiceException ex) {
-                    //!\\ fail silently in case of errors with deletion in queen service
-                    // we admit "orphan" campaigns can appear in queen backoffice
-                    log.error(ex.toString());
-                }
-            });
+                .map(QuestionnaireMode::getMode)
+                .filter(Mode::isWebMode)
+                .forEach(mode ->
+                        deleteQueenCampaign(IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode)));
     }
 
     /**
-     * @param questionnaireModelId questionnaire model id
-     * @return all survey units linked oto the questionnaire model id
+     * Create campaign in queen (questionnaire model, campaign, survey units) and update synchronisation state for questionnaire mode
+     *
+     * @param ddi               ddi
+     * @param questionnaire     questionnaire
+     * @param questionnaireMode questionnaire mode
+     * @throws CampaignNotFoundException exception throwed if the campaign was not found
      */
-    public List<SurveyUnit> getSurveyUnits(String questionnaireModelId) {
-        return queenService.getSurveyUnits(questionnaireModelId);
+    private void createQueenCampaign(Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
+        String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireMode.getMode());
+        List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
+        createQuestionnaireModel(questionnaireModelId, ddi, questionnaire.getContext(), questionnaireMode);
+        createCampaign(questionnaireModelId, ddi, questionnaire, questionnaireMode);
+        createSurveyUnits(questionnaireModelId, surveyUnits, questionnaireMode);
+        questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
+    }
+
+    /**
+     * Update queen campaign, resolve synchronisation problems and update synchronisation state for questionnaire mode
+     * The update recreates a complete campaign (delete then create) for campaign, questionnaire model and survey units
+     *
+     * @param ddi               ddi
+     * @param questionnaire     questionnaire
+     * @param questionnaireMode questionnaire mode
+     */
+    private void updateQueenCampaign(Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
+        Mode mode = questionnaireMode.getMode();
+        String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
+        List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
+        // try to delete campaign if exists
+        try {
+            log.debug(String.format("Delete campaign %s", questionnaireModelId));
+            queenService.deleteCampaign(questionnaireModelId);
+            questionnaireMode.setSynchronisationState(null);
+        } catch (CampaignNotFoundException ex) {
+            // campaign does not exist, we will create it afterwards, no need to throw this exception
+            log.debug(ex.getMessage());
+        }
+
+        if (!queenService.hasQuestionnaireModel(questionnaireModelId)) {
+            log.debug(String.format("Questionnaire model %s does not exist", questionnaireModelId));
+            createQuestionnaireModel(questionnaireModelId, ddi, questionnaire.getContext(), questionnaireMode);
+        }
+
+        createCampaign(questionnaireModelId, ddi, questionnaire, questionnaireMode);
+        createSurveyUnits(questionnaireModelId, surveyUnits, questionnaireMode);
+        questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
+    }
+
+    /**
+     * Delete completely a campaign (campaign, associated questionnaire model and survey units)
+     *
+     * @param questionnaireModelId questionnaire model id
+     */
+    private void deleteQueenCampaign(String questionnaireModelId) {
+        log.debug(String.format("delete campaign %s", questionnaireModelId));
+        try {
+            queenService.deleteCampaign(questionnaireModelId);
+        } catch (ServiceException | CampaignNotFoundException ex) {
+            //!\\ fail silently in case of errors.
+            // we admit "orphan" campaigns can appear in queen backoffice
+            log.error(ex.toString());
+        }
+    }
+
+    /**
+     * Create a questionnaire model in orchestrator backoffice and update synchronisation state for questionnaire mode
+     *
+     * @param questionnaireModelId questionnaire model id
+     * @param ddi                  ddi
+     * @param context              context
+     * @param questionnaireMode    questionnaire mode
+     */
+    private void createQuestionnaireModel(String questionnaireModelId, Ddi ddi, Context context, QuestionnaireMode questionnaireMode) {
+        log.debug(String.format("Create questionnaire model %s", questionnaireModelId));
+        JsonLunatic jsonLunatic = ddiUseCase.getJsonLunatic(ddi, context, questionnaireMode.getMode());
+        questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
+        queenService.createQuestionnaireModel(questionnaireModelId, ddi, jsonLunatic);
+    }
+
+    /**
+     * Create campaign in queen and update synchronisation state for questionnaire mode
+     *
+     * @param questionnaireModelId questionnaire model id
+     * @param ddi                  ddi
+     * @param questionnaire        questionnaire
+     * @param questionnaireMode    questionnaire mode
+     */
+    private void createCampaign(String questionnaireModelId, Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
+        log.debug(String.format("Create campaign %s", questionnaireModelId));
+        questionnaireMode.setSynchronisationState(SynchronisationState.INIT_CAMPAIGN.name());
+        queenService.createCampaign(questionnaireModelId, questionnaire, ddi);
+    }
+
+    /**
+     * Create survey units in queen and update synchronisation state for questionnaire mode
+     *
+     * @param campaignId        campaign id
+     * @param surveyUnits       survey units list
+     * @param questionnaireMode questionnaire mode
+     */
+    private void createSurveyUnits(String campaignId, List<SurveyUnit> surveyUnits, QuestionnaireMode questionnaireMode) {
+        log.debug(String.format("Create survey units for campaign %s", campaignId));
+        questionnaireMode.setSynchronisationState(SynchronisationState.INIT_SURVEY_UNIT.name());
+        queenService.createSurveyUnits(campaignId, surveyUnits);
     }
 }

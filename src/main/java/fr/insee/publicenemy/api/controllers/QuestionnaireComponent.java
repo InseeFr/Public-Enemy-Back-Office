@@ -1,8 +1,6 @@
 package fr.insee.publicenemy.api.controllers;
 
-import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.ModeRest;
@@ -10,7 +8,6 @@ import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -26,14 +23,10 @@ public class QuestionnaireComponent {
      * @return the model for this rest questionnaire
      */
     public QuestionnaireRest createFromModel(@NonNull Questionnaire questionnaire) {
-        List<ModeRest> modesRest = questionnaire.getQuestionnaireModes().stream()
-                .map(QuestionnaireMode::getMode)
-                .sorted(Comparator.comparing(Mode::ordinal))
-                .map(mode -> new ModeRest(mode.name(), mode.isWebMode()))
-                .toList();
+        List<ModeRest> modesRest = ModeRest.fromQuestionnaireModesModel(questionnaire.getQuestionnaireModes());
 
         ContextRest contextRest = null;
-        if(questionnaire.getContext() != null) {
+        if (questionnaire.getContext() != null) {
             String contextName = questionnaire.getContext().name();
             contextRest = new ContextRest(contextName, messageService.getMessage("context." + contextName.toLowerCase()));
         }

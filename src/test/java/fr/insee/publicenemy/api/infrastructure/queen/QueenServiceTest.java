@@ -4,6 +4,7 @@ import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.SurveyUnitsNotFoundException;
@@ -39,6 +40,9 @@ class QueenServiceTest {
     private Ddi ddi;
     @Mock
     private MetadataProps metadataProps;
+    @Mock
+    private I18nMessagePort messagePort;
+
     private final WebClient webClient = WebClient.create();
     private QueenServiceImpl service;
 
@@ -57,12 +61,12 @@ class QueenServiceTest {
     public void init() {
         String baseUrl = String.format("http://localhost:%s",
                 mockWebServer.getPort());
-        service = new QueenServiceImpl(webClient, baseUrl, metadataProps);
+        service = new QueenServiceImpl(messagePort, webClient, baseUrl, metadataProps);
 
         QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
         List<QuestionnaireMode> questionnaireModes = List.of(questionnaireMode);
         questionnaire = new Questionnaire(1L, "l8wwljbo", "label", Context.BUSINESS,
-                questionnaireModes, "data".getBytes(),  false);
+                questionnaireModes, "data".getBytes(), false);
     }
 
     @Test
@@ -70,15 +74,15 @@ class QueenServiceTest {
         SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
         List<SurveyUnit> surveyUnits = new ArrayList<>();
         // Create success response for each survey unit creation
-        for(long nbSurveyUnits=1; nbSurveyUnits<=4; nbSurveyUnits++) {
-            surveyUnits.add(new SurveyUnit("id"+nbSurveyUnits, "q"+nbSurveyUnits, data, SurveyUnitStateData.createInitialStateData()));
+        for (long nbSurveyUnits = 1; nbSurveyUnits <= 4; nbSurveyUnits++) {
+            surveyUnits.add(new SurveyUnit("id" + nbSurveyUnits, "q" + nbSurveyUnits, data, SurveyUnitStateData.createInitialStateData()));
             createMockResponseSuccess();
         }
         assertAll(() -> service.createSurveyUnits("12-CAWI", surveyUnits));
     }
 
     @Test
-    void onCreateQuestionnaireModelWhenApiResponseErrorThrowsServiceException()  {
+    void onCreateQuestionnaireModelWhenApiResponseErrorThrowsServiceException() {
         createMockResponseError();
         when(jsonLunatic.jsonContent()).thenReturn("{}");
         assertThrows(ServiceException.class, () -> service.createQuestionnaireModel("l8wwljbo", ddi, jsonLunatic));

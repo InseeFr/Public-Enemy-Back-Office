@@ -59,6 +59,7 @@ public class QuestionnaireController {
     }
 
     /**
+     * 
      * @return all questionnaires
      */
     @GetMapping("")
@@ -69,12 +70,23 @@ public class QuestionnaireController {
     }
 
     /**
+     *
      * @param id questionnaire id
      * @return questionnaire
      */
     @GetMapping("/{id}")
     public QuestionnaireRest getQuestionnaire(@PathVariable Long id) {
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(id);
+        return questionnaireComponent.createFromModel(questionnaire);
+    }
+
+    /**
+     * @param poguesId questionnaire pogues id
+     * @return questionnaire
+     */
+    @GetMapping("/{poguesId}/db")
+    public QuestionnaireRest getQuestionnaire(@PathVariable String poguesId) {
+        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
         return questionnaireComponent.createFromModel(questionnaire);
     }
 
@@ -95,6 +107,7 @@ public class QuestionnaireController {
     }
 
     /**
+     * 
      * @param poguesId pogues questionnaire id
      * @return questionnaire informations from ddi
      */
