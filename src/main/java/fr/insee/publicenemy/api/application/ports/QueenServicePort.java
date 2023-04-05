@@ -4,6 +4,7 @@ import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 
 import java.util.List;
 
@@ -11,30 +12,34 @@ public interface QueenServicePort {
 
     /**
      * Add questionnaire model in queen
+     *
      * @param questionnaireModelId questionnaire model id
-     * @param ddi questionnaire DDI
-     * @param jsonLunatic json lunatic for this questionnaire model
+     * @param ddi                  questionnaire DDI
+     * @param jsonLunatic          json lunatic for this questionnaire model
      */
     void createQuestionnaireModel(String questionnaireModelId, Ddi ddi, JsonLunatic jsonLunatic);
 
     /**
      * Create campaign in queen
-     * @param campaignId campaign id
-     * @param ddi questionnaire DDI
+     *
+     * @param campaignId    campaign id
+     * @param ddi           questionnaire DDI
      * @param questionnaire model questionnaire
      */
     void createCampaign(String campaignId, Questionnaire questionnaire, Ddi ddi);
 
     /**
      * Delete campaign in queen
+     *
      * @param campaignId campaign id
      */
-    void deleteCampaign(String campaignId);
+    void deleteCampaign(String campaignId) throws CampaignNotFoundException;
 
     /**
      * Create survey units for campaign
+     *
      * @param questionnaireModelId questionnaire model id
-     * @param surveyUnits survey units to save
+     * @param surveyUnits          survey units to save
      */
     void createSurveyUnits(String questionnaireModelId, List<SurveyUnit> surveyUnits);
 
@@ -43,4 +48,10 @@ public interface QueenServicePort {
      * @return list of all survey units for a campaign
      */
     List<SurveyUnit> getSurveyUnits(String campaignId);
+
+    /**
+     * @param questionnaireModelId questionnaire model id
+     * @return true if questionnaire model exists, false otherwise
+     */
+    boolean hasQuestionnaireModel(String questionnaireModelId);
 }

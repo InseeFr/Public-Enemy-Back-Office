@@ -17,7 +17,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="questionnaire")
+@Table(name = "questionnaire")
 public class QuestionnaireEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,17 +50,18 @@ public class QuestionnaireEntity implements Serializable {
     @NotNull
     private byte[] surveyUnitData;
 
-    @Column(name="synchronized", nullable = false)
+    @Column(name = "synchronized", nullable = false)
     private boolean isSynchronized;
 
     /**
      * Constructor
-     * @param poguesId questionnaire pogues id
-     * @param label questionnaire label
-     * @param context insee context
+     *
+     * @param poguesId           questionnaire pogues id
+     * @param label              questionnaire label
+     * @param context            insee context
      * @param questionnaireModes questionnaire modes
-     * @param surveyUnitData csv survey unit data
-     * @param isSynchronized is this questionnaire full synchronized with orchestrator
+     * @param surveyUnitData     csv survey unit data
+     * @param isSynchronized     is this questionnaire full synchronized with orchestrator
      */
     public QuestionnaireEntity(String poguesId, String label, Context context, List<QuestionnaireMode> questionnaireModes,
                                @NotNull byte[] surveyUnitData, boolean isSynchronized) {
@@ -68,9 +69,7 @@ public class QuestionnaireEntity implements Serializable {
         this.poguesId = poguesId;
         this.label = label;
         this.context = context;
-        this.modeEntities = questionnaireModes.stream()
-                .map(questionnaireMode -> QuestionnaireModeEntity.createEntity(this, questionnaireMode))
-                .toList();
+        this.modeEntities = QuestionnaireModeEntity.fromModel(this, questionnaireModes);
         this.creationDate = date;
         this.updatedDate = date;
         this.surveyUnitData = surveyUnitData;
@@ -97,6 +96,7 @@ public class QuestionnaireEntity implements Serializable {
 
     /**
      * Permits to create the entity before saving it to persistence unit
+     *
      * @param questionnaire application model of questionnaire
      * @return the entity representation of the questionnaire
      */
@@ -116,11 +116,18 @@ public class QuestionnaireEntity implements Serializable {
             setSurveyUnitData(questionnaireUnitData);
         }
         setContext(questionnaire.getContext());
+        setLabel(questionnaire.getLabel());
         setUpdatedDate(Calendar.getInstance().getTime());
+        List<QuestionnaireModeEntity> qModeEntities =
+                QuestionnaireModeEntity.fromModel(this, questionnaire.getQuestionnaireModes());
+        // need to create a mutable list from the immutable one or jpa fails on merge lists
+        setModeEntities(new ArrayList<>(qModeEntities));
+        setSynchronized(questionnaire.isSynchronized());
     }
 
     /**
      * Update synchronisation state for the questionnaire entity
+     *
      * @param questionnaire with synchronisation state
      */
     public void updateState(@NotNull Questionnaire questionnaire) {
@@ -135,6 +142,7 @@ public class QuestionnaireEntity implements Serializable {
 
     /**
      * Get questionnaire mode entity associated with the corresponding mode
+     *
      * @param mode insee mode
      * @return the questionnaire mode entity
      */

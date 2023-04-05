@@ -48,6 +48,7 @@ public class Questionnaire {
         this.questionnaireModes = QuestionnaireMode.toModel(modes);
         this.isSynchronized = false;
     }
+
     public Questionnaire(Ddi ddi, Context context, byte[] surveyUnitData) {
         this.poguesId = ddi.poguesId();
         this.label = ddi.label();
@@ -79,14 +80,13 @@ public class Questionnaire {
 
     @Override
     public String toString() {
-            return "Questionnaire{" +
-                    "id=" + id +
-                    ", poguesId='" + poguesId + '\'' +
-                    ", label='" + label + '\'' +
-                    ", context=" + context +
-                    ", questionnaireModes=" + questionnaireModes +
-                    ", surveyUnitData=" + Arrays.toString(surveyUnitData) +
-                    ", isSynchronized=" + isSynchronized +
-                    '}';
-        }
+        return "Questionnaire{" +
+                "id=" + id +
+                ", poguesId='" + poguesId + '\'' +
+                ", label='" + label + '\'' +
+                ", context=" + context +
+                ", questionnaireModes=" + questionnaireModes +
+                ", isSynchronized=" + isSynchronized +
+                '}';
+    }
 }

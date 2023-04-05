@@ -13,21 +13,32 @@ public interface QuestionnairePort {
      */
     Questionnaire addQuestionnaire(Questionnaire questionnaire);
 
-     /**
+    /**
      * Get questionnaire
+     *
      * @param questionnaireId questionnaire id
-     * @return  questionnaire
+     * @return questionnaire
      */
     Questionnaire getQuestionnaire(Long questionnaireId);
 
     /**
+     * Get questionnaire
+     *
+     * @param poguesId questionnaire pogues id
+     * @return the questionnaire
+     */
+    Questionnaire getQuestionnaire(String poguesId);
+
+    /**
      * Get all questionnaires
-     * @return  all questionnaires
+     *
+     * @return all questionnaires
      */
     List<Questionnaire> getQuestionnaires();
 
     /**
      * update questionnaire
+     *
      * @param questionnaire questionnaire id
      * @return saved questionnaire
      */
@@ -35,18 +46,21 @@ public interface QuestionnairePort {
 
     /**
      * delete questionnaire
+     *
      * @param id questionnaire id to delete
      */
     void deleteQuestionnaire(Long id);
 
     /**
      * update questionnaire synchronisation state
+     *
      * @param questionnaire questionnaire that needs state update
      */
     Questionnaire updateQuestionnaireState(Questionnaire questionnaire);
 
     /**
      * Get questionnaire
+     *
      * @param questionnaireId questionnaire id
      * @return survey units csv data
      */

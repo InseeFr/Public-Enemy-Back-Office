@@ -3,8 +3,6 @@ package fr.insee.publicenemy.api.application.usecase;
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.exceptions.ServiceException;
-import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,20 +18,17 @@ public class QuestionnaireUseCase {
 
     private final DDIUseCase ddiUseCase;
 
-    private final I18nMessagePort messageService;
-
-    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase,
-                                I18nMessagePort messagePort) {
+    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase) {
         this.questionnairePort = questionnairePort;
         this.ddiUseCase = ddiUseCase;
         this.queenUseCase = queenUseCase;
-        this.messageService = messagePort;
     }
 
     /**
      * Add questionnaire
-     * @param poguesId pogues questionnaire id
-     * @param context insee context
+     *
+     * @param poguesId   pogues questionnaire id
+     * @param context    insee context
      * @param csvContent survey unit data file (csv)
      * @return the saved questionnaire
      */
@@ -42,13 +37,9 @@ public class QuestionnaireUseCase {
 
         Questionnaire questionnaire = new Questionnaire(ddi, context, csvContent);
         questionnaire = questionnairePort.addQuestionnaire(questionnaire);
-        try {
-            queenUseCase.synchronizeCreate(ddi, context, questionnaire);
-        } catch(ServiceException ex) {
-            // fail silently as the questionnaire is already created
-            log.warn(messageService.getMessage("exception.occurred"), ex);
-        }
 
+        queenUseCase.synchronizeCreate(ddi, questionnaire);
+        questionnaire.setSynchronized(true);
         // update questionnaire to save the synchronisation state (unsuccessful in case of throwed ServiceException)
         questionnairePort.updateQuestionnaireState(questionnaire);
         return questionnaire;
@@ -56,6 +47,7 @@ public class QuestionnaireUseCase {
 
     /**
      * Get questionnaire
+     *
      * @param id questionnaire id
      * @return the questionnaire
      */
@@ -64,7 +56,18 @@ public class QuestionnaireUseCase {
     }
 
     /**
+     * Get questionnaire
+     *
+     * @param poguesId questionnaire pogues id
+     * @return a questionnaire based on its pogues id
+     */
+    public Questionnaire getQuestionnaire(String poguesId) {
+        return questionnairePort.getQuestionnaire(poguesId);
+    }
+
+    /**
      * Get survey units data from questionnaire
+     *
      * @param id questionnaire id
      * @return csv of survey units
      */
@@ -74,6 +77,7 @@ public class QuestionnaireUseCase {
 
     /**
      * Get questionnaire list
+     *
      * @return the questionnaire list
      */
     public List<Questionnaire> getQuestionnaires() {
@@ -82,6 +86,7 @@ public class QuestionnaireUseCase {
 
     /**
      * delete questionnaire
+     *
      * @param id questionnaire id
      */
     public void deleteQuestionnaire(Long id) {
@@ -92,14 +97,20 @@ public class QuestionnaireUseCase {
 
     /**
      * Update questionnaire
-     * @param id questionnaire id
-     * @param context insee context
+     *
+     * @param id             questionnaire id
+     * @param context        insee context
      * @param surveyUnitData survey unit data file in csv format
      * @return the saved questionnaire
      */
     public Questionnaire updateQuestionnaire(Long id, Context context, byte[] surveyUnitData) {
-        Questionnaire questionnaire = new Questionnaire(id, context, surveyUnitData);
-
+        Questionnaire questionnaire = getQuestionnaire(id);
+        Ddi ddi = ddiUseCase.getDdi(questionnaire.getPoguesId());
+        questionnaire.setContext(context);
+        questionnaire.setSurveyUnitData(surveyUnitData);
+        questionnaire.setLabel(ddi.label());
+        queenUseCase.synchronizeUpdate(ddi, questionnaire);
+        questionnaire.setSynchronized(true);
         return questionnairePort.updateQuestionnaire(questionnaire);
     }
 }
