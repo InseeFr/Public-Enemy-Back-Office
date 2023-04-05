@@ -23,6 +23,7 @@ public class QuestionnaireRepository implements QuestionnairePort {
 
     /**
      * Constructor
+     *
      * @param questionnaireEntityRepository questionnaire repository
      */
     public QuestionnaireRepository(QuestionnaireEntityRepository questionnaireEntityRepository, I18nMessagePort messageService) {
@@ -38,6 +39,13 @@ public class QuestionnaireRepository implements QuestionnairePort {
     @Override
     public Questionnaire getQuestionnaire(Long questionnaireId) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaireId)
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+        return questionnaireEntity.toModel();
+    }
+
+    @Override
+    public Questionnaire getQuestionnaire(String poguesId) {
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findByPoguesId(poguesId)
                 .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
         return questionnaireEntity.toModel();
     }

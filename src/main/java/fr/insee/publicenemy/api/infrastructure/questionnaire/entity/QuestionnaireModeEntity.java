@@ -20,7 +20,7 @@ import java.util.Objects;
 @IdClass(QuestionnaireModeEntityPK.class)
 public class QuestionnaireModeEntity implements Serializable {
     @Id
-    @Column(name="mode")
+    @Column(name = "mode")
     @Enumerated(EnumType.STRING)
     private Mode mode;
 
@@ -29,13 +29,14 @@ public class QuestionnaireModeEntity implements Serializable {
     @JoinColumn(name = "questionnaire_id")
     private QuestionnaireEntity questionnaire;
 
-    @Column(name="state")
+    @Column(name = "state")
     private String synchronisationState;
 
     /**
      * Constructor
-     * @param questionnaire the questionnaire linked to this questionnaire mode
-     * @param mode insee mode
+     *
+     * @param questionnaire        the questionnaire linked to this questionnaire mode
+     * @param mode                 insee mode
      * @param synchronisationState synchronisation state of this mode in orchestrators
      */
     public QuestionnaireModeEntity(QuestionnaireEntity questionnaire, Mode mode, String synchronisationState) {
@@ -63,12 +64,26 @@ public class QuestionnaireModeEntity implements Serializable {
     }
 
     /**
-     * Permits to create a mode entity before saving it to persistence unit
+     * Permits to create a list of mode entities before saving it to persistence unit
+     *
      * @param questionnaireEntity the questionnaire entity to link to the mode entity
-     * @param questionnaireMode application mode model
+     * @param questionnaireModes  list of application mode model
      * @return the questionnaire mode entity from the questionnaire entity and mode
      */
-    public static QuestionnaireModeEntity createEntity(QuestionnaireEntity questionnaireEntity, QuestionnaireMode questionnaireMode) {
+    public static List<QuestionnaireModeEntity> fromModel(QuestionnaireEntity questionnaireEntity, List<QuestionnaireMode> questionnaireModes) {
+        return questionnaireModes.stream()
+                .map(questionnaireMode -> QuestionnaireModeEntity.fromModel(questionnaireEntity, questionnaireMode))
+                .toList();
+    }
+
+    /**
+     * Permits to create a mode entity before saving it to persistence unit
+     *
+     * @param questionnaireEntity the questionnaire entity to link to the mode entity
+     * @param questionnaireMode   application mode model
+     * @return the questionnaire mode entity from the questionnaire entity and mode
+     */
+    public static QuestionnaireModeEntity fromModel(QuestionnaireEntity questionnaireEntity, QuestionnaireMode questionnaireMode) {
         return new QuestionnaireModeEntity(questionnaireEntity, questionnaireMode.getMode(), questionnaireMode.getSynchronisationState());
     }
 
@@ -82,7 +97,7 @@ public class QuestionnaireModeEntity implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mode, questionnaire, synchronisationState);
+        return Objects.hash(mode, questionnaire.getId(), synchronisationState);
     }
 
     @Override

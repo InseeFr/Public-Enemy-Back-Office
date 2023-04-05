@@ -9,13 +9,13 @@ import java.util.List;
 public interface DdiServicePort {
     /**
      * Get DDI as XML format from Pogues questionnaireId
+     *
      * @param questionnaireId questionnaire id
      * @return DDI
      */
     Ddi getDdi(String questionnaireId);
 
     /**
-     * 
      * @param poguesId pogues questionnaire id
      * @return questionnaire details from pogues
      */

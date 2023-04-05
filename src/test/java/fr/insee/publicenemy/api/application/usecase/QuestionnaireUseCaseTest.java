@@ -3,7 +3,6 @@ package fr.insee.publicenemy.api.application.usecase;
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,10 +22,6 @@ class QuestionnaireUseCaseTest {
     private QuestionnairePort questionnairePort;
     @Mock
     private DDIUseCase ddiUseCase;
-
-    @Mock
-    private I18nMessagePort messageService;
-
     @Mock
     private Ddi ddi;
     @Mock
@@ -36,7 +31,7 @@ class QuestionnaireUseCaseTest {
 
     @BeforeEach
     public void init() {
-        questionnaireUseCase = new QuestionnaireUseCase(questionnairePort, ddiUseCase, queenUseCase, messageService);
+        questionnaireUseCase = new QuestionnaireUseCase(questionnairePort, ddiUseCase, queenUseCase);
     }
 
     @Test
@@ -46,7 +41,7 @@ class QuestionnaireUseCaseTest {
         when(ddiUseCase.getDdi(any())).thenReturn(ddi);
         when(questionnairePort.addQuestionnaire(any())).thenReturn(questionnaire);
         questionnaireUseCase.addQuestionnaire(poguesId, context, new byte[0]);
-        verify(queenUseCase, times(1)).synchronizeCreate(ddi, context, questionnaire);
+        verify(queenUseCase, times(1)).synchronizeCreate(ddi, questionnaire);
     }
 
     @Test
@@ -55,5 +50,16 @@ class QuestionnaireUseCaseTest {
         when(questionnairePort.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
         questionnaireUseCase.deleteQuestionnaire(questionnaireId);
         verify(queenUseCase, times(1)).synchronizeDelete(questionnaire);
+    }
+
+    @Test
+    void onUpdateQuestionnaireShouldInvokeCampaignUpdateInQueen() {
+        Long questionnaireId = 1L;
+        when(questionnairePort.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
+        when(ddiUseCase.getDdi(any())).thenReturn(ddi);
+        questionnaireUseCase.updateQuestionnaire(questionnaireId, Context.BUSINESS, "data".getBytes());
+        verify(queenUseCase, times(1)).synchronizeUpdate(ddi, questionnaire);
+        verify(questionnairePort, times(1)).updateQuestionnaire(questionnaire);
+        verify(questionnaire).setSynchronized(true);
     }
 }
