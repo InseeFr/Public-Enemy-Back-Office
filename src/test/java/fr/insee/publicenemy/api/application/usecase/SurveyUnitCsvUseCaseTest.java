@@ -5,7 +5,7 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.*;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
+import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvService;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
@@ -77,8 +77,8 @@ class SurveyUnitCsvUseCaseTest {
         byte[] surveyUnitDataByte = "data".getBytes();
         SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
         List<SurveyUnit> surveyUnits = new ArrayList<>();
-        for(int i=0; i<50; i++) {
-            surveyUnits.add(new SurveyUnit(i+"", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        for (int i = 0; i < 50; i++) {
+            surveyUnits.add(new SurveyUnit(i + "", "q1", data, SurveyUnitStateData.createInitialStateData()));
         }
         when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, poguesId)).thenReturn(surveyUnits);
         when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(new ArrayList<>());
@@ -95,7 +95,7 @@ class SurveyUnitCsvUseCaseTest {
         List<SurveyUnit> surveyUnits = new ArrayList<>();
 
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
-        csvFields.add(new AbstractMap.SimpleEntry<>("name","true"));
+        csvFields.add(new AbstractMap.SimpleEntry<>("name", "true"));
         SurveyUnitData data = new SurveyUnitData(csvFields);
 
         surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));
@@ -119,7 +119,7 @@ class SurveyUnitCsvUseCaseTest {
         List<SurveyUnit> surveyUnits = new ArrayList<>();
 
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
-        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect","not a boolean value"));
+        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect", "not a boolean value"));
         SurveyUnitData data = new SurveyUnitData(csvFields);
 
         surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));
@@ -130,18 +130,18 @@ class SurveyUnitCsvUseCaseTest {
         when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
         when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, poguesId)).thenReturn(surveyUnits);
 
-        assertThrows(SurveyUnitsValidationException.class, () -> usecase.validateSurveyUnits(surveyUnitDataByte, poguesId));
+        assertThrows(SurveyUnitsSpecificValidationException.class, () -> usecase.validateSurveyUnits(surveyUnitDataByte, poguesId));
     }
 
     @Test
-    void onValidateSurveyWhenSurveyUnitsAttributeNotDefinedInVariablesReturnsWarningMessages() throws SurveyUnitsGlobalValidationException, SurveyUnitsValidationException {
+    void onValidateSurveyWhenSurveyUnitsAttributeNotDefinedInVariablesReturnsWarningMessages() throws SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
         String poguesId = "l8wwljbo";
         byte[] surveyUnitDataByte = "data".getBytes();
         List<SurveyUnit> surveyUnits = new ArrayList<>();
 
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
-        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect","1"));
-        csvFields.add(new AbstractMap.SimpleEntry<>("nonExistingAttribute","test"));
+        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect", "1"));
+        csvFields.add(new AbstractMap.SimpleEntry<>("nonExistingAttribute", "test"));
         SurveyUnitData data = new SurveyUnitData(csvFields);
 
         surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));
@@ -158,7 +158,7 @@ class SurveyUnitCsvUseCaseTest {
     }
 
     @Test
-    void onValidateSurveyWhenSurveyUnitsAttributeValidReturnNothing() throws SurveyUnitsGlobalValidationException, SurveyUnitsValidationException {
+    void onValidateSurveyWhenSurveyUnitsAttributeValidReturnNothing() throws SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
         Long questionnaireId = 1L;
         String poguesId = "l8wwljbo";
         when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
@@ -168,7 +168,7 @@ class SurveyUnitCsvUseCaseTest {
         List<SurveyUnit> surveyUnits = new ArrayList<>();
 
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
-        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect","1"));
+        csvFields.add(new AbstractMap.SimpleEntry<>("isCorrect", "1"));
         SurveyUnitData data = new SurveyUnitData(csvFields);
 
         surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));

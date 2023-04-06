@@ -1,6 +1,6 @@
 package fr.insee.publicenemy.api.application.domain.model.surveyunit;
 
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import lombok.EqualsAndHashCode;
@@ -13,36 +13,41 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 @Getter
-public class SurveyUnitListData implements ISurveyUnitObjectData<List<String>> {
+/**
+ * Object containing a survey unit attribute value as a list of string
+ * Used to validate the attribute value against its corresponding variable type (variable type coming from a questionnaire model)
+ */
+public class SurveyUnitDataAttributeValueList implements ISurveyUnitDataAttributeValue<List<String>> {
     private final List<String> values;
 
-    public SurveyUnitListData() {
+    public SurveyUnitDataAttributeValueList() {
         this.values = new ArrayList<>();
     }
 
 
     @Override
-    public DataTypeValidation validate(VariableType variableType) {
-        if(values.isEmpty()) {
-            return DataTypeValidation.createOkDataTypeValidation();
+    public DataTypeValidationResult validate(VariableType variableType) {
+        if (values.isEmpty()) {
+            return DataTypeValidationResult.createOkDataTypeValidation();
         }
 
         boolean isValid = true;
         List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
-        for(String value : values) {
-            DataTypeValidation validationObject = variableType.dataType().validate(value);
-            if(!validationObject.isValid()) {
+        for (String value : values) {
+            DataTypeValidationResult validationObject = variableType.dataType().validate(value);
+            if (!validationObject.isValid()) {
                 isValid = false;
             }
             errorMessages.addAll(validationObject.errorMessages());
         }
 
-        return new DataTypeValidation(isValid, errorMessages);
+        return new DataTypeValidationResult(isValid, errorMessages);
     }
 
     /**
      * Add value to the values set
+     *
      * @param value value to add
      */
     public void addValue(String value) {

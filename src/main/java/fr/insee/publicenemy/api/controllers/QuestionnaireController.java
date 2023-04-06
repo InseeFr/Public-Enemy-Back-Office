@@ -6,7 +6,7 @@ import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
+import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
@@ -57,49 +57,45 @@ public class QuestionnaireController {
     }
 
     /**
-     * 
      * @return all questionnaires
      */
     @GetMapping("")
     public List<QuestionnaireRest> getQuestionnaires() {
         return questionnaireUseCase.getQuestionnaires().stream()
                 .map(questionnaireComponent::createFromModel)
-                .toList();      
+                .toList();
     }
 
     /**
-     * 
      * @param id questionnaire id
      * @return questionnaire
      */
     @GetMapping("/{id}")
-    public QuestionnaireRest getQuestionnaire(@PathVariable Long id) {        
+    public QuestionnaireRest getQuestionnaire(@PathVariable Long id) {
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(id);
         return questionnaireComponent.createFromModel(questionnaire);
     }
 
     /**
-     * 
      * @param poguesId pogues questionnaire id
      * @return questionnaire informations from ddi
      */
     @GetMapping("/pogues/{poguesId}")
-    public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {        
+    public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {
         Questionnaire questionnaire = ddiUseCase.getQuestionnaire(poguesId);
         return questionnaireComponent.createFromModel(questionnaire);
     }
 
     /**
-     * 
      * @param questionnaireRest questionnaire form
-     * @param surveyUnitData csv content of survey units
+     * @param surveyUnitData    csv content of survey units
      * @return the saved questionnaire
      */
-    @PostMapping(path = "/add", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(path = "/add", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public QuestionnaireRest addQuestionnaire(
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
-            @RequestPart(name = "surveyUnitData") MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsValidationException {
-        
+            @RequestPart(name = "surveyUnitData") MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
+
         byte[] csvContent = surveyUnitData.getBytes();
 
         csvUseCase.validateSurveyUnits(csvContent, questionnaireRest.poguesId());
@@ -109,20 +105,19 @@ public class QuestionnaireController {
     }
 
     /**
-     * 
-     * @param id questionnaire id
-     * @param context insee context
+     * @param id             questionnaire id
+     * @param context        insee context
      * @param surveyUnitData csv content of survey units
      * @return the updated questionnaire
      */
-    @PostMapping(path = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(path = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public QuestionnaireRest saveQuestionnaire(
             @PathVariable Long id,
             @RequestPart(name = "context") ContextRest context,
-            @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsValidationException {
-        
+            @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
+
         byte[] csvContent = null;
-        if(surveyUnitData != null) {
+        if (surveyUnitData != null) {
             csvContent = surveyUnitData.getBytes();
             csvUseCase.validateSurveyUnits(csvContent, id);
         }
@@ -132,11 +127,12 @@ public class QuestionnaireController {
 
     /**
      * Delete questionnaire
-     * @param id  questionnaire id to delete
+     *
+     * @param id questionnaire id to delete
      */
     @DeleteMapping(path = "/{id}/delete")
     public String deleteQuestionnaire(
-            @PathVariable Long id) {        
+            @PathVariable Long id) {
         questionnaireUseCase.deleteQuestionnaire(id);
         return "{}";
     }
@@ -148,7 +144,7 @@ public class QuestionnaireController {
     @ExceptionHandler({SurveyUnitsGlobalValidationException.class,
             CsvException.class,
             CsvRuntimeException.class,
-            SurveyUnitsValidationException.class,
+            SurveyUnitsSpecificValidationException.class,
             CsvMultilineLimitBrokenException.class,
             CsvMalformedLineException.class
     })

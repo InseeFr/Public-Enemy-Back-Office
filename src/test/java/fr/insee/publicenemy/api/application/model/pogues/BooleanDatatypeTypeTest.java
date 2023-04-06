@@ -1,7 +1,7 @@
 package fr.insee.publicenemy.api.application.model.pogues;
 
 import fr.insee.publicenemy.api.application.domain.model.pogues.BooleanDatatypeType;
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,20 +22,20 @@ class BooleanDatatypeTypeTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "1", "0"})
     void onValidateWhenFieldValueCorrespondsToBooleanValueReturnOkValidationObject(String fieldValue) {
-        DataTypeValidation validation = booleanType.validate(fieldValue);
+        DataTypeValidationResult validation = booleanType.validate(fieldValue);
         assertTrue(validation.isValid());
     }
 
     @Test
     void onValidateWhenFieldValueIncorrectReturnErrorValidationObject() {
-        DataTypeValidation validation = booleanType.validate("plop");
+        DataTypeValidationResult validation = booleanType.validate("plop");
         assertFalse(validation.isValid());
         assertTrue(validation.errorMessages().stream().anyMatch(message -> message.getCode().equals("datatype.error.boolean.incorrect-value")));
     }
 
     @Test
     void onValidateWhenFieldValueIsNullReturnOkValidationObject() {
-        DataTypeValidation validation = booleanType.validate(null);
+        DataTypeValidationResult validation = booleanType.validate(null);
         assertTrue(validation.isValid());
     }
 }

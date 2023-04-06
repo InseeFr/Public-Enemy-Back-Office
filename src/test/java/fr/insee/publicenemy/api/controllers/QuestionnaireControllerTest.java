@@ -6,7 +6,7 @@ import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
+import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
@@ -84,10 +84,10 @@ class QuestionnaireControllerTest {
 
         questionnaires = new LinkedList<>();
         List<QuestionnaireRest> questionnairesRest = new LinkedList<>();
-        for(long nbQuestionnaires=0; nbQuestionnaires<3; nbQuestionnaires++) {
+        for (long nbQuestionnaires = 0; nbQuestionnaires < 3; nbQuestionnaires++) {
             Long id = nbQuestionnaires + 1;
-            Questionnaire q = new Questionnaire(id, "l8wwljbo"+id, "label"+id, Context.BUSINESS,
-                    questionnaireModes, "data".getBytes(),  false);
+            Questionnaire q = new Questionnaire(id, "l8wwljbo" + id, "label" + id, Context.BUSINESS,
+                    questionnaireModes, "data".getBytes(), false);
             QuestionnaireRest qRest = new QuestionnaireRest(q.getId(), q.getPoguesId(),
                     q.getLabel(), contextRest, modesRest, q.isSynchronized());
             questionnaires.add(q);
@@ -127,7 +127,7 @@ class QuestionnaireControllerTest {
 
     @Test
     void onAddQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
-        QuestionnaireAddRest questionnaireAddRest =  new QuestionnaireAddRest( "l8wwljbo",  new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
+        QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = "test".getBytes();
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
@@ -158,7 +158,7 @@ class QuestionnaireControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
                 .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
-                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))        ;
+                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())));
     }
 
     @ParameterizedTest
@@ -169,7 +169,7 @@ class QuestionnaireControllerTest {
 
         ObjectMapper Obj = new ObjectMapper();
         String jsonContext = Obj.writeValueAsString(questionnaireRest.context());
-        MockPart contextMockPart = new MockPart("context", jsonContext.getBytes() );
+        MockPart contextMockPart = new MockPart("context", jsonContext.getBytes());
         contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", surveyUnitData, MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire.getSurveyUnitData());
 
@@ -200,7 +200,7 @@ class QuestionnaireControllerTest {
 
     @Test
     void onAddQuestionnaireWhenGlobalErrorsOnCsvSchemaReturnGenericErrorMessages() throws Exception {
-        QuestionnaireAddRest questionnaireAddRest =  new QuestionnaireAddRest( "l8wwljbo",  new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
+        QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = "test".getBytes();
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
@@ -222,7 +222,7 @@ class QuestionnaireControllerTest {
 
     @Test
     void onAddQuestionnaireWhenSpecificErrorsOnCsvSchemaReturnGenericErrorMessages() throws Exception {
-        QuestionnaireAddRest questionnaireAddRest =  new QuestionnaireAddRest( "l8wwljbo",  new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
+        QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = "test".getBytes();
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
@@ -233,8 +233,8 @@ class QuestionnaireControllerTest {
 
         String code = "error.code";
         when(messageService.getMessage("validation.errors")).thenReturn(code);
-        SurveyUnitsValidationException surveyUnitsValidationException = new SurveyUnitsValidationException("main error message", new ArrayList<>());
-        when(surveyUnitCsvUseCase.validateSurveyUnits(surveyUnitData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
+        SurveyUnitsSpecificValidationException surveyUnitsSpecificValidationException = new SurveyUnitsSpecificValidationException("main error message", new ArrayList<>());
+        when(surveyUnitCsvUseCase.validateSurveyUnits(surveyUnitData, "l8wwljbo")).thenThrow(surveyUnitsSpecificValidationException);
 
         mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
                         .contentType(MediaType.MULTIPART_FORM_DATA))

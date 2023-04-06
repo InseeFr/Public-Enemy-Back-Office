@@ -33,12 +33,12 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
+@RestControllerAdvice
 /**
  * Handle API exceptions for project
  * Do not work on exceptions occuring before/outside controllers scope
  */
-@Slf4j
-@RestControllerAdvice
 public class ApiExceptionHandler {
 
     private final fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent errorComponent;
@@ -55,19 +55,23 @@ public class ApiExceptionHandler {
     private static final String NOTFOUND_EXCEPTION_KEY = "exception.notfound";
     private static final String EXCEPTION_OCCURRED_KEY = "exception.occurred";
 
-    /** Global method to process the catched exception
-     * @param ex Exception catched
+    /**
+     * Global method to process the catched exception
+     *
+     * @param ex         Exception catched
      * @param statusCode status code linked with this exception
-     * @param request request initiating the exception
+     * @param request    request initiating the exception
      * @return the apierror object with associated status code
      */
     private ResponseEntity<ApiError> processException(Exception ex, int statusCode, WebRequest request) {
         return processException(ex, HttpStatus.valueOf(statusCode), request);
     }
 
-    /** Global method to process the catched exception
-     * @param ex Exception catched
-     * @param status status linked with this exception
+    /**
+     * Global method to process the catched exception
+     *
+     * @param ex      Exception catched
+     * @param status  status linked with this exception
      * @param request request initiating the exception
      * @return the apierror object with associated status code
      */
@@ -75,17 +79,19 @@ public class ApiExceptionHandler {
         return processException(ex, status, request, null);
     }
 
-    /** Global method to process the catched exception
-     * @param ex Exception catched
-     * @param status status linked with this exception
-     * @param request request initiating the exception
+    /**
+     * Global method to process the catched exception
+     *
+     * @param ex                   Exception catched
+     * @param status               status linked with this exception
+     * @param request              request initiating the exception
      * @param overrideErrorMessage message overriding default error message from exception
      * @return the apierror object with associated status code
      */
     private ResponseEntity<ApiError> processException(Exception ex, HttpStatus status, WebRequest request, String overrideErrorMessage) {
         log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
         String errorMessage = ex.getMessage();
-        if(overrideErrorMessage != null) {
+        if (overrideErrorMessage != null) {
             errorMessage = overrideErrorMessage;
         }
         ApiError error = errorComponent.buildApiErrorObject(request, status, errorMessage);
@@ -99,11 +105,11 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ExceptionHandler({ ServiceException.class })
+    @ExceptionHandler({ServiceException.class})
     public ResponseEntity<ApiError> handleServiceException(
             ServiceException ex,
             WebRequest request) {
-        return processException(ex, ex.getCode(), request);
+        return processException(ex, ex.getStatus().value(), request);
     }
 
     /**
@@ -113,7 +119,7 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ExceptionHandler({ PoguesJsonNotFoundException.class })
+    @ExceptionHandler({PoguesJsonNotFoundException.class})
     public ResponseEntity<ApiError> handlePoguesJsonNotFoundException(
             PoguesJsonNotFoundException ex,
             WebRequest request) {
@@ -127,7 +133,7 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ExceptionHandler({ LunaticJsonNotFoundException.class })
+    @ExceptionHandler({LunaticJsonNotFoundException.class})
     public ResponseEntity<ApiError> handleLunaticJsonNotFoundException(
             LunaticJsonNotFoundException ex,
             WebRequest request) {
@@ -141,7 +147,7 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ExceptionHandler({ ApiException.class })
+    @ExceptionHandler({ApiException.class})
     public ResponseEntity<ApiError> handleApiException(
             ApiException ex,
             WebRequest request) {
@@ -246,7 +252,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     protected ResponseEntity<ApiError> handleHttpMessageNotReadable(HttpMessageNotReadableException ex,
-            WebRequest request) {
+                                                                    WebRequest request) {
         return processException(ex, HttpStatus.BAD_REQUEST, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
@@ -259,14 +265,14 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(HttpMessageNotWritableException.class)
     protected ResponseEntity<ApiError> handleHttpMessageNotWritable(HttpMessageNotWritableException ex,
-            WebRequest request) {
+                                                                    WebRequest request) {
         return processException(ex, HttpStatus.INTERNAL_SERVER_ERROR, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
     /**
      * Handle NoHandlerFoundException.
      *
-     * @param ex NoHandlerFoundException
+     * @param ex      NoHandlerFoundException
      * @param request WebRequest object
      * @return the ApiError object
      */
@@ -280,13 +286,13 @@ public class ApiExceptionHandler {
     /**
      * Handle jakarta.persistence.EntityNotFoundException
      *
-     * @param ex EntityNotFoundException
+     * @param ex      EntityNotFoundException
      * @param request WebRequest object
      * @return the ApiError object
      */
     @ExceptionHandler(jakarta.persistence.EntityNotFoundException.class)
     protected ResponseEntity<ApiError> handleEntityNotFound(jakarta.persistence.EntityNotFoundException ex,
-            WebRequest request) {
+                                                            WebRequest request) {
         return processException(ex, HttpStatus.NOT_FOUND, request, messageService.getMessage(NOTFOUND_EXCEPTION_KEY));
     }
 
@@ -301,7 +307,7 @@ public class ApiExceptionHandler {
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(DataIntegrityViolationException.class)
     protected ApiError handleDataIntegrityViolation(DataIntegrityViolationException ex,
-            WebRequest request) {
+                                                    WebRequest request) {
         log.error(messageService.getMessage(EXCEPTION_OCCURRED_KEY), ex);
         if (ex.getCause() instanceof ConstraintViolationException) {
             return errorComponent.buildApiErrorObject(request, HttpStatus.CONFLICT,
@@ -320,7 +326,7 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ResponseEntity<ApiError> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex,
-            WebRequest request) {
+                                                                        WebRequest request) {
         return processException(ex, HttpStatus.BAD_REQUEST, request, messageService.getMessage(INTERNAL_EXCEPTION_KEY));
     }
 
@@ -336,7 +342,7 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ExceptionHandler({ Exception.class })
+    @ExceptionHandler({Exception.class})
     protected ResponseEntity<ApiError> handleException(
             Exception ex,
             WebRequest request) {
@@ -350,7 +356,7 @@ public class ApiExceptionHandler {
      * @param request WebRequest object WebRequest
      * @return the ApiError object
      */
-    @ExceptionHandler({ RepositoryEntityNotFoundException.class })
+    @ExceptionHandler({RepositoryEntityNotFoundException.class})
     public ResponseEntity<ApiError> handleRepositoryEntityNotFoundException(
             RepositoryEntityNotFoundException ex,
             WebRequest request) {

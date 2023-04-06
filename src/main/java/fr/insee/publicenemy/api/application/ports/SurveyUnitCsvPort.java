@@ -8,13 +8,16 @@ import java.util.List;
 
 public interface SurveyUnitCsvPort {
     /**
-     * @param surveyUnitData survey units data
+     * initialize survey units from a csv data file
+     *
+     * @param surveyUnitData       survey units data
      * @param questionnaireModelId questionnaire model id
      * @return survey units model from questionnaire csv survey units
      */
     List<SurveyUnit> initSurveyUnits(byte[] surveyUnitData, String questionnaireModelId);
 
     /**
+     * retrieve csv headers based on variable types from a questionnaire model
      *
      * @param variablesType list of variables types for a questionnaire
      * @return csv headers for survey units from variables type

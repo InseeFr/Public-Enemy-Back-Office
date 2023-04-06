@@ -10,7 +10,7 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarnin
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
+import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
@@ -18,7 +18,6 @@ import fr.insee.publicenemy.api.controllers.dto.SurveyUnitErrors;
 import fr.insee.publicenemy.api.controllers.dto.SurveyUnitsRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
-import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorCode;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithSurveyUnits;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
@@ -50,7 +49,7 @@ public class SurveyUnitController {
 
     private final ApiExceptionComponent errorComponent;
 
-    private static final String CSV_ERROR_MESSAGE= "CSV Error: ";
+    private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
     public SurveyUnitController(QueenUseCase queenUseCase, SurveyUnitCsvUseCase surveyUnitUseCase,
                                 I18nMessagePort messageService, SurveyUnitMessagesComponent messageComponent,
@@ -63,9 +62,8 @@ public class SurveyUnitController {
     }
 
     /**
-     *
      * @param questionnaireId questionnaire id
-     * @param modeName insee mode
+     * @param modeName        insee mode
      * @return all survey units fro the questionnaire
      */
     @GetMapping("/{questionnaireId}/modes/{modeName}/survey-units")
@@ -90,11 +88,8 @@ public class SurveyUnitController {
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + filename + "\"");
 
-        // create a csv writer
         CSVWriter writer = new CSVWriter(response.getWriter());
-
         SurveyUnitCsvHeaderLine attributes = surveyUnitUseCase.getHeadersLine(poguesId);
-        // write all employees to csv file
         writer.writeNext(attributes.headers().toArray(String[]::new));
         writer.close();
     }
@@ -102,17 +97,18 @@ public class SurveyUnitController {
 
     /**
      * Check Data from survey unit csv data
-     * @param poguesId questionnaire pogues id
+     *
+     * @param poguesId       questionnaire pogues id
      * @param surveyUnitData survey unit data
      * @return result of checking csv file
-     * @throws IOException IO Exception
-     * @throws SurveyUnitsGlobalValidationException  global exceptions occurred when validating survey unit data csv file
-     * @throws SurveyUnitsValidationException specific exceptions occurred when validating survey unit data csv file
+     * @throws IOException                            IO Exception
+     * @throws SurveyUnitsGlobalValidationException   global exceptions occurred when validating survey unit data csv file
+     * @throws SurveyUnitsSpecificValidationException specific exceptions occurred when validating survey unit data csv file
      */
-    @PostMapping(path = "/{poguesId}/checkdata", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(path = "/{poguesId}/checkdata", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public List<String> checkSurveyUnitsData(
             @PathVariable String poguesId,
-            @RequestPart(name = "surveyUnitData") @NonNull MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsValidationException {
+            @RequestPart(name = "surveyUnitData") @NonNull MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
         byte[] csvContent = surveyUnitData.getBytes();
         List<ValidationWarningMessage> validationMessages = surveyUnitUseCase.validateSurveyUnits(csvContent, poguesId);
 
@@ -123,6 +119,7 @@ public class SurveyUnitController {
 
     /**
      * Handle global survey units errors when checking csv data
+     *
      * @param validationException global validation exception
      * @return list of error messages
      */
@@ -130,15 +127,14 @@ public class SurveyUnitController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrorWithMessages handleSurveyUnitsGlobalValidationException(
             SurveyUnitsGlobalValidationException validationException, WebRequest request) {
-        List<String> errors =  validationException.getGlobalErrorMessages().stream()
+        List<String> errors = validationException.getGlobalErrorMessages().stream()
                 .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))
                 .toList();
-        return errorComponent.buildApiErrorWithMessages(request, ApiErrorCode.SURVEY_UNITS_GLOBAL_ERRORS.getValue(),
+        return errorComponent.buildApiErrorWithMessages(request, validationException.getCode().value(),
                 validationException.getMessage(), errors);
     }
 
     /**
-     *
      * @param csvException csv exceptions
      * @return csv parsing errors
      */
@@ -148,7 +144,7 @@ public class SurveyUnitController {
             CsvException csvException, WebRequest request) {
         String line = String.join(",", csvException.getLine());
         String message = messageService.getMessage("validation.csv.error.message", csvException.getMessage(),
-                csvException.getLineNumber()+"", line);
+                csvException.getLineNumber() + "", line);
         log.warn(CSV_ERROR_MESSAGE, csvException);
         return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST, message);
     }
@@ -174,21 +170,20 @@ public class SurveyUnitController {
     public ApiError handleSurveyUnitsGlobalCSVValidationException(
             CsvMalformedLineException csvException, WebRequest request) {
         log.warn(CSV_ERROR_MESSAGE, csvException);
-        String message = messageService.getMessage("validation.csv.malform.error", csvException.getLineNumber()+"", csvException.getMessage());
+        String message = messageService.getMessage("validation.csv.malform.error", csvException.getLineNumber() + "", csvException.getMessage());
         return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST, message);
     }
 
     /**
-     *
-     * @param surveyUnitsValidationException specific survey unit validation exception
+     * @param validationException specific survey unit validation exception
      * @return list of survey units specific errors
      */
-    @ExceptionHandler(SurveyUnitsValidationException.class)
+    @ExceptionHandler(SurveyUnitsSpecificValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrorWithSurveyUnits handleSurveyUnitsValidationException(
-            SurveyUnitsValidationException surveyUnitsValidationException, WebRequest request) {
-        List<SurveyUnitErrors> errors = messageComponent.getErrors(surveyUnitsValidationException.getSurveyUnitsErrors());
-        return errorComponent.buildApiErrorWithSurveyUnits(request, ApiErrorCode.SURVEY_UNITS_DETAILS_ERRORS.getValue(),
-                surveyUnitsValidationException.getMessage(), errors);
+            SurveyUnitsSpecificValidationException validationException, WebRequest request) {
+        List<SurveyUnitErrors> errors = messageComponent.getErrors(validationException.getSurveyUnitsErrors());
+        return errorComponent.buildApiErrorWithSurveyUnits(request, validationException.getCode().value(),
+                validationException.getMessage(), errors);
     }
 }

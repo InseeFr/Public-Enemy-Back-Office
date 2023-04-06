@@ -1,21 +1,21 @@
 package fr.insee.publicenemy.api.controllers;
 
 import fr.insee.publicenemy.api.application.domain.model.Mode;
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidation;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationErrorMessage;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitAttributeValidation;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitValidation;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataAttributeValidationResult;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataValidationResult;
+import fr.insee.publicenemy.api.application.exceptions.SurveyUnitExceptionCode;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsValidationException;
+import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
-import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorCode;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 import lombok.extern.slf4j.Slf4j;
@@ -77,9 +77,9 @@ class SurveyUnitControllerTest {
     public void init() {
         SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
         surveyUnits = new ArrayList<>();
-        surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));
-        surveyUnits.add(new SurveyUnit("2", "q1", data, SurveyUnitStateData.createInitialStateData()));
-        surveyUnits.add(new SurveyUnit("3", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        surveyUnits.add(new SurveyUnit("11-CAPI-1", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        surveyUnits.add(new SurveyUnit("11-CAPI-2", "q1", data, SurveyUnitStateData.createInitialStateData()));
+        surveyUnits.add(new SurveyUnit("11-CAPI-3", "q1", data, SurveyUnitStateData.createInitialStateData()));
     }
 
     @Test
@@ -137,7 +137,7 @@ class SurveyUnitControllerTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals("[\""+code+"\"]", result.getResponse().getContentAsString());
+        assertEquals("[\"" + code + "\"]", result.getResponse().getContentAsString());
     }
 
     @Test
@@ -156,7 +156,7 @@ class SurveyUnitControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        verify(errorComponent).buildApiErrorWithMessages(any(), eq(ApiErrorCode.SURVEY_UNITS_GLOBAL_ERRORS.getValue()),
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(SurveyUnitExceptionCode.SURVEY_UNIT_GLOBAL_VALIDATION_FAILED.value()),
                 eq(surveyUnitsValidationException.getMessage()), any());
 
     }
@@ -166,18 +166,18 @@ class SurveyUnitControllerTest {
         String poguesId = "l8wwljbo";
         byte[] surveyUnitData = "".getBytes();
 
-        List<SurveyUnitValidation> surveyUnitValidations = new ArrayList<>();
-        List<SurveyUnitAttributeValidation>  attributesValidations = new ArrayList<>();
+        List<SurveyUnitDataValidationResult> surveyUnitDataValidationResults = new ArrayList<>();
+        List<SurveyUnitDataAttributeValidationResult> attributesValidations = new ArrayList<>();
         DataTypeValidationMessage message1 = DataTypeValidationMessage.createMessage("error.code1");
         DataTypeValidationMessage message2 = DataTypeValidationMessage.createMessage("error.code2");
         List<DataTypeValidationMessage> messages = List.of(message1, message2);
 
-        DataTypeValidation typeValidation = new DataTypeValidation(false, messages);
-        attributesValidations.add(new SurveyUnitAttributeValidation("att1", typeValidation));
-        attributesValidations.add(new SurveyUnitAttributeValidation("att2", typeValidation));
-        surveyUnitValidations.add(new SurveyUnitValidation("1", attributesValidations));
-        surveyUnitValidations.add(new SurveyUnitValidation("2", attributesValidations));
-        SurveyUnitsValidationException ex = new SurveyUnitsValidationException("main error message", surveyUnitValidations);
+        DataTypeValidationResult typeValidation = new DataTypeValidationResult(false, messages);
+        attributesValidations.add(new SurveyUnitDataAttributeValidationResult("att1", typeValidation));
+        attributesValidations.add(new SurveyUnitDataAttributeValidationResult("att2", typeValidation));
+        surveyUnitDataValidationResults.add(new SurveyUnitDataValidationResult("1", attributesValidations));
+        surveyUnitDataValidationResults.add(new SurveyUnitDataValidationResult("2", attributesValidations));
+        SurveyUnitsSpecificValidationException ex = new SurveyUnitsSpecificValidationException("main error message", surveyUnitDataValidationResults);
 
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(ex);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
@@ -186,6 +186,6 @@ class SurveyUnitControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        verify(messageComponent).getErrors(surveyUnitValidations);
+        verify(messageComponent).getErrors(surveyUnitDataValidationResults);
     }
 }

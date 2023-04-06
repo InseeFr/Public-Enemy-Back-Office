@@ -43,18 +43,18 @@ class ApiExceptionHandlerTest {
 
     @Test
     void onHandleServiceExceptionReturnCorrectApiError() {
-        ServiceException exception = new ServiceException(404, "message");
-        ApiError apiError = new ApiError(exception.getCode(), "/", exception.getMessage(), Calendar.getInstance().getTime());
+        ServiceException exception = new ServiceException(HttpStatus.NOT_FOUND, "message");
+        ApiError apiError = new ApiError(exception.getStatus().value(), "/", exception.getMessage(), Calendar.getInstance().getTime());
         simulateProcessException(apiError);
         ResponseEntity<ApiError> response = handler.handleServiceException(exception, request);
-        assertEquals(exception.getCode(), response.getStatusCode().value());
+        assertEquals(exception.getStatus().value(), response.getStatusCode().value());
         assertEquals(apiError, response.getBody());
     }
 
     @Test
     void onHandlePoguesJsonNotFoundExceptionReturnCorrectApiError() {
         PoguesJsonNotFoundException exception = new PoguesJsonNotFoundException("poguesId");
-        ApiError apiError = new ApiError(404, "/", exception.getMessage(), Calendar.getInstance().getTime());
+        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND.value(), "/", exception.getMessage(), Calendar.getInstance().getTime());
         simulateProcessException(apiError);
         ResponseEntity<ApiError> response = handler.handlePoguesJsonNotFoundException(exception, request);
         assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCode().value());
@@ -64,7 +64,7 @@ class ApiExceptionHandlerTest {
     @Test
     void onHandleLunaticJsonNotFoundExceptionReturnCorrectApiError() {
         LunaticJsonNotFoundException exception = new LunaticJsonNotFoundException("poguesId", Context.HOUSEHOLD, Mode.CAWI);
-        ApiError apiError = new ApiError(404, "/", exception.getMessage(), Calendar.getInstance().getTime());
+        ApiError apiError = new ApiError(HttpStatus.NOT_FOUND.value(), "/", exception.getMessage(), Calendar.getInstance().getTime());
         simulateProcessException(apiError);
         ResponseEntity<ApiError> response = handler.handleLunaticJsonNotFoundException(exception, request);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), response.getStatusCode().value());
@@ -73,7 +73,7 @@ class ApiExceptionHandlerTest {
 
     @Test
     void onHandleApiExceptionReturnCorrectApiError() {
-        ApiException exception = new ApiException(404, "message");
+        ApiException exception = new ApiException(HttpStatus.NOT_FOUND.value(), "message");
         HttpStatus status = HttpStatus.NOT_FOUND;
 
         ApiError apiError = new ApiError(exception.getStatusCode(), "/", exception.getMessage(), Calendar.getInstance().getTime());

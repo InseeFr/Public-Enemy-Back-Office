@@ -2,9 +2,9 @@ package fr.insee.publicenemy.api.infrastructure.csv;
 
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.ISurveyUnitObjectData;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.ISurveyUnitDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitStringData;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataAttributeValue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,11 +45,11 @@ class SurveyUnitCsvServiceTest {
         List<SurveyUnit> surveyUnits = service.initSurveyUnits(surveyUnitData, questionnaireModelId);
 
         SurveyUnit surveyUnit = surveyUnits.get(0);
-        Map<String, ISurveyUnitObjectData<?>> attributes = surveyUnit.data().getAttributes();
+        Map<String, ISurveyUnitDataAttributeValue<?>> attributes = surveyUnit.data().getAttributes();
 
         assertEquals(String.format("%s-%s", questionnaireModelId, "1"), surveyUnit.id());
-        SurveyUnitStringData numfa = new SurveyUnitStringData("1");
-        SurveyUnitStringData complement = new SurveyUnitStringData("CS 70058");
+        SurveyUnitDataAttributeValue numfa = new SurveyUnitDataAttributeValue("1");
+        SurveyUnitDataAttributeValue complement = new SurveyUnitDataAttributeValue("CS 70058");
         assertEquals(numfa, attributes.get("Numfa"));
         assertEquals(complement, attributes.get("ComplementAdresse"));
     }

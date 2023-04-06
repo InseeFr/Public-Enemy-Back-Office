@@ -38,7 +38,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
     public QueenServiceImpl(WebClient webClient, @Value("${application.queen.url}") String queenUrl,
                             MetadataProps metadataProps) {
-        this.webClient = webClient; 
+        this.webClient = webClient;
         this.queenUrl = queenUrl;
         this.metadataProps = metadataProps;
     }
@@ -58,7 +58,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
                 )
                 .toBodilessEntity()
                 .block();
@@ -79,7 +79,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .retrieve()
                 .onStatus(
                         HttpStatusCode::isError,
-                        response -> Mono.error(new ServiceException(response.statusCode().value(),
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                 String.format("Error trying to create queen campaign %s", campaignId)))
                 )
                 .toBodilessEntity()
@@ -98,8 +98,8 @@ public class QueenServiceImpl implements QueenServicePort {
                 .retrieve()
                 .onStatus(
                         HttpStatusCode::isError,
-                        response -> Mono.error(new ServiceException(response.statusCode().value(),
-                                        String.format("Error trying to delete queen campaign %s", campaignId)))
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                String.format("Error trying to delete queen campaign %s", campaignId)))
                 )
                 .toBodilessEntity()
                 .block();
@@ -118,7 +118,7 @@ public class QueenServiceImpl implements QueenServicePort {
                         .retrieve()
                         .onStatus(
                                 HttpStatusCode::isError,
-                                response -> Mono.error(new ServiceException(response.statusCode().value(),
+                                response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                         String.format("Error trying to create survey unit %s for campaign %s", surveyUnit.id(), questionnaireModelId)))
                         )
                         .toBodilessEntity()
@@ -139,10 +139,11 @@ public class QueenServiceImpl implements QueenServicePort {
                 )
                 .onStatus(
                         HttpStatusCode::isError,
-                        response -> Mono.error(new ServiceException(response.statusCode().value(),
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                 String.format("Error trying to get survey units for campaign %s", campaignId)))
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<SurveyUnit>>() {})
+                .bodyToMono(new ParameterizedTypeReference<List<SurveyUnit>>() {
+                })
                 .blockOptional()
                 .orElseThrow(() -> new SurveyUnitsNotFoundException(campaignId));
     }

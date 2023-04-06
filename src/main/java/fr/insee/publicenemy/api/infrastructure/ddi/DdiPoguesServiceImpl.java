@@ -40,11 +40,12 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
 
     /**
      * Constructor
+     *
      * @param webClient webclient
      * @param poguesUrl pogues url
      */
     public DdiPoguesServiceImpl(WebClient webClient, @Value("${application.pogues.url}") String poguesUrl, I18nMessagePort messagePort) {
-        this.webClient = webClient; 
+        this.webClient = webClient;
         this.poguesUrl = poguesUrl;
         this.messageService = messagePort;
     }
@@ -65,6 +66,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
 
     /**
      * Retrieve summary details from JSON Pogues
+     *
      * @param poguesId questionnaire pogues Id
      * @return questionnaire summary from pogues
      */
@@ -75,6 +77,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
 
     /**
      * Retrieve summary details from JSON Pogues
+     *
      * @param jsonPogues json from pogues
      * @return questionnaire summary from pogues
      */
@@ -83,7 +86,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
         String label = "";
         jsonPogues.get("TargetMode").forEach(node -> modes.add(Mode.valueOf(node.asText())));
         JsonNode labelNode = jsonPogues.get("Label");
-        if(!labelNode.isEmpty()) {
+        if (!labelNode.isEmpty()) {
             label = labelNode.get(0).asText();
         }
         return new PoguesDataSummary(label, modes);
@@ -91,6 +94,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
 
     /**
      * Get Json Pogues
+     *
      * @param questionnaireId pogues questionnaire Id
      * @return the json from pogues
      */
@@ -105,7 +109,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
                 )
                 .bodyToMono(JsonNode.class)
                 .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
@@ -123,22 +127,24 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
                 )
                 .bodyToMono(String.class)
                 .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(variablesString, new TypeReference<List<VariableType>>(){});
+            return mapper.readValue(variablesString, new TypeReference<List<VariableType>>() {
+            });
         } catch (JsonProcessingException e) {
             log.error(String.format("Exception during variables deserialization of questionnaire id: %s", questionnaireId), e);
-            throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR.value(), String.format("Error retrieving variables from questionnaire id %s", questionnaireId));
+            throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Error retrieving variables from questionnaire id %s", questionnaireId));
         }
     }
-    
+
     /**
-     *  Get DDI 
+     * Get DDI
+     *
      * @param jsonPogues Json from Pogues
      * @return the DDI
      */
@@ -155,7 +161,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
                 )
                 .bodyToMono(byte[].class).blockOptional().orElseThrow(() -> new DdiNotFoundException(poguesId));
     }
