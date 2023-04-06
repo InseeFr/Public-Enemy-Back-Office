@@ -6,7 +6,24 @@ on:
       - v2-develop
 
 jobs:
-  release-rc:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      release-version: ${{ steps.version-step.outputs.pe-version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Build PE
+        run: mvn package --no-transfer-progress
+
+  release-beta:
+    needs: build
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     runs-on: ubuntu-latest
     steps:
@@ -29,8 +46,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
-  build:
-    needs: release-rc
+  build-beta:
+    needs: release-beta
     runs-on: ubuntu-latest
     outputs:
       release-version: ${{ steps.version-step.outputs.pe-version }}
@@ -62,7 +79,7 @@ jobs:
           path: target/*.jar
 
   docker:
-    needs: build
+    needs: build-beta
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -81,4 +98,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           default_branch: v2-develop
-          tags: latest
+          tags: ${{ steps.version-step.outputs.pe-version }}
