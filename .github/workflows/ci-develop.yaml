@@ -98,4 +98,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           default_branch: v2-develop
-          tags: ${{ steps.version-step.outputs.pe-version }}
+          tags: ${{ needs.build-beta.outputs.release-version }}
