@@ -1,5 +1,22 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.4](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.3...2.1.0-beta.4) (2023-04-06)
+
+
+### Bug Fixes
+
+* add handler for more csv exceptions ([019ac80](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/019ac809929802e846361cf0c728b81145ec912c))
+* endpoint for variables has changed, fix for the json properties ([5ba18d1](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/5ba18d15fed4753a6a709c976e1ea6dbcec535cb))
+* i18n on json pogues not found exception ([8c5c96b](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/8c5c96b1b29e7db22bb9805d59de0667e9f55fd0))
+* regression when inserting survey unit data attributes in queen ([7ba4411](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/7ba44112d09c4e87f6ba7cecffd7386b7703046c))
+* survey units csv tests ([d81a345](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/d81a3458921d728367f7a52baf129379636552d9))
+
+
+### Features
+
+* add csv verification checks ([b0c6d72](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/b0c6d72597d7e88750e7c9dfaecd014e019bdb3d))
+* check survey units data when adding/updating questionnaire ([ba2203f](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/ba2203f9503e7b3366606ee2fde120e32315a366))
+
 ## [2.1.0-beta.3](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.2...2.1.0-beta.3) (2023-03-17)
 
 
