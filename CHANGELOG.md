@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.5](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.4...2.1.0-beta.5) (2023-04-06)
+
+
+### Features
+
+* expose existing csv for a questionnaire ([5beab64](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/5beab649047fa3757dbf5da6f765be6935e6f043))
+
 ## [2.1.0-beta.4](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.3...2.1.0-beta.4) (2023-04-06)
 
 
