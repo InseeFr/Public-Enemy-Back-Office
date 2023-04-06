@@ -1,6 +1,6 @@
 package fr.insee.publicenemy.api.application.model.pogues;
 
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DateDatatypeType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DateFormatEnum;
@@ -22,7 +22,7 @@ class DateDatatypeTypeTest {
     void onValidateWhenFieldValueIsInWrongFormatReturnErrorValidationObject(String fieldValue) {
         DateDatatypeType dateType =
                 new DateDatatypeType("2020", "2025", DateFormatEnum.YYYY);
-        DataTypeValidation validation = dateType.validate(fieldValue);
+        DataTypeValidationResult validation = dateType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.date.format-incorrect"));
     }
@@ -32,7 +32,7 @@ class DateDatatypeTypeTest {
         String fieldValue = "2022";
         DateDatatypeType dateType =
                 new DateDatatypeType("2020", "2025", DateFormatEnum.YYYY);
-        DataTypeValidation validation = dateType.validate(fieldValue);
+        DataTypeValidationResult validation = dateType.validate(fieldValue);
         assertTrue(validation.isValid());
     }
 
@@ -41,7 +41,7 @@ class DateDatatypeTypeTest {
         String fieldValue = "2019";
         DateDatatypeType dateType =
                 new DateDatatypeType("2020", "2025", DateFormatEnum.YYYY);
-        DataTypeValidation validation = dateType.validate(fieldValue);
+        DataTypeValidationResult validation = dateType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.date.before-minimum"));
     }
@@ -51,7 +51,7 @@ class DateDatatypeTypeTest {
         String fieldValue = "2022-01";
         DateDatatypeType dateType =
                 new DateDatatypeType("219-01", "2025-01", DateFormatEnum.YYYY_MM);
-        DataTypeValidation validation = dateType.validate(fieldValue);
+        DataTypeValidationResult validation = dateType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.date.format-minimum"));
     }
@@ -61,7 +61,7 @@ class DateDatatypeTypeTest {
         String fieldValue = "2022-02-01";
         DateDatatypeType dateType =
                 new DateDatatypeType("2019-10-02", "225-11-11", DateFormatEnum.YYYY_MM_DD);
-        DataTypeValidation validation = dateType.validate(fieldValue);
+        DataTypeValidationResult validation = dateType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.date.format-maximum"));
     }
@@ -71,7 +71,7 @@ class DateDatatypeTypeTest {
         String fieldValue = "2026";
         DateDatatypeType dateType =
                 new DateDatatypeType("2020", "2025", DateFormatEnum.YYYY);
-        DataTypeValidation validation = dateType.validate(fieldValue);
+        DataTypeValidationResult validation = dateType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.date.after-maximum"));
     }
@@ -82,7 +82,7 @@ class DateDatatypeTypeTest {
     void onValidateWhenFieldValueIsEmptyOrNullReturnOkValidationObject(String fieldValue) {
         DateDatatypeType dateType =
                 new DateDatatypeType("2020", "2025", DateFormatEnum.YYYY);
-        DataTypeValidation validation = dateType.validate(fieldValue);
+        DataTypeValidationResult validation = dateType.validate(fieldValue);
         assertTrue(validation.isValid());
     }
 

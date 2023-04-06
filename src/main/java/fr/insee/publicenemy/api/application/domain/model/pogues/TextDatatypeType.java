@@ -27,31 +27,31 @@ public class TextDatatypeType implements IDataType {
     private String pattern;
 
     @JsonCreator
-    public TextDatatypeType(@JsonProperty(value="MaxLength") Integer maxLength, @JsonProperty(value="Pattern") String pattern) {
+    public TextDatatypeType(@JsonProperty(value = "MaxLength") Integer maxLength, @JsonProperty(value = "Pattern") String pattern) {
         this.maxLength = maxLength;
         this.pattern = pattern;
     }
 
     @Override
-    public DataTypeValidation validate(String fieldValue) {
-        if(fieldValue == null || fieldValue.isEmpty()) {
-            return DataTypeValidation.createOkDataTypeValidation();
+    public DataTypeValidationResult validate(String fieldValue) {
+        if (fieldValue == null || fieldValue.isEmpty()) {
+            return DataTypeValidationResult.createOkDataTypeValidation();
         }
 
         List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
-        if(maxLength != null && fieldValue.length() > maxLength) {
-            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.superior-maxlength", fieldValue, maxLength.toString(), fieldValue.length()+""));
+        if (maxLength != null && fieldValue.length() > maxLength) {
+            errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.superior-maxlength", fieldValue, maxLength.toString(), fieldValue.length() + ""));
         }
 
-        if(pattern != null && !pattern.isEmpty() && !fieldValue.matches(pattern)) {
+        if (pattern != null && !pattern.isEmpty() && !fieldValue.matches(pattern)) {
             errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.format-pattern", fieldValue, pattern));
         }
 
-        if(errorMessages.isEmpty()) {
-            return DataTypeValidation.createOkDataTypeValidation();
+        if (errorMessages.isEmpty()) {
+            return DataTypeValidationResult.createOkDataTypeValidation();
         }
-        return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
+        return DataTypeValidationResult.createErrorDataTypeValidation(errorMessages);
     }
 }
 

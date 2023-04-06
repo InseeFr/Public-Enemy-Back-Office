@@ -33,9 +33,9 @@ public class NumericDatatypeType implements IDataType {
     private Integer decimals;
 
     @JsonCreator
-    public NumericDatatypeType(@JsonProperty(value="Minimum") BigDecimal minimum,
-                               @JsonProperty(value="Maximum") BigDecimal maximum,
-                               @JsonProperty(value="Decimals") Integer decimals) {
+    public NumericDatatypeType(@JsonProperty(value = "Minimum") BigDecimal minimum,
+                               @JsonProperty(value = "Maximum") BigDecimal maximum,
+                               @JsonProperty(value = "Decimals") Integer decimals) {
         this.minimum = minimum;
         this.maximum = maximum;
         this.decimals = decimals;
@@ -45,48 +45,48 @@ public class NumericDatatypeType implements IDataType {
      * @param fieldValue field value to validate
      * @return data validation object validation success ii successful, object validation failure otherwise
      */
-    public DataTypeValidation validate(String fieldValue) {
-        if(fieldValue == null || fieldValue.isEmpty()) {
-            return DataTypeValidation.createOkDataTypeValidation();
+    public DataTypeValidationResult validate(String fieldValue) {
+        if (fieldValue == null || fieldValue.isEmpty()) {
+            return DataTypeValidationResult.createOkDataTypeValidation();
         }
 
         // replace decimal separator in a more javaish way,
         // handle the thousand separator and trim
         fieldValue = fieldValue
-                .replace(',','.')
-                .replaceAll("\\s","");
+                .replace(',', '.')
+                .replaceAll("\\s", "");
 
         BigDecimal numericValue;
 
         try {
             numericValue = new BigDecimal(fieldValue);
         } catch (NumberFormatException nfe) {
-            return DataTypeValidation.createErrorDataTypeValidation(
+            return DataTypeValidationResult.createErrorDataTypeValidation(
                     DataTypeValidationMessage.createMessage("datatype.error.numeric.format"));
         }
 
         List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
-        if(minimum != null && numericValue.compareTo(minimum) < 0) {
+        if (minimum != null && numericValue.compareTo(minimum) < 0) {
             errorMessages.add(
                     DataTypeValidationMessage.createMessage("datatype.error.numeric.inferior-minimum", fieldValue, minimum.toString()));
         }
 
-        if(maximum != null && numericValue.compareTo(maximum) > 0) {
+        if (maximum != null && numericValue.compareTo(maximum) > 0) {
             errorMessages.add(
                     DataTypeValidationMessage.createMessage("datatype.error.numeric.superior-maximum", fieldValue, maximum.toString()));
         }
 
-        int scale =  numericValue.stripTrailingZeros().scale();
-        if(decimals != null && scale > decimals) {
+        int scale = numericValue.stripTrailingZeros().scale();
+        if (decimals != null && scale > decimals) {
             errorMessages.add(
-                    DataTypeValidationMessage.createMessage("datatype.error.numeric.decimals-precision", fieldValue, decimals.toString(), scale+""));
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.decimals-precision", fieldValue, decimals.toString(), scale + ""));
         }
 
-        if(errorMessages.isEmpty()) {
-            return DataTypeValidation.createOkDataTypeValidation();
+        if (errorMessages.isEmpty()) {
+            return DataTypeValidationResult.createOkDataTypeValidation();
         }
-        return DataTypeValidation.createErrorDataTypeValidation(errorMessages);
+        return DataTypeValidationResult.createErrorDataTypeValidation(errorMessages);
     }
 }
 
