@@ -29,15 +29,15 @@ public class DurationDatatypeType implements IDataType {
     private String format;
 
     @JsonCreator
-    public DurationDatatypeType(@JsonProperty(value="Minimum") String minimum, @JsonProperty(value="Maximum") String maximum,
-                                @JsonProperty(value="Format") String format) {
+    public DurationDatatypeType(@JsonProperty(value = "Minimum") String minimum, @JsonProperty(value = "Maximum") String maximum,
+                                @JsonProperty(value = "Format") String format) {
         this.minimum = minimum;
         this.maximum = maximum;
         this.format = format;
     }
 
     @Override
-    public DataTypeValidation validate(String fieldValue) {
+    public DataTypeValidationResult validate(String fieldValue) {
         throw new IllegalArgumentException("Validate method is not yet implemented");
     }
 }

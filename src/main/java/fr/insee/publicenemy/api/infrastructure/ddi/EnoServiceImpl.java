@@ -28,7 +28,7 @@ public class EnoServiceImpl implements EnoServicePort {
     private final String enoUrl;
 
     public EnoServiceImpl(WebClient webClient, @Value("${application.eno.url}") String enoUrl) {
-        this.webClient = webClient; 
+        this.webClient = webClient;
         this.enoUrl = enoUrl;
     }
 
@@ -38,24 +38,24 @@ public class EnoServiceImpl implements EnoServicePort {
         MultipartBodyBuilder resourceBuilder = new MultipartBodyBuilder();
         Resource ddiResource = new FileNameAwareByteArrayResource("resource.json", ddi.content(), "description");
         resourceBuilder.part("in", ddiResource);
-        
+
         String lunaticJson = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}", context.name(), mode.name())
-            .accept(MediaType.APPLICATION_OCTET_STREAM)
-            .contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(BodyInserters.fromMultipartData(resourceBuilder.build()))
-            .retrieve()
-            .onStatus(
-                    HttpStatus.NOT_FOUND::equals,
-                    response -> response.bodyToMono(String.class)
-                            .flatMap(errorMessage -> Mono.error(new LunaticJsonNotFoundException(ddi.poguesId(), context, mode)))
-            )
-            .onStatus(
-                    HttpStatusCode::isError,
-                    response -> response.bodyToMono(String.class)
-                            .flatMap(errorMessage -> Mono.error(new ServiceException(response.statusCode().value(), errorMessage)))
-            )
-            .bodyToMono(String.class).blockOptional().orElseThrow(() -> new LunaticJsonNotFoundException(ddi.poguesId(), context, mode));
+                .accept(MediaType.APPLICATION_OCTET_STREAM)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(resourceBuilder.build()))
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new LunaticJsonNotFoundException(ddi.poguesId(), context, mode)))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
+                )
+                .bodyToMono(String.class).blockOptional().orElseThrow(() -> new LunaticJsonNotFoundException(ddi.poguesId(), context, mode));
 
         return new JsonLunatic(lunaticJson);
-    } 
+    }
 }

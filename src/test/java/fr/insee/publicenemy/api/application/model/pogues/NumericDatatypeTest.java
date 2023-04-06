@@ -16,25 +16,25 @@ class NumericDatatypeTest {
     @ParameterizedTest
     @ValueSource(strings = {"11/05/1984", "3-54"})
     void onValidateWhenFieldValueIsInWrongFormatReturnErrorValidationObject(String fieldValue) {
-        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("0"),new BigDecimal("10000"),0);
-        DataTypeValidation validation = numericType.validate(fieldValue);
+        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("0"), new BigDecimal("10000"), 0);
+        DataTypeValidationResult validation = numericType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.numeric.format"));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"0", "10000", "10000.0000", "42", "42,0", "42,1234", "42,12340000"," 9 000.00 "})
+    @ValueSource(strings = {"0", "10000", "10000.0000", "42", "42,0", "42,1234", "42,12340000", " 9 000.00 "})
     void onValidateWhenFieldValueIsInCorrectFormatReturnOkValidationObject(String fieldValue) {
-        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("0"),new BigDecimal("10000"),4);
-        DataTypeValidation validation = numericType.validate(fieldValue);
+        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("0"), new BigDecimal("10000"), 4);
+        DataTypeValidationResult validation = numericType.validate(fieldValue);
         assertTrue(validation.isValid());
     }
 
     @Test
     void onValidateWhenFieldValueIsInferiorToMinimumReturnErrorValidationObject() {
         String fieldValue = "0";
-        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("1"),new BigDecimal("5"),0);
-        DataTypeValidation validation = numericType.validate(fieldValue);
+        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("1"), new BigDecimal("5"), 0);
+        DataTypeValidationResult validation = numericType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.numeric.inferior-minimum"));
     }
@@ -42,16 +42,16 @@ class NumericDatatypeTest {
     @Test
     void onValidateWhenFieldValueIsSuperiorToMaximumReturnErrorValidationObject() {
         String fieldValue = "7";
-        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("1"),new BigDecimal("5"),2);
-        DataTypeValidation validation = numericType.validate(fieldValue);
+        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("1"), new BigDecimal("5"), 2);
+        DataTypeValidationResult validation = numericType.validate(fieldValue);
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.numeric.superior-maximum"));
     }
 
     @Test
     void onValidateWhenFieldValueHasIncorrectDecimalsReturnErrorValidationObject() {
-        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("1"),new BigDecimal("5"),2);
-        DataTypeValidation validation = numericType.validate("14785.123");
+        NumericDatatypeType numericType = new NumericDatatypeType(new BigDecimal("1"), new BigDecimal("5"), 2);
+        DataTypeValidationResult validation = numericType.validate("14785.123");
         assertFalse(validation.isValid());
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.numeric.decimals-precision"));
     }
