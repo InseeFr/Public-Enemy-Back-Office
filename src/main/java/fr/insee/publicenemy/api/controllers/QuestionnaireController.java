@@ -59,7 +59,6 @@ public class QuestionnaireController {
     }
 
     /**
-     * 
      * @return all questionnaires
      */
     @GetMapping("")
@@ -70,7 +69,6 @@ public class QuestionnaireController {
     }
 
     /**
-     *
      * @param id questionnaire id
      * @return questionnaire
      */
@@ -107,7 +105,6 @@ public class QuestionnaireController {
     }
 
     /**
-     * 
      * @param poguesId pogues questionnaire id
      * @return questionnaire informations from ddi
      */
