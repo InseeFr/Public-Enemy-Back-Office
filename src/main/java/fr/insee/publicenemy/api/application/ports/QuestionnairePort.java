@@ -59,6 +59,12 @@ public interface QuestionnairePort {
     Questionnaire updateQuestionnaireState(Questionnaire questionnaire);
 
     /**
+     * @param poguesId questionnaire pogues id
+     * @return true if questionnaire exist, false otherwise
+     */
+    boolean hasQuestionnaire(String poguesId);
+
+    /**
      * Get questionnaire
      *
      * @param questionnaireId questionnaire id

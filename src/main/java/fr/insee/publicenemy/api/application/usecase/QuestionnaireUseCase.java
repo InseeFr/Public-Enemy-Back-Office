@@ -3,8 +3,11 @@ package fr.insee.publicenemy.api.application.usecase;
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,10 +21,13 @@ public class QuestionnaireUseCase {
 
     private final DDIUseCase ddiUseCase;
 
-    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase) {
+    private final I18nMessagePort messageService;
+
+    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase, I18nMessagePort messageService) {
         this.questionnairePort = questionnairePort;
         this.ddiUseCase = ddiUseCase;
         this.queenUseCase = queenUseCase;
+        this.messageService = messageService;
     }
 
     /**
@@ -33,6 +39,10 @@ public class QuestionnaireUseCase {
      * @return the saved questionnaire
      */
     public Questionnaire addQuestionnaire(String poguesId, Context context, byte[] csvContent) {
+
+        if (questionnairePort.hasQuestionnaire(poguesId)) {
+            throw new ServiceException(HttpStatus.CONFLICT, messageService.getMessage("questionnaire.exists", poguesId));
+        }
         Ddi ddi = ddiUseCase.getDdi(poguesId);
 
         Questionnaire questionnaire = new Questionnaire(ddi, context, csvContent);
