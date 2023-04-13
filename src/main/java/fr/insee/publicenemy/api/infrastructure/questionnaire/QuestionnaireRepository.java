@@ -39,21 +39,26 @@ public class QuestionnaireRepository implements QuestionnairePort {
     @Override
     public Questionnaire getQuestionnaire(Long questionnaireId) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaireId)
-                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, Long.toString(questionnaireId))));
         return questionnaireEntity.toModel();
     }
 
     @Override
     public Questionnaire getQuestionnaire(String poguesId) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findByPoguesId(poguesId)
-                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, poguesId)));
         return questionnaireEntity.toModel();
+    }
+
+    @Override
+    public boolean hasQuestionnaire(String poguesId) {
+        return questionnaireEntityRepository.existsByPoguesId(poguesId);
     }
 
     @Override
     public byte[] getSurveyUnitData(Long questionnaireId) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaireId)
-                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, Long.toString(questionnaireId))));
         return questionnaireEntity.getSurveyUnitData();
     }
 
@@ -68,7 +73,7 @@ public class QuestionnaireRepository implements QuestionnairePort {
     @Override
     public Questionnaire updateQuestionnaire(Questionnaire questionnaire) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.getId())
-                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, Long.toString(questionnaire.getId()))));
 
         questionnaireEntity.update(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
@@ -83,7 +88,7 @@ public class QuestionnaireRepository implements QuestionnairePort {
     @Override
     public Questionnaire updateQuestionnaireState(Questionnaire questionnaire) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaire.getId())
-                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY)));
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, Long.toString(questionnaire.getId()))));
 
         questionnaireEntity.updateState(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);

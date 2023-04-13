@@ -26,7 +26,7 @@ class QuestionnaireEntityRepositoryTest {
     @Test
     void shouldSaveQuestionnaire() {
         List<QuestionnaireMode> questionnaireModes = QuestionnaireMode.toModel(List.of(Mode.CAWI, Mode.CAPI));
-        QuestionnaireEntity questionnaire = new QuestionnaireEntity("l8wwljbo", "questionnaire label", Context.BUSINESS, questionnaireModes, "content".getBytes(), false);
+        QuestionnaireEntity questionnaire = new QuestionnaireEntity("ae3z1rz", "questionnaire label", Context.BUSINESS, questionnaireModes, "content".getBytes(), false);
         QuestionnaireEntity savedQuestionnaire = repository.saveAndFlush(questionnaire);
         assertThat(savedQuestionnaire).usingRecursiveComparison().ignoringFields("id").isEqualTo(questionnaire);
     }

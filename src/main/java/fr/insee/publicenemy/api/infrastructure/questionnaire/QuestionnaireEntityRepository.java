@@ -20,4 +20,6 @@ public interface QuestionnaireEntityRepository extends JpaRepository<Questionnai
     @Query("select q from QuestionnaireEntity q join fetch q.modeEntities where q.poguesId=?1")
     @NonNull
     Optional<QuestionnaireEntity> findByPoguesId(String poguesId);
+
+    boolean existsByPoguesId(String poguesId);
 } 

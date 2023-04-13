@@ -360,6 +360,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<ApiError> handleRepositoryEntityNotFoundException(
             RepositoryEntityNotFoundException ex,
             WebRequest request) {
-        return processException(ex, HttpStatus.NOT_FOUND, request);
+        ApiError error = errorComponent.buildApiErrorObject(request, HttpStatus.NOT_FOUND, ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 }
