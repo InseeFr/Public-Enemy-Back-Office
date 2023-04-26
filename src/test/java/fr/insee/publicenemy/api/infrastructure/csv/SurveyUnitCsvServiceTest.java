@@ -5,8 +5,15 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.ISurveyUnitDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataAttributeValue;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import fr.insee.publicenemy.api.infrastructure.csv.exceptions.SurveyUnitCsvNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
@@ -20,7 +27,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ExtendWith(MockitoExtension.class)
 class SurveyUnitCsvServiceTest {
 
-    private final SurveyUnitCsvService service = new SurveyUnitCsvService(2);
+    private SurveyUnitCsvService service;
+
+    @Mock
+    private I18nMessagePort messageService;
+
+    @BeforeEach
+    void init() {
+        this.service = new SurveyUnitCsvService(2, messageService);
+    }
 
     @Test
     void onGetSurveyUnitsReturnCorrectCountNumber() throws IOException {
@@ -96,5 +111,24 @@ class SurveyUnitCsvServiceTest {
         assertEquals("NUMERIC-TEST", iterator.next());
         assertEquals("DATE-TEST_1", iterator.next());
         assertEquals("DATE-TEST_2", iterator.next());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2})
+    void onGetCsvSurveyUnitReturnCorrectSurveyUnit(int surveyUnitId) {
+        String questionnaireModelId = "11-CAPI";
+        SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(questionnaireModelId, surveyUnitId);
+        byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
+        SurveyUnit su = service.getCsvSurveyUnit(surveyUnitId, data, questionnaireModelId);
+        assertEquals(su.id(), identifierHandler.getQueenIdentifier());
+        assertEquals(("value" + surveyUnitId), su.data().getAttributes().get("name").getValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 10})
+    void onGetCsvSurveyUnitWhenSurveyUnitIdIncorrectThrowsException(int surveyUnitId) {
+        String questionnaireModelId = "11-CAPI";
+        byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
+        assertThrows(SurveyUnitCsvNotFoundException.class, () -> service.getCsvSurveyUnit(surveyUnitId, data, questionnaireModelId));
     }
 }

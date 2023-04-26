@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
@@ -38,6 +39,18 @@ public class QueenUseCase {
      */
     public List<SurveyUnit> getSurveyUnits(String questionnaireModelId) {
         return queenService.getSurveyUnits(questionnaireModelId);
+    }
+
+    /**
+     * reset data/state data for a specific survey unit
+     *
+     * @param surveyUnitId   survey unit id
+     * @param surveyUnitData survey units csv data
+     */
+    public void resetSurveyUnit(String surveyUnitId, byte[] surveyUnitData) {
+        SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(surveyUnitId);
+        SurveyUnit surveyUnit = surveyUnitCsvService.getCsvSurveyUnit(identifierHandler.getSurveyUnitIdentifier(), surveyUnitData, identifierHandler.getQuestionnaireModelId());
+        queenService.updateSurveyUnit(surveyUnit);
     }
 
     /**

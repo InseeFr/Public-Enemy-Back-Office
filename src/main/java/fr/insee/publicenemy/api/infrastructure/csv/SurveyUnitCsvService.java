@@ -5,7 +5,9 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
+import fr.insee.publicenemy.api.infrastructure.csv.exceptions.SurveyUnitCsvNotFoundException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,22 +23,16 @@ import java.util.*;
 public class SurveyUnitCsvService implements SurveyUnitCsvPort {
     private final Integer iterationHeaderCount;
 
-    public SurveyUnitCsvService(@Value("${application.csv.iteration-header-count}") Integer iterationHeaderCount) {
+    private final I18nMessagePort messageService;
+
+    public SurveyUnitCsvService(@Value("${application.csv.iteration-header-count}") Integer iterationHeaderCount, I18nMessagePort messagePort) {
+        this.messageService = messagePort;
         this.iterationHeaderCount = iterationHeaderCount;
     }
 
     @Override
     public List<SurveyUnit> initSurveyUnits(byte[] surveyUnitData, String questionnaireModelId) {
-        Reader reader = new InputStreamReader(new ByteArrayInputStream(surveyUnitData));
-
-        List<SurveyUnitCsvLine> surveyUnitsCsvModel = new CsvToBeanBuilder<SurveyUnitCsvLine>(reader)
-                .withSkipLines(0)
-                .withSeparator(',')
-                .withIgnoreLeadingWhiteSpace(true)
-                .withStrictQuotes(true)
-                .withIgnoreQuotations(false)
-                .withType(SurveyUnitCsvLine.class)
-                .build().parse();
+        List<SurveyUnitCsvLine> surveyUnitsCsvModel = getSurveyUnitsCsvLines(surveyUnitData);
 
         List<SurveyUnit> surveyUnits = new ArrayList<>();
         for (int id = 1; id <= surveyUnitsCsvModel.size(); id++) {
@@ -44,6 +40,18 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
             surveyUnits.add(initSurveyUnit(id, surveyUnitCsvLine, questionnaireModelId));
         }
         return surveyUnits;
+    }
+
+    @Override
+    public SurveyUnit getCsvSurveyUnit(int surveyUnitId, byte[] surveyUnitData, String questionnaireModelId) {
+        List<SurveyUnitCsvLine> surveyUnitsCsvModel = getSurveyUnitsCsvLines(surveyUnitData);
+
+        if (surveyUnitId <= 0 || surveyUnitId > surveyUnitsCsvModel.size()) {
+            throw new SurveyUnitCsvNotFoundException(messageService.getMessage("surveyunit.csv.not-found"));
+        }
+
+        SurveyUnitCsvLine surveyUnitCsvLine = surveyUnitsCsvModel.get(surveyUnitId - 1);
+        return initSurveyUnit(surveyUnitId, surveyUnitCsvLine, questionnaireModelId);
     }
 
     /**
@@ -96,5 +104,24 @@ public class SurveyUnitCsvService implements SurveyUnitCsvPort {
             csvHeaders.add(variableType.name() + "_" + index);
         }
         return csvHeaders;
+    }
+
+    /**
+     * get a list of survey units from survey unit csv data
+     *
+     * @param surveyUnitData survey units csv data
+     * @return list of survey units from survey unit csv data
+     */
+    private List<SurveyUnitCsvLine> getSurveyUnitsCsvLines(byte[] surveyUnitData) {
+        Reader reader = new InputStreamReader(new ByteArrayInputStream(surveyUnitData));
+
+        return new CsvToBeanBuilder<SurveyUnitCsvLine>(reader)
+                .withSkipLines(0)
+                .withSeparator(',')
+                .withIgnoreLeadingWhiteSpace(true)
+                .withStrictQuotes(true)
+                .withIgnoreQuotations(false)
+                .withType(SurveyUnitCsvLine.class)
+                .build().parse();
     }
 }

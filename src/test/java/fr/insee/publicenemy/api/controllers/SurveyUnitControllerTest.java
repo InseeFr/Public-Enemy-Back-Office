@@ -14,6 +14,7 @@ import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidati
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
+import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
@@ -42,8 +43,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -65,6 +65,9 @@ class SurveyUnitControllerTest {
 
     @MockBean
     private I18nMessagePort messageService;
+
+    @MockBean
+    private QuestionnaireUseCase questionnaireUseCase;
 
     @Autowired
     private MockMvc mockMvc;
@@ -187,5 +190,19 @@ class SurveyUnitControllerTest {
                 .andReturn();
 
         verify(messageComponent).getErrors(surveyUnitDataValidationResults);
+    }
+
+    @Test
+    void onResetSurveyUnitCallResetService() throws Exception {
+        String surveyUnitId = "11-CAPI-1";
+        byte[] surveyUnitData = "".getBytes();
+        when(questionnaireUseCase.getSurveyUnitData(11L)).thenReturn(surveyUnitData);
+
+        mockMvc.perform(put("/api/survey-units/{surveyUnitId}/reset", surveyUnitId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        verify(queenUseCase).resetSurveyUnit(surveyUnitId, surveyUnitData);
     }
 }

@@ -133,23 +133,26 @@ public class QuestionnaireController {
     }
 
     /**
-     * @param id             questionnaire id
-     * @param context        insee context
-     * @param surveyUnitData csv content of survey units
+     * @param questionnaireId questionnaire id
+     * @param context         insee context
+     * @param surveyUnitData  csv content of survey units
      * @return the updated questionnaire
      */
-    @PostMapping(path = "/{id}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public QuestionnaireRest saveQuestionnaire(
-            @PathVariable Long id,
+            @PathVariable Long questionnaireId,
             @RequestPart(name = "context") ContextRest context,
             @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
 
         byte[] csvContent = null;
         if (surveyUnitData != null) {
             csvContent = surveyUnitData.getBytes();
-            csvUseCase.validateSurveyUnits(csvContent, id);
+            csvUseCase.validateSurveyUnits(csvContent, questionnaireId);
+        } else {
+            csvContent = questionnaireUseCase.getSurveyUnitData(questionnaireId);
+            csvUseCase.validateSurveyUnits(csvContent, questionnaireId);
         }
-        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(id, ContextRest.toModel(context), csvContent);
+        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(questionnaireId, ContextRest.toModel(context), csvContent);
         return questionnaireComponent.createFromModel(questionnaire);
     }
 
