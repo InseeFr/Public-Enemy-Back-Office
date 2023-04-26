@@ -42,8 +42,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -202,6 +201,22 @@ class QuestionnaireControllerTest {
                 .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
                 .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
                 .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
+    }
+
+    @Test
+    void onSaveQuestionnaireWhenEmptyDataShouldFetchDataFromQuestionnaire() throws Exception {
+
+        ObjectMapper Obj = new ObjectMapper();
+        String jsonContext = Obj.writeValueAsString(questionnaireRest.context());
+        MockPart contextMockPart = new MockPart("context", jsonContext.getBytes());
+        contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+        Long id = questionnaire.getId();
+
+        mockMvc.perform(multipart("/api/questionnaires/{id}", id).part(contextMockPart)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
+                .andExpect(status().isOk());
+        verify(questionnaireUseCase, times(1)).getSurveyUnitData(id);
     }
 
     @Test
