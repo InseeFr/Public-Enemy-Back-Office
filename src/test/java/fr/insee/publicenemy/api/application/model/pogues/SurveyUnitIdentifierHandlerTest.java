@@ -14,8 +14,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class SurveyUnitIdentifierHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = {"11-CAPI", "CAPI-1", "1111111", "11-CAPI-PLOP"})
-    void onCreateIdentifierHandlerWhenPatternNotRecognizeThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> new SurveyUnitIdentifierHandler("11-CAPI"));
+    void onCreateIdentifierHandlerFromQueenIdentifierWhenPatternNotRecognizeThrowsException(String queenIdentifier) {
+        assertThrows(IllegalArgumentException.class, () -> new SurveyUnitIdentifierHandler(queenIdentifier));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"CAPI-1", "1111111", "11-CAPI-PLOP"})
+    void onCreateIdentifierHandlerWhenPatternNotRecognizeThrowsException(String questionnaireModelId) {
+        assertThrows(IllegalArgumentException.class, () -> new SurveyUnitIdentifierHandler(questionnaireModelId, 1));
     }
 
     @Test
