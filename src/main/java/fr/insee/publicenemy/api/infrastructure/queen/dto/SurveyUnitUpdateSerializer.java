@@ -11,29 +11,27 @@ import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 
-public class SurveyUnitSerializer extends StdSerializer<SurveyUnitDto> {
+public class SurveyUnitUpdateSerializer extends StdSerializer<SurveyUnitUpdateDto> {
 
     @Serial
     private static final long serialVersionUID = 5928430315100640987L;
 
-    public SurveyUnitSerializer() {
+    public SurveyUnitUpdateSerializer() {
         this(null);
     }
 
-    public SurveyUnitSerializer(Class<SurveyUnitDto> t) {
+    public SurveyUnitUpdateSerializer(Class<SurveyUnitUpdateDto> t) {
         super(t);
     }
 
     @Override
     public void serialize(
-            SurveyUnitDto surveyUnit, JsonGenerator jgen, SerializerProvider provider)
+            SurveyUnitUpdateDto surveyUnit, JsonGenerator jgen, SerializerProvider provider)
             throws IOException {
 
         List<PersonalizationAttributeDto<String>> personalizationData = PersonalizationAttributeDto.getDefaultAttributes();
 
         jgen.writeStartObject();
-        jgen.writeStringField("id", surveyUnit.id());
-        jgen.writeStringField("questionnaireId", surveyUnit.questionnaireId());
         jgen.writeObjectField("personalization", personalizationData);
         jgen.writeObjectFieldStart("comment");
         jgen.writeEndObject();

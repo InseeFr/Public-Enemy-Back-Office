@@ -21,7 +21,8 @@ class SurveyUnitIdentifierHandlerTest {
     @Test
     void onCreateIdentifierHandlerFromQueenIdentifierReturnCorrectIdentifiers() {
         SurveyUnitIdentifierHandler handler = new SurveyUnitIdentifierHandler("11-CAPI-1");
-        assertEquals("1", handler.getSurveyUnitIdentifier());
+        assertEquals(11L, handler.getQuestionnaireId());
+        assertEquals(1, handler.getSurveyUnitIdentifier());
         assertEquals("11-CAPI", handler.getQuestionnaireModelId());
         assertEquals("11-CAPI-1", handler.getQueenIdentifier());
     }
@@ -29,8 +30,9 @@ class SurveyUnitIdentifierHandlerTest {
     @Test
     void onCreateIdentifierHandleReturnCorrectIdentifiers() {
         SurveyUnitIdentifierHandler handler = new SurveyUnitIdentifierHandler("11-CAPI", 1);
-        assertEquals("1", handler.getSurveyUnitIdentifier());
+        assertEquals(1, handler.getSurveyUnitIdentifier());
         assertEquals("11-CAPI", handler.getQuestionnaireModelId());
         assertEquals("11-CAPI-1", handler.getQueenIdentifier());
+        assertEquals(11L, handler.getQuestionnaireId());
     }
 }

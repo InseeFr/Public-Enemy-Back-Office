@@ -8,11 +8,13 @@ import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
+import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
 import fr.insee.publicenemy.api.controllers.dto.SurveyUnitErrors;
 import fr.insee.publicenemy.api.controllers.dto.SurveyUnitsRest;
@@ -35,11 +37,13 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/questionnaires")
+@RequestMapping("/api")
 @Slf4j
 public class SurveyUnitController {
 
     private final QueenUseCase queenUseCase;
+
+    private final QuestionnaireUseCase questionnaireUseCase;
 
     private final SurveyUnitCsvUseCase surveyUnitUseCase;
 
@@ -51,9 +55,10 @@ public class SurveyUnitController {
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
-    public SurveyUnitController(QueenUseCase queenUseCase, SurveyUnitCsvUseCase surveyUnitUseCase,
+    public SurveyUnitController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, SurveyUnitCsvUseCase surveyUnitUseCase,
                                 I18nMessagePort messageService, SurveyUnitMessagesComponent messageComponent,
                                 ApiExceptionComponent errorComponent) {
+        this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
         this.surveyUnitUseCase = surveyUnitUseCase;
         this.messageService = messageService;
@@ -66,7 +71,7 @@ public class SurveyUnitController {
      * @param modeName        insee mode
      * @return all survey units fro the questionnaire
      */
-    @GetMapping("/{questionnaireId}/modes/{modeName}/survey-units")
+    @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/survey-units")
     public SurveyUnitsRest getSurveyUnits(@PathVariable Long questionnaireId, @PathVariable String modeName) {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
         List<SurveyUnit> surveyUnits = queenUseCase.getSurveyUnits(questionnaireModelId);
@@ -74,11 +79,24 @@ public class SurveyUnitController {
     }
 
     /**
+     * reset survey unit data/state data
+     *
+     * @param surveyUnitId survey unit id
+     */
+    @PutMapping("/survey-units/{surveyUnitId}/reset")
+    public String resetSurveyUnit(@PathVariable String surveyUnitId) {
+        SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(surveyUnitId);
+        byte[] surveyUnitsCsvData = questionnaireUseCase.getSurveyUnitData(identifierHandler.getQuestionnaireId());
+        queenUseCase.resetSurveyUnit(surveyUnitId, surveyUnitsCsvData);
+        return "{}";
+    }
+
+    /**
      * @param response http servlet response object
      * @param poguesId questionnaire pogues identifier
      * @throws IOException IO Exception
      */
-    @GetMapping("/{poguesId}/csv")
+    @GetMapping("/questionnaires/{poguesId}/csv")
     public void getCsvSchema(HttpServletResponse response, @PathVariable String poguesId) throws IOException {
 
         // set file name and content type
@@ -105,7 +123,7 @@ public class SurveyUnitController {
      * @throws SurveyUnitsGlobalValidationException   global exceptions occurred when validating survey unit data csv file
      * @throws SurveyUnitsSpecificValidationException specific exceptions occurred when validating survey unit data csv file
      */
-    @PostMapping(path = "/{poguesId}/checkdata", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(path = "/questionnaires/{poguesId}/checkdata", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public List<String> checkSurveyUnitsData(
             @PathVariable String poguesId,
             @RequestPart(name = "surveyUnitData") @NonNull MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
