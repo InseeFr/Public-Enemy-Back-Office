@@ -25,8 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -161,6 +160,34 @@ class QueenServiceTest {
         createMockResponseError();
         SurveyUnit su = new SurveyUnit("11-CAPI-1", "11", null, SurveyUnitStateData.createInitialStateData());
         assertThrows(ServiceException.class, () -> service.updateSurveyUnit(su));
+    }
+
+    @Test
+    void onHasQuestionnaireModelWhenApiResponseIncorrectThrowsServiceException() {
+        createMockResponseError();
+        assertThrows(ServiceException.class, () -> service.hasQuestionnaireModel("11-CAPI"));
+    }
+
+    @Test
+    void onHasQuestionnaireModelWhenApiResponseBodyEmptyReturnFalse() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("")
+        );
+        assertFalse(service.hasQuestionnaireModel("11-CAPI"));
+    }
+
+    @Test
+    void onHasQuestionnaireModelWhenApiResponseBodyNotEmptyReturnTrue() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("{\"name\":\"value\"}")
+        );
+        assertTrue(service.hasQuestionnaireModel("11-CAPI"));
     }
 
     /**

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +26,9 @@ class QuestionnaireRepositoryTest {
     private QuestionnaireEntityRepository questionnaireEntityRepository;
     @Mock
     private I18nMessagePort messageService;
+
+    @Mock
+    private QuestionnaireEntity questionnaireEntity;
 
     private QuestionnaireRepository repository;
 
@@ -45,10 +49,51 @@ class QuestionnaireRepositoryTest {
     }
 
     @Test
+    void onGetQuestionnaireFromPoguesIdWhenQuestionnaireNotExistsThrowRepositoryEntityNotFoundException() {
+        String poguesId = "l8wwljbo";
+        Optional<QuestionnaireEntity> emptyQuestionnaire = Optional.empty();
+        when(questionnaireEntityRepository.findByPoguesId(poguesId)).thenReturn(emptyQuestionnaire);
+        assertThrows(RepositoryEntityNotFoundException.class, () -> repository.getQuestionnaire(poguesId));
+    }
+
+    @Test
+    void onGetQuestionnaireFromPoguesIdShouldCallRepository() {
+        String poguesId = "l8wwljbo";
+        when(questionnaireEntityRepository.findByPoguesId(poguesId)).thenReturn(Optional.of(questionnaireEntity));
+        repository.getQuestionnaire(poguesId);
+        verify(questionnaireEntityRepository).findByPoguesId(poguesId);
+    }
+
+    @Test
     void onUpdateQuestionnaireWhenQuestionnaireNotExistsThrowRepositoryEntityNotFoundException() {
         Optional<QuestionnaireEntity> emptyQuestionnaire = Optional.empty();
         when(questionnaireEntityRepository.findById(questionnaire.getId())).thenReturn(emptyQuestionnaire);
         assertThrows(RepositoryEntityNotFoundException.class, () -> repository.updateQuestionnaire(questionnaire));
+    }
+
+    @Test
+    void onUpdateQuestionnaireShouldSaveQuestionnaire() {
+        when(questionnaireEntityRepository.findById(questionnaire.getId())).thenReturn(Optional.of(questionnaireEntity));
+        when(questionnaireEntity.toModel()).thenReturn(questionnaire);
+        when(questionnaireEntityRepository.save(questionnaireEntity)).thenReturn(questionnaireEntity);
+        repository.updateQuestionnaire(questionnaire);
+        verify(questionnaireEntityRepository).save(questionnaireEntity);
+    }
+
+    @Test
+    void onUpdateQuestionnaireStateWhenQuestionnaireNotExistsThrowRepositoryEntityNotFoundException() {
+        Optional<QuestionnaireEntity> emptyQuestionnaire = Optional.empty();
+        when(questionnaireEntityRepository.findById(questionnaire.getId())).thenReturn(emptyQuestionnaire);
+        assertThrows(RepositoryEntityNotFoundException.class, () -> repository.updateQuestionnaireState(questionnaire));
+    }
+
+    @Test
+    void onUpdateQuestionnaireStateShouldSaveQuestionnaireState() {
+        when(questionnaireEntityRepository.findById(questionnaire.getId())).thenReturn(Optional.of(questionnaireEntity));
+        when(questionnaireEntity.toModel()).thenReturn(questionnaire);
+        when(questionnaireEntityRepository.save(questionnaireEntity)).thenReturn(questionnaireEntity);
+        repository.updateQuestionnaireState(questionnaire);
+        verify(questionnaireEntityRepository).save(questionnaireEntity);
     }
 
     @Test
