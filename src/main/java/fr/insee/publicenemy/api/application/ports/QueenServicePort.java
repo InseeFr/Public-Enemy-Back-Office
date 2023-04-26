@@ -54,4 +54,11 @@ public interface QueenServicePort {
      * @return true if questionnaire model exists, false otherwise
      */
     boolean hasQuestionnaireModel(String questionnaireModelId);
+
+    /**
+     * Update a survey unit
+     *
+     * @param surveyUnit survey unit to update
+     */
+    void updateSurveyUnit(SurveyUnit surveyUnit);
 }

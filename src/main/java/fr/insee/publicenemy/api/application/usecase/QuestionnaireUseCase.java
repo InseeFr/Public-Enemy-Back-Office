@@ -78,11 +78,11 @@ public class QuestionnaireUseCase {
     /**
      * Get survey units data from questionnaire
      *
-     * @param id questionnaire id
+     * @param questionnaireId questionnaire id
      * @return csv of survey units
      */
-    public byte[] getSurveyUnitData(Long id) {
-        return questionnairePort.getSurveyUnitData(id);
+    public byte[] getSurveyUnitData(Long questionnaireId) {
+        return questionnairePort.getSurveyUnitData(questionnaireId);
     }
 
     /**

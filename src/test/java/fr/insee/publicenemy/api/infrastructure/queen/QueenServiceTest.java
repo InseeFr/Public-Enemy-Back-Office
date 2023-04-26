@@ -148,6 +148,21 @@ class QueenServiceTest {
         assertAll(() -> service.deleteCampaign("l8wwljbo-CAPI"));
     }
 
+    @Test
+    void onUpdateSurveyUnitWhenApiResponseSuccessfulReturnNothing() {
+        createMockResponseSuccess();
+
+        SurveyUnit su = new SurveyUnit("11-CAPI-1", "11", null, SurveyUnitStateData.createInitialStateData());
+        assertAll(() -> service.updateSurveyUnit(su));
+    }
+
+    @Test
+    void onUpdateSurveyUnitWhenApiResponseIncorrectThrowsServiceException() {
+        createMockResponseError();
+        SurveyUnit su = new SurveyUnit("11-CAPI-1", "11", null, SurveyUnitStateData.createInitialStateData());
+        assertThrows(ServiceException.class, () -> service.updateSurveyUnit(su));
+    }
+
     /**
      * Create api empty response whit status 200
      */

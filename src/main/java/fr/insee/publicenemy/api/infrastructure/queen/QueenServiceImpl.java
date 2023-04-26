@@ -9,10 +9,7 @@ import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.CampaignDto;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.QuestionnaireMetadataDto;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.QuestionnaireModelDto;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.SurveyUnitDto;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.*;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.SurveyUnitsNotFoundException;
 import jakarta.validation.constraints.NotNull;
@@ -181,5 +178,24 @@ public class QueenServiceImpl implements QueenServicePort {
                 })
                 .blockOptional()
                 .orElseThrow(() -> new SurveyUnitsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)));
+    }
+
+    public void updateSurveyUnit(@NotNull SurveyUnit surveyUnit) {
+        SurveyUnitUpdateDto surveyUnitDto = SurveyUnitUpdateDto.fromModel(surveyUnit);
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(queenUrl)
+                .path("/api/survey-unit/{id}")
+                .build(surveyUnit.id());
+
+        webClient.put().uri(uri)
+                .body(BodyInserters.fromValue(surveyUnitDto))
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                messageService.getMessage("queen.error.campaign.su.update", surveyUnit.id(), surveyUnit.questionnaireId())))
+                )
+                .toBodilessEntity()
+                .block();
     }
 }

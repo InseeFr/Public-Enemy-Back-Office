@@ -3,7 +3,7 @@ package fr.insee.publicenemy.api.controllers.dto;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
 
-public record SurveyUnitRest(String id, String displayableId) {
+public record SurveyUnitRest(String id, int displayableId) {
     /**
      * @param surveyUnit survey unit model
      * @return a new survey unit rest from the survey unit model
