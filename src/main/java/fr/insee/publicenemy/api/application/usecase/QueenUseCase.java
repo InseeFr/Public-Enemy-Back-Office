@@ -79,11 +79,13 @@ public class QueenUseCase {
         List<Mode> ddiModes = ddi.modes();
         List<QuestionnaireMode> questionnaireModes = new ArrayList<>(questionnaire.getQuestionnaireModes());
 
+        log.info(String.format("%s is synchronized: %b", questionnaire.getPoguesId(), questionnaire.isSynchronized()));
+
         // retrieve questionnaire modes not in DDI (these modes need to be deleted) and delete them
         questionnaire.getQuestionnaireModes().stream()
                 .filter(questionnaireMode -> !ddiModes.contains(questionnaireMode.getMode()))
                 .forEach(questionnaireModeToDelete -> {
-                    log.debug("Mode to delete: " + questionnaireModeToDelete.getMode().name());
+                    log.info(String.format("%s: mode to delete: %s", questionnaire.getPoguesId(), questionnaireModeToDelete.getMode().name()));
                     questionnaireModes.remove(questionnaireModeToDelete);
                     if (questionnaireModeToDelete.getMode().isWebMode()) {
                         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireModeToDelete.getMode());
@@ -99,7 +101,7 @@ public class QueenUseCase {
         ddiModes.stream()
                 .filter(mode -> !modesFromQuestionnaire.contains(mode))
                 .forEach(mode -> {
-                    log.debug("Mode to add: " + mode.name());
+                    log.info(String.format("%s: mode to add: %s", questionnaire.getPoguesId(), mode.name()));
                     questionnaireModes.add(
                             new QuestionnaireMode(questionnaire.getId(), mode, SynchronisationState.INIT_QUESTIONNAIRE.name()));
                 });
@@ -110,7 +112,7 @@ public class QueenUseCase {
         questionnaireModes.stream()
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
                 .forEach(questionnaireMode -> {
-                    log.debug("Mode to update: " + questionnaireMode.getMode().name());
+                    log.info(String.format("%s: mode to update: %s", questionnaire.getPoguesId(), questionnaireMode.getMode().name()));
                     updateQueenCampaign(ddi, questionnaire, questionnaireMode);
                 });
         questionnaire.setQuestionnaireModes(questionnaireModes);
@@ -161,7 +163,7 @@ public class QueenUseCase {
         List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
         // try to delete campaign if exists
         try {
-            log.debug(String.format("Delete campaign %s", questionnaireModelId));
+            log.info(String.format("%s: delete campaign %s", questionnaire.getPoguesId(), questionnaireModelId));
             queenService.deleteCampaign(questionnaireModelId);
             questionnaireMode.setSynchronisationState(null);
         } catch (CampaignNotFoundException ex) {
@@ -170,7 +172,7 @@ public class QueenUseCase {
         }
 
         if (!queenService.hasQuestionnaireModel(questionnaireModelId)) {
-            log.debug(String.format("Questionnaire model %s does not exist", questionnaireModelId));
+            log.info(String.format("%s: questionnaire model %s does not exist", questionnaire.getPoguesId(), questionnaireModelId));
             createQuestionnaireModel(questionnaireModelId, ddi, questionnaire.getContext(), questionnaireMode);
         }
 
@@ -185,7 +187,7 @@ public class QueenUseCase {
      * @param questionnaireModelId questionnaire model id
      */
     private void deleteQueenCampaign(String questionnaireModelId) {
-        log.debug(String.format("delete campaign %s", questionnaireModelId));
+        log.info(String.format("delete campaign %s", questionnaireModelId));
         try {
             queenService.deleteCampaign(questionnaireModelId);
         } catch (ServiceException | CampaignNotFoundException ex) {
@@ -204,7 +206,7 @@ public class QueenUseCase {
      * @param questionnaireMode    questionnaire mode
      */
     private void createQuestionnaireModel(String questionnaireModelId, Ddi ddi, Context context, QuestionnaireMode questionnaireMode) {
-        log.debug(String.format("Create questionnaire model %s", questionnaireModelId));
+        log.info(String.format("create questionnaire model %s", questionnaireModelId));
         JsonLunatic jsonLunatic = ddiUseCase.getJsonLunatic(ddi, context, questionnaireMode.getMode());
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
         queenService.createQuestionnaireModel(questionnaireModelId, ddi, jsonLunatic);
@@ -219,7 +221,7 @@ public class QueenUseCase {
      * @param questionnaireMode    questionnaire mode
      */
     private void createCampaign(String questionnaireModelId, Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
-        log.debug(String.format("Create campaign %s", questionnaireModelId));
+        log.info(String.format("create campaign %s", questionnaireModelId));
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_CAMPAIGN.name());
         queenService.createCampaign(questionnaireModelId, questionnaire, ddi);
     }
@@ -232,7 +234,7 @@ public class QueenUseCase {
      * @param questionnaireMode questionnaire mode
      */
     private void createSurveyUnits(String campaignId, List<SurveyUnit> surveyUnits, QuestionnaireMode questionnaireMode) {
-        log.debug(String.format("Create survey units for campaign %s", campaignId));
+        log.info(String.format("create survey units for campaign %s", campaignId));
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_SURVEY_UNIT.name());
         queenService.createSurveyUnits(campaignId, surveyUnits);
     }
