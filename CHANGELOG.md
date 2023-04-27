@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.7](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.6...2.1.0-beta.7) (2023-04-27)
+
+
+### Bug Fixes
+
+* build PR in CI & unify main/develop  release workflow ([#61](https://github.com/InseeFr/Public-Enemy-Back-Office/issues/61)) ([a53c49d](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/a53c49d1056729b04323c3895ae753e4b827ef7f))
+
 ## [2.1.0-beta.6](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.5...2.1.0-beta.6) (2023-04-27)
 
 
