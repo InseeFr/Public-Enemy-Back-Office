@@ -39,7 +39,7 @@ public class QuestionnaireUseCase {
      * @return the saved questionnaire
      */
     public Questionnaire addQuestionnaire(String poguesId, Context context, byte[] csvContent) {
-
+        log.info(String.format("%s: create questionnaire", poguesId));
         if (questionnairePort.hasQuestionnaire(poguesId)) {
             throw new ServiceException(HttpStatus.CONFLICT, messageService.getMessage("questionnaire.exists", poguesId));
         }
@@ -101,6 +101,7 @@ public class QuestionnaireUseCase {
      */
     public void deleteQuestionnaire(Long id) {
         Questionnaire questionnaire = questionnairePort.getQuestionnaire(id);
+        log.info(String.format("%s: delete questionnaire", questionnaire.getPoguesId()));
         questionnairePort.deleteQuestionnaire(id);
         queenUseCase.synchronizeDelete(questionnaire);
     }
@@ -115,6 +116,7 @@ public class QuestionnaireUseCase {
      */
     public Questionnaire updateQuestionnaire(Long id, Context context, byte[] surveyUnitData) {
         Questionnaire questionnaire = getQuestionnaire(id);
+        log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
         Ddi ddi = ddiUseCase.getDdi(questionnaire.getPoguesId());
         questionnaire.setContext(context);
         questionnaire.setSurveyUnitData(surveyUnitData);
