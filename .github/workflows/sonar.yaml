@@ -1,4 +1,4 @@
-name: Public enemy
+name: Sonar Analysis
 
 on: [push]
 jobs:
