@@ -1,5 +1,14 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.6](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.5...2.1.0-beta.6) (2023-04-27)
+
+
+### Features
+
+* [[#40](https://github.com/InseeFr/Public-Enemy-Back-Office/issues/40)] resolve synchronisation errors with orchestrator API ([dd60fbd](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/dd60fbd702e964cbf1058926c17ba7036d643eec))
+* [[#48](https://github.com/InseeFr/Public-Enemy-Back-Office/issues/48)] reset survey unit data/state data ([3783f5c](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/3783f5cf6891ae7c91fafd3083e7a69b6ec7d652))
+* [[#49](https://github.com/InseeFr/Public-Enemy-Back-Office/issues/49)] disallow multiple questionnaireis with same pogues id ([c4120a3](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/c4120a3aaa8b5db15d9c14e17c33222d75eb3c1d))
+
 ## [2.1.0-beta.5](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.4...2.1.0-beta.5) (2023-04-06)
 
 
