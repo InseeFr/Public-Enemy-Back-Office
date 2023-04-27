@@ -84,5 +84,4 @@ jobs:
           name: inseefr/public-enemy-back-office
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          default_branch: v2-develop
           tags: "latest,${{ needs.build-release.outputs.release-version }}"
