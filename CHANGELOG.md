@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.8](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.7...2.1.0-beta.8) (2023-04-28)
+
+
+### Features
+
+* add logs on questionnaire creation/update/delete ([9c5c781](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/9c5c781881da7cab8a184f850ceda675f750c8f9))
+
 ## [2.1.0-beta.7](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.6...2.1.0-beta.7) (2023-04-27)
 
 
