@@ -117,6 +117,9 @@ public class QuestionnaireUseCase {
     public Questionnaire updateQuestionnaire(Long id, Context context, byte[] surveyUnitData) {
         Questionnaire questionnaire = getQuestionnaire(id);
         log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
+        // new synchronisation, first, set the questionnaire as not synchronized
+        questionnaire.setSynchronized(false);
+        questionnairePort.updateQuestionnaireState(questionnaire);
         Ddi ddi = ddiUseCase.getDdi(questionnaire.getPoguesId());
         questionnaire.setContext(context);
         questionnaire.setSurveyUnitData(surveyUnitData);
