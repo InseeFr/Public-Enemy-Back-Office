@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [2.1.0-beta.9](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.8...2.1.0-beta.9) (2023-04-28)
+
+
+### Bug Fixes
+
+* set questionnaire as not synchronized when starting update ([f575963](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/f575963ee39d6740161c8f7b257e43b18b253a2b))
+
 ## [2.1.0-beta.8](https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.1.0-beta.7...2.1.0-beta.8) (2023-04-28)
 
 
