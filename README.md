@@ -1,10 +1,10 @@
 # Public-Enemy-Back-Office
 Back-office services for Public-Enemy
-REST API for communication between: 
-- Public-Enemy frontend
-- Pogues Backoffice
-- Eno
-- Stromae backoffice
+REST API for communication with: 
+- [Public-Enemy frontend](https://github.com/InseeFr/Public-Enemy)
+- [Pogues Backoffice](https://github.com/InseeFr/Pogues-Back-Office)
+- [Eno](https://github.com/InseeFr/Eno/)
+- [Stromae backoffice](https://github.com/InseeFr/Queen-Back-Office)
 
 ## Requirements
 For building and running the application you need:
@@ -61,7 +61,7 @@ application:
     enable: true
     url: proxy.xxx.com
     port: 80
-  # allowed origin: url of your public-enemu frontend
+  # allowed origin: url of your public-enemy frontend
   cors:
     allowed-origins: http://localhost:3000
   # pogues backoffice url
@@ -75,13 +75,22 @@ application:
     url: https://stromae-api.xxx.com
 ```
 
-### 5. Application Access
-To access to swagger-ui, use this url : [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)  
+### 3. Docker/Kubernetes
+
+A Dockerfile is present on this root project to deploy a container. 
+
+[Helm chart repository](https://github.com/InseeFr/Helm-Charts/) is available for the public-enemy backoffice/frontend
+
+The repository contains helm charts to deploy pogues/eno/stromae too. 
+
+### 4. Application Access
+To access the swagger-ui, use this url : [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)  
+
 
 ## Before you commit
 Before committing code please ensure,  
 1 - README.md is updated  
-2 - A successful build is run and all tests are sucessful  
+2 - A successful build is run and all tests are successful  
 3 - All newly implemented APIs are documented  
 4 - All newly added properties are documented
 
@@ -140,4 +149,3 @@ Public-Enemy's global functionalities for a designer:
 
 ## License
 Please check [LICENSE](https://github.com/InseeFr/Public-Enemy-Back-Office/blob/main/LICENSE) file
-
