@@ -6,6 +6,23 @@ REST API for communication with:
 - [Eno](https://github.com/InseeFr/Eno/)
 - [Stromae backoffice](https://github.com/InseeFr/Queen-Back-Office)
 
+## Global project concept
+Public-Enemy Backoffice (& frontend) is a tool used to test questionnaires with data. Questionnaire designer create questionnaire in pogues but can't test them with predefined data directly. Public-Enemy gives to the designer the ability to inject a questionnaire in orchestrators (stromae, queen soon), and add predefined survey units data in the orchestrators for this questionnaire.
+
+Public-Enemy's global functionalities for a designer:
+
+- create a questionnaire in public-enemy
+  - retrieve the questionnaire from pogues
+  - create the questionnaire in public-enemy
+  - inject the questionnaire and survey units data (given by the designer when creating questionnaire in public-enemy) in the orchestrators
+- update a questionnaire in public-enemy
+  - synchronise the questionnaire with the orchestrators (when pogues questionnaire has been edited for example, or to change survey units data)
+- delete a questionnaire in public-enemy
+  - delete questionnaire in orchestrators
+- access to questionnaire in orchestrators
+  - designer can access to a questionnaire in orchestrators for a specific survey unit
+  - designer can reset a specific survey unit data
+
 ## Requirements
 For building and running the application you need:
 - [JDK 17](https://jdk.java.net/archive/)
@@ -71,16 +88,18 @@ application:
     url: https://stromae-api.xxx.com
 ```
 
-### 3. Docker/Kubernetes
+### 3. Application Access
+To access the swagger-ui, use this url : [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 
-A Dockerfile is present on this root project to deploy a container. 
+
+## Docker/Kubernetes
+
+A Dockerfile is present on this root project to deploy a container. You can [get docker images on docker hub](https://hub.docker.com/r/inseefr/public-enemy-back-office/tags)
 
 [Helm chart repository](https://github.com/InseeFr/Helm-Charts/) is available for the public-enemy backoffice/frontend
 
 The repository contains helm charts to deploy pogues/eno/stromae too. 
 
-### 4. Application Access
-To access the swagger-ui, use this url : [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)  
 
 ## Liquibase
 Liquibase is enabled by default and run changelogs if needed.
@@ -97,24 +116,6 @@ Before committing code please ensure,
 2 - A successful build is run and all tests are successful  
 3 - All newly implemented APIs are documented  
 4 - All newly added properties are documented
-
-## Global project concept
-
-Public-Enemy Backoffice (& frontend) is a tool used to test questionnaires with data. Questionnaire designer create questionnaire in pogues but can't test them with predefined data directly. Public-Enemy gives to the designer the ability to inject a questionnaire in orchestrators (stromae, queen soon), and add predefined survey units data in the orchestrators for this questionnaire.
-
-Public-Enemy's global functionalities for a designer:
-
-- create a questionnaire in public-enemy
-    - retrieve the questionnaire from pogues
-    - create the questionnaire in public-enemy
-    - inject the questionnaire and survey units data (given by the designer when creating questionnaire in public-enemy) in the orchestrators
-- update a questionnaire in public-enemy
-    - synchronise the questionnaire with the orchestrators (when pogues questionnaire has been edited for example, or to change survey units data)
-- delete a questionnaire in public-enemy
-    - delete questionnaire in orchestrators
-- access to questionnaire in orchestrators
-    - designer can access to a questionnaire in orchestrators for a specific survey unit
-    - designer can reset a specific survey unit data
   
 ## End-Points in /api
 - Modes
