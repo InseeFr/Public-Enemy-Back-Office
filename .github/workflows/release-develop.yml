@@ -78,7 +78,9 @@ jobs:
           path: target/*.jar
 
   docker:
-    needs: build-release
+    needs: 
+      - check-version
+      - build-release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
