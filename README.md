@@ -23,9 +23,6 @@ Use the [Spring Boot Maven plugin](https://docs.spring.io/spring-boot/docs/curre
 mvn spring-boot:run
 ```
 
-## Application Accesses locally
-To access to swagger-ui, use this url : [http://localhost:8080/api/swagger-ui.html](http://localhost:8080/swagger-ui.html)
-
 ## Deploy application on Tomcat server
 ### 1. Package the application
 Use the [Spring Boot Maven plugin]  (https://docs.spring.io/spring-boot/docs/current/reference/html/build-tool-plugins-maven-plugin.html) like so:
@@ -35,7 +32,6 @@ mvn clean package
 The jar will be generate in `/target` repository
 
 ### 2. Launch
-
 ```shell
 java -jar public-enemy-api-XXX.jar
 ```  
@@ -86,6 +82,14 @@ The repository contains helm charts to deploy pogues/eno/stromae too.
 ### 4. Application Access
 To access the swagger-ui, use this url : [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)  
 
+## Liquibase
+Liquibase is enabled by default and run changelogs if needed.
+
+### Generate diff changelog between twos databases
+```shell
+#Don't forget to edit configuration properties in pom.xml for this
+mvn liquibase:diff
+```
 
 ## Before you commit
 Before committing code please ensure,  
