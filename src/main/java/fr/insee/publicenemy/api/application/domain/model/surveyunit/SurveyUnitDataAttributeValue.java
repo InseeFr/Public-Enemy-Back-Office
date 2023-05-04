@@ -7,14 +7,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@EqualsAndHashCode
-@ToString
-@Data
-@NoArgsConstructor
 /**
  * Object containing a survey unit attribute value as a string and its validation object
  * Used to validate the attribute value against its corresponding variable type (variable type coming from a questionnaire model)
  */
+@EqualsAndHashCode
+@ToString
+@Data
+@NoArgsConstructor
 public class SurveyUnitDataAttributeValue implements ISurveyUnitDataAttributeValue<String> {
     private String value;
 

@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-@Data
-@AllArgsConstructor
 /**
  * Transform fields (key/value) from a csv file containing survey units data to data attributes for a survey unit
  */
+@Data
+@AllArgsConstructor
 public class SurveyUnitData {
 
     private final Map<String, ISurveyUnitDataAttributeValue<?>> attributes;
