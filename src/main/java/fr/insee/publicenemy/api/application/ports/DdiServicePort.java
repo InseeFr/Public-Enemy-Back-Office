@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface DdiServicePort {
     /**
-     * Get DDI as XML format from Pogues questionnaireId
+     * Get DDI from pogues questionnaire id
      *
      * @param questionnaireId questionnaire id
      * @return DDI

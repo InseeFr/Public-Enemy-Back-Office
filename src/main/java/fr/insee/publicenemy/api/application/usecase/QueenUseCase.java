@@ -14,11 +14,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-@Slf4j
 /**
  * Handle synchronisation with queen
  */
+@Service
+@Slf4j
 public class QueenUseCase {
 
     private final QueenServicePort queenService;
@@ -138,7 +138,7 @@ public class QueenUseCase {
      * @param ddi               ddi
      * @param questionnaire     questionnaire
      * @param questionnaireMode questionnaire mode
-     * @throws CampaignNotFoundException exception throwed if the campaign was not found
+     * @throws CampaignNotFoundException exception thrown if the campaign was not found
      */
     private void createQueenCampaign(Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireMode.getMode());

@@ -33,12 +33,12 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
-@RestControllerAdvice
 /**
  * Handle API exceptions for project
  * Do not work on exceptions occuring before/outside controllers scope
  */
+@Slf4j
+@RestControllerAdvice
 public class ApiExceptionHandler {
 
     private final fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent errorComponent;

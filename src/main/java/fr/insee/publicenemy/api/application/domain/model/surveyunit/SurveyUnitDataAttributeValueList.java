@@ -10,13 +10,13 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.List;
 
-@EqualsAndHashCode
-@ToString
-@Getter
 /**
  * Object containing a survey unit attribute value as a list of string
  * Used to validate the attribute value against its corresponding variable type (variable type coming from a questionnaire model)
  */
+@EqualsAndHashCode
+@ToString
+@Getter
 public class SurveyUnitDataAttributeValueList implements ISurveyUnitDataAttributeValue<List<String>> {
     private final List<String> values;
 
