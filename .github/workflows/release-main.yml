@@ -3,7 +3,7 @@ name: Build release
 on:
   push:
     branches:
-      - v2-main
+      - main
 
 jobs:
   check-version:
