@@ -68,6 +68,8 @@ application:
   # when generating csv headers for csv schema, indicate the number of headers to generate for array variables
   csv:
     iteration-header-count: 1
+  mode:
+    handle-only-cawi: true
   questionnaire:
     metadata:
       -

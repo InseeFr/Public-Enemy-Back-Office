@@ -42,7 +42,7 @@ class QueenUseCaseTest {
 
     @BeforeEach
     public void init() {
-        queenUseCase = new QueenUseCase(ddiUseCase, queenServicePort, surveyUnitServicePort);
+        queenUseCase = new QueenUseCase(ddiUseCase, queenServicePort, surveyUnitServicePort, false);
     }
 
     @Test
