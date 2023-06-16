@@ -9,6 +9,7 @@ import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,10 +28,16 @@ public class QueenUseCase {
 
     private final DDIUseCase ddiUseCase;
 
-    public QueenUseCase(DDIUseCase ddiUseCase, QueenServicePort queenService, SurveyUnitCsvPort surveyUnitCsvService) {
+    private boolean onlyCAWIMode;
+
+    public QueenUseCase(DDIUseCase ddiUseCase,
+                        QueenServicePort queenService,
+                        SurveyUnitCsvPort surveyUnitCsvService,
+                        @Value("${application.mode.handle-only-cawi}") boolean onlyCAWIMode) {
         this.ddiUseCase = ddiUseCase;
         this.queenService = queenService;
         this.surveyUnitCsvService = surveyUnitCsvService;
+        this.onlyCAWIMode = onlyCAWIMode;
     }
 
     /**
@@ -62,6 +69,8 @@ public class QueenUseCase {
     public void synchronizeCreate(Ddi ddi, Questionnaire questionnaire) {
         questionnaire.getQuestionnaireModes().stream()
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
+                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
+                .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
                 .forEach(questionnaireMode -> createQueenCampaign(ddi, questionnaire, questionnaireMode));
     }
 
@@ -100,6 +109,8 @@ public class QueenUseCase {
         // get modes that exist in DDI but not in questionnaire (these modes need to be added)
         ddiModes.stream()
                 .filter(mode -> !modesFromQuestionnaire.contains(mode))
+                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
+                .filter(mode -> isModeAllowed(Mode.CAWI))
                 .forEach(mode -> {
                     log.info(String.format("%s: mode to add: %s", questionnaire.getPoguesId(), mode.name()));
                     questionnaireModes.add(
@@ -111,6 +122,8 @@ public class QueenUseCase {
         // Often it will cause unnecessary checks for created modes, but synchronisation is safer this way
         questionnaireModes.stream()
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
+                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
+                .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
                 .forEach(questionnaireMode -> {
                     log.info(String.format("%s: mode to update: %s", questionnaire.getPoguesId(), questionnaireMode.getMode().name()));
                     updateQueenCampaign(ddi, questionnaire, questionnaireMode);
@@ -128,6 +141,8 @@ public class QueenUseCase {
         questionnaire.getQuestionnaireModes().stream()
                 .map(QuestionnaireMode::getMode)
                 .filter(Mode::isWebMode)
+                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
+                .filter(mode -> isModeAllowed(mode))
                 .forEach(mode ->
                         deleteQueenCampaign(IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode)));
     }
@@ -237,5 +252,15 @@ public class QueenUseCase {
         log.info(String.format("create survey units for campaign %s", campaignId));
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_SURVEY_UNIT.name());
         queenService.createSurveyUnits(campaignId, surveyUnits);
+    }
+
+    private boolean isModeAllowed(Mode mode) {
+        if(!onlyCAWIMode) {
+            return true;
+        }
+        if(mode.equals(Mode.CAWI)) {
+            return true;
+        }
+        return false;
     }
 }
