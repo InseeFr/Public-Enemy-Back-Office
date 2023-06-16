@@ -5,6 +5,7 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Service
 @Transactional
+@Slf4j
 public class DDIUseCase {
 
     private final DdiServicePort ddiService;
@@ -39,6 +41,7 @@ public class DDIUseCase {
      * @return DDI
      */
     public Ddi getDdi(String poguesId) {
+        log.info(poguesId + ": get DDI");
         return ddiService.getDdi(poguesId);
     }
 
@@ -51,6 +54,7 @@ public class DDIUseCase {
      * @return Json Lunatic
      */
     public JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode) {
+        log.info(ddi.poguesId() + ": get JSON Lunatic for mode " + mode.name());
         return enoService.getJsonLunatic(ddi, context, mode);
     }
 
