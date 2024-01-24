@@ -4,8 +4,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
 import fr.insee.publicenemy.api.configuration.PropertiesLogger;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "fr.insee.publicenemy")
+@EnableTransactionManagement
+@ConfigurationPropertiesScan
 public class PublicEnemyApplication {
 
 	/**

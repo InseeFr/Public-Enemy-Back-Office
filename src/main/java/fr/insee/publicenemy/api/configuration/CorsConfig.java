@@ -2,34 +2,32 @@ package fr.insee.publicenemy.api.configuration;
 
 import java.util.List;
 
+import fr.insee.publicenemy.api.configuration.properties.ApplicationProperties;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 /** Cors configuration */
 @Configuration
+@AllArgsConstructor
 public class CorsConfig {
-    private final List<String> corsOrigins;
-
-    public CorsConfig(@Value("${application.cors.allowed-origins}") List<String> corsOrigins) {
-        this.corsOrigins = corsOrigins;
-    }
-
     @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
+    protected CorsConfigurationSource corsConfigurationSource(ApplicationProperties applicationProperties) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(applicationProperties.corsOrigins());
+        configuration.setAllowedMethods(List.of("GET", "PUT", "POST", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.addExposedHeader("Content-Disposition");
+        configuration.setMaxAge(3600L);
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        corsOrigins.forEach(config::addAllowedOrigin);
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(0);
-        return bean;
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
