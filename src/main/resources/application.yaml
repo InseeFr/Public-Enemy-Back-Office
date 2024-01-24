@@ -49,6 +49,33 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ANT_PATH_MATCHER
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${feature.oidc.auth-server-url}/realms/${feature.oidc.realm}
+
+feature:
+  oidc:
+    enabled: true
+    auth-server-host: https://auth-server.host
+    auth-server-url: ${feature.oidc.auth-server-host}/auth
+    client-id: my-client-id
+    realm: my-realm
+    principal-attribute: id-claim
+    role-claim: 'role-claim' # can be a json Path like 'deep.value.to.roles'
+  swagger:
+    enabled: true
+
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: ${feature.oidc.client-id}
+    path: /
+    syntax-highlight:
+      activated: false
+    tagsSorter: alpha
+    doc-expansion: none
 
 application:
   debug:
@@ -57,8 +84,15 @@ application:
     enable: false
     url:
     port:
-  cors:
-    allowed-origins:
+  public-urls:
+    - /swagger-ui/**
+    - /v3/api-docs/**
+    - /api/healthcheck
+    - /
+  roles:
+    admin: 'admin'
+    designer: 'designer'
+  corsOrigins: '*'
   pogues:
     url: https://pogues-url.insee.fr
   queen:
