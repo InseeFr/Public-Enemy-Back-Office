@@ -57,7 +57,7 @@ spring:
 
 feature:
   oidc:
-    enabled: true
+    enabled: false
     auth-server-host: https://auth-server.host
     auth-server-url: ${feature.oidc.auth-server-host}/auth
     client-id: my-client-id
@@ -92,7 +92,7 @@ application:
   roles:
     admin: 'admin'
     designer: 'designer'
-  corsOrigins: '*'
+  corsOrigins: 
   pogues:
     url: https://pogues-url.insee.fr
   queen:
