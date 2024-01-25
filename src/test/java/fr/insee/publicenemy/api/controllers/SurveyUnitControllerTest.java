@@ -19,15 +19,20 @@ import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
+import fr.insee.publicenemy.api.infrastructure.i18n.I18nMessageServiceImpl;
+import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -43,13 +48,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(SurveyUnitController.class)
-@ContextConfiguration(classes = SurveyUnitController.class)
-@Slf4j
+@SpringBootTest
+@ActiveProfiles("test")
+@ContextConfiguration
+@AutoConfigureMockMvc
 class SurveyUnitControllerTest {
     @MockBean
     private QueenUseCase queenUseCase;
@@ -72,6 +80,8 @@ class SurveyUnitControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    private final AuthenticatedUserTestHelper authenticatedUserTestHelper = new AuthenticatedUserTestHelper();
+
     @Mock
     private List<SurveyUnit> surveyUnits;
 
@@ -91,7 +101,8 @@ class SurveyUnitControllerTest {
         Mode cawi = Mode.valueOf("CAWI");
         String questionnaireModelId = String.format("%s-%s", questionnaireId, cawi.name());
         when(queenUseCase.getSurveyUnits(questionnaireModelId)).thenReturn(surveyUnits);
-        mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/survey-units", questionnaireId, cawi.name()))
+        mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/survey-units", questionnaireId, cawi.name())
+                        .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.surveyUnits.size()", is(surveyUnits.size())))
                 .andExpect(jsonPath("$.questionnaireModelId", is(questionnaireModelId)));
@@ -106,7 +117,8 @@ class SurveyUnitControllerTest {
         headers.add("Header3");
         SurveyUnitCsvHeaderLine headerLine = new SurveyUnitCsvHeaderLine(headers);
         when(csvUseCase.getHeadersLine(poguesId)).thenReturn(headerLine);
-        MvcResult result = mockMvc.perform(get("/api/questionnaires/{poguesId}/csv", poguesId))
+        MvcResult result = mockMvc.perform(get("/api/questionnaires/{poguesId}/csv", poguesId)
+                        .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andReturn();
         assertEquals("\"Header1\",\"Header2\",\"Header3\"\n", result.getResponse().getContentAsString());
@@ -120,6 +132,7 @@ class SurveyUnitControllerTest {
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenReturn(new ArrayList<>());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -137,6 +150,7 @@ class SurveyUnitControllerTest {
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -155,6 +169,7 @@ class SurveyUnitControllerTest {
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(surveyUnitsValidationException);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -185,6 +200,7 @@ class SurveyUnitControllerTest {
         when(csvUseCase.validateSurveyUnits(surveyUnitData, poguesId)).thenThrow(ex);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -199,6 +215,7 @@ class SurveyUnitControllerTest {
         when(questionnaireUseCase.getSurveyUnitData(11L)).thenReturn(surveyUnitData);
 
         mockMvc.perform(put("/api/survey-units/{surveyUnitId}/reset", surveyUnitId)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
