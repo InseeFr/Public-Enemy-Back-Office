@@ -37,7 +37,7 @@ public class GrantedAuthorityConverter implements Converter<Jwt, Collection<Gran
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         Map<String, Object> claims = jwt.getClaims();
 
-        List<String> roles = (List<String>) getDeepPropsOfMapForRoles(claims, oidcProperties.roleClaim());
+        List<String> roles = getDeepPropsOfMapForRoles(claims, oidcProperties.roleClaim());
 
         return roles.stream()
                 .map(role -> {

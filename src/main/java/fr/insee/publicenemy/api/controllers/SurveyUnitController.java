@@ -29,12 +29,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+
+import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
 @RestController
 @RequestMapping("/api")
@@ -72,6 +75,7 @@ public class SurveyUnitController {
      * @return all survey units fro the questionnaire
      */
     @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/survey-units")
+    @PreAuthorize(HAS_ANY_ROLE)
     public SurveyUnitsRest getSurveyUnits(@PathVariable Long questionnaireId, @PathVariable String modeName) {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
         List<SurveyUnit> surveyUnits = queenUseCase.getSurveyUnits(questionnaireModelId);
@@ -84,6 +88,7 @@ public class SurveyUnitController {
      * @param surveyUnitId survey unit id
      */
     @PutMapping("/survey-units/{surveyUnitId}/reset")
+    @PreAuthorize(HAS_ANY_ROLE)
     public String resetSurveyUnit(@PathVariable String surveyUnitId) {
         SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(surveyUnitId);
         byte[] surveyUnitsCsvData = questionnaireUseCase.getSurveyUnitData(identifierHandler.getQuestionnaireId());
@@ -97,6 +102,7 @@ public class SurveyUnitController {
      * @throws IOException IO Exception
      */
     @GetMapping("/questionnaires/{poguesId}/csv")
+    @PreAuthorize(HAS_ANY_ROLE)
     public void getCsvSchema(HttpServletResponse response, @PathVariable String poguesId) throws IOException {
 
         // set file name and content type
@@ -124,6 +130,7 @@ public class SurveyUnitController {
      * @throws SurveyUnitsSpecificValidationException specific exceptions occurred when validating survey unit data csv file
      */
     @PostMapping(path = "/questionnaires/{poguesId}/checkdata", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PreAuthorize(HAS_ANY_ROLE)
     public List<String> checkSurveyUnitsData(
             @PathVariable String poguesId,
             @RequestPart(name = "surveyUnitData") @NonNull MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
