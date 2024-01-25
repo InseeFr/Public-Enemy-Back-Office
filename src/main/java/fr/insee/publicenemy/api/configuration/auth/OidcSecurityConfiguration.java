@@ -93,11 +93,4 @@ public class OidcSecurityConfiguration {
         return new GrantedAuthorityConverter(oidcProperties, roleProperties);
     }
 
-    @Bean
-    protected RestTemplate restTemplateQueen(AuthenticationHelper authenticationHelper) {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getInterceptors().add(new RestTemplateAddJsonHeaderInterceptor());
-        restTemplate.getInterceptors().add(new RestTemplateTokenInterceptor(authenticationHelper));
-        return restTemplate;
-    }
 }

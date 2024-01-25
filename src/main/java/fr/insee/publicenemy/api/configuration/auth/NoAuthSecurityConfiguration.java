@@ -58,11 +58,4 @@ public class NoAuthSecurityConfiguration {
     protected SecurityFilterChain filterPublicUrlsChain(HttpSecurity http, ApplicationProperties applicationProperties) throws Exception {
         return publicSecurityFilterChainConfiguration.buildSecurityPublicFilterChain(http, applicationProperties.publicUrls());
     }
-
-    @Bean
-    protected RestTemplate restTemplateQueen() {
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.getInterceptors().add(new RestTemplateAddJsonHeaderInterceptor());
-        return restTemplate;
-    }
 }

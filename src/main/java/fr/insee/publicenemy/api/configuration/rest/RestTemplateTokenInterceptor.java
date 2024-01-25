@@ -11,7 +11,7 @@ import org.springframework.http.client.ClientHttpResponse;
 import java.io.IOException;
 
 /**
- * Add interceptor to restTemplate to inject tokens when oidc is enabled
+ * ToDo, change this to create intercept for WebClient
  */
 @RequiredArgsConstructor
 public class RestTemplateTokenInterceptor implements ClientHttpRequestInterceptor {
