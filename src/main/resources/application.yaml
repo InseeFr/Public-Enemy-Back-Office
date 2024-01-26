@@ -8,10 +8,10 @@ server:
 
 # LOGGING
 logging:
-  file:
-    path: /var/log
-    name: publicenemy/publicenemy.log
-    maxHistory: 365
+#  file:
+#    path: /var/log
+#    name: publicenemy/publicenemy.log
+#    maxHistory: 365
   level:
     root: INFO
     org:
