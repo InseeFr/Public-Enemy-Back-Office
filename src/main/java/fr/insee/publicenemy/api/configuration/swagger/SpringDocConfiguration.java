@@ -28,7 +28,6 @@ public class SpringDocConfiguration {
     @Bean
     @ConditionalOnProperty(name = "feature.oidc.enabled", havingValue = "true")
     protected OpenAPI oidcOpenAPI(OidcProperties oidcProperties, BuildProperties buildProperties) {
-        System.out.println("JKjclkdj");
         String authUrl = oidcProperties.authServerUrl() + "/realms/" + oidcProperties.realm() + "/protocol/openid-connect";
         String securitySchemeName = "oauth2";
 

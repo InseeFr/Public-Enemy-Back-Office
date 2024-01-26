@@ -1,11 +1,8 @@
 package fr.insee.publicenemy.api.configuration.auth;
 
-import fr.insee.publicenemy.api.application.web.auth.AuthenticationHelper;
 import fr.insee.publicenemy.api.configuration.properties.ApplicationProperties;
 import fr.insee.publicenemy.api.configuration.properties.OidcProperties;
 import fr.insee.publicenemy.api.configuration.properties.RoleProperties;
-import fr.insee.publicenemy.api.configuration.rest.RestTemplateAddJsonHeaderInterceptor;
-import fr.insee.publicenemy.api.configuration.rest.RestTemplateTokenInterceptor;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +21,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Collection;
 

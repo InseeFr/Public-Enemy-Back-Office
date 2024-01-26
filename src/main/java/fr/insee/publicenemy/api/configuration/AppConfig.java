@@ -1,8 +1,12 @@
 package fr.insee.publicenemy.api.configuration;
 
+import fr.insee.publicenemy.api.application.web.auth.AuthenticationHelper;
+import fr.insee.publicenemy.api.configuration.rest.WebClientTokenInterceptor;
 import io.netty.handler.logging.LogLevel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.EnableCaching;
@@ -28,6 +32,10 @@ import reactor.netty.transport.logging.AdvancedByteBufFormat;
 @Slf4j
 public class AppConfig implements WebMvcConfigurer {
 
+    @Autowired
+    private AuthenticationHelper authenticationHelper;
+
+
     /**
      * 
      * @param proxyUrl proxy url
@@ -36,9 +44,12 @@ public class AppConfig implements WebMvcConfigurer {
      * @return webclient configured with proxy
      */
     @Bean
-    @ConditionalOnProperty(name="application.proxy.enable", havingValue="true")
-    public WebClient webClientProxy(@Value("${application.proxy.url}") String proxyUrl, 
-            @Value("${application.proxy.port}") Integer proxyPort, @Value("${application.debug.webclient}") boolean debug,
+    @ConditionalOnProperty(name="feature.proxy.enabled", havingValue="true")
+    public WebClient webClientProxy(
+            @Value("${feature.proxy.url}") String proxyUrl,
+            @Value("${feature.proxy.port}") Integer proxyPort,
+            @Value("${feature.debug.webclient}") boolean debug,
+            @Value("${feature.oidc.enabled}") boolean oidcEnabled,
             WebClient.Builder builder) {
         HttpClient httpClient = HttpClient.create()
                 .proxy(proxy -> proxy
@@ -55,6 +66,8 @@ public class AppConfig implements WebMvcConfigurer {
             .clientConnector(new ReactorClientHttpConnector(httpClient))
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE) 
             .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+
+        if(oidcEnabled) builder.filter(new WebClientTokenInterceptor(authenticationHelper));
         return builder.build();
     }
 
@@ -64,11 +77,14 @@ public class AppConfig implements WebMvcConfigurer {
      * @return webclient with json default headers
      */
     @Bean
-    @ConditionalOnProperty(name="application.proxy.enable", havingValue="false")
-    public WebClient webClient(WebClient.Builder builder) {
+    @ConditionalOnProperty(name="feature.proxy.enabled", havingValue="false")
+    public WebClient webClient(
+            @Value("${feature.oidc.enabled}") boolean oidcEnabled,
+            WebClient.Builder builder) {
         builder
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE) 
-            .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        if(oidcEnabled)  builder.filter(new WebClientTokenInterceptor(authenticationHelper));
         return builder.build();
     }
 }
