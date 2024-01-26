@@ -11,11 +11,13 @@ import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
+import fr.insee.publicenemy.api.configuration.auth.AuthorityRoleEnum;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.ModeRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
+import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,12 +26,15 @@ import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -43,12 +48,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(QuestionnaireController.class)
-@ContextConfiguration(classes = QuestionnaireController.class)
-@Slf4j
+@SpringBootTest
+@ActiveProfiles("test")
+@ContextConfiguration
+@AutoConfigureMockMvc
 class QuestionnaireControllerTest {
     @MockBean
     private QuestionnaireUseCase questionnaireUseCase;
@@ -70,6 +77,8 @@ class QuestionnaireControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    private final AuthenticatedUserTestHelper authenticatedUserTestHelper = new AuthenticatedUserTestHelper();
     private List<Questionnaire> questionnaires;
 
     private Questionnaire questionnaire;
@@ -105,7 +114,8 @@ class QuestionnaireControllerTest {
 
         when(questionnaireUseCase.getQuestionnaires()).thenReturn(questionnaires);
 
-        mockMvc.perform(get("/api/questionnaires"))
+        mockMvc.perform(get("/api/questionnaires")
+                        .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()", is(questionnaires.size())));
     }
@@ -115,7 +125,8 @@ class QuestionnaireControllerTest {
         Long id = questionnaire.getId();
         when(questionnaireUseCase.getQuestionnaire(id)).thenReturn(questionnaire);
 
-        mockMvc.perform(get("/api/questionnaires/{id}", id))
+        mockMvc.perform(get("/api/questionnaires/{id}", id)
+                        .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
                 .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
@@ -132,7 +143,8 @@ class QuestionnaireControllerTest {
         byte[] data = "\"att1\",\"att2\"".getBytes();
         when(questionnaireUseCase.getSurveyUnitData(id)).thenReturn(data);
 
-        MvcResult result = mockMvc.perform(get("/api/questionnaires/{id}/data", id))
+        MvcResult result = mockMvc.perform(get("/api/questionnaires/{id}/data", id)
+                        .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -152,6 +164,7 @@ class QuestionnaireControllerTest {
 
         questionnaireMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
@@ -168,7 +181,8 @@ class QuestionnaireControllerTest {
         String poguesId = questionnaire.getPoguesId();
         when(ddiUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
 
-        mockMvc.perform(get("/api/questionnaires/pogues/{poguesId}", poguesId))
+        mockMvc.perform(get("/api/questionnaires/pogues/{poguesId}", poguesId)
+                        .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
                 .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
@@ -192,6 +206,7 @@ class QuestionnaireControllerTest {
                 questionnaire.getContext(), questionnaire.getSurveyUnitData())).thenReturn(questionnaire);
 
         mockMvc.perform(multipart("/api/questionnaires/{id}", id).part(contextMockPart).file(surveyUnitMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
@@ -214,6 +229,7 @@ class QuestionnaireControllerTest {
         Long id = questionnaire.getId();
 
         mockMvc.perform(multipart("/api/questionnaires/{id}", id).part(contextMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk());
         verify(questionnaireUseCase, times(1)).getSurveyUnitData(id);
@@ -223,7 +239,8 @@ class QuestionnaireControllerTest {
     void onDeleteQuestionnaireShouldReturnEmptyJsonObject() throws Exception {
         Long id = questionnaire.getId();
 
-        mockMvc.perform(delete("/api/questionnaires/{id}/delete", id))
+        mockMvc.perform(delete("/api/questionnaires/{id}/delete", id)
+                        .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(content().json("{}"));
     }
@@ -243,6 +260,7 @@ class QuestionnaireControllerTest {
         SurveyUnitsGlobalValidationException surveyUnitsValidationException = new SurveyUnitsGlobalValidationException("main error message", new ArrayList<>());
         when(surveyUnitCsvUseCase.validateSurveyUnits(surveyUnitData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
         mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
 
@@ -266,7 +284,10 @@ class QuestionnaireControllerTest {
         SurveyUnitsSpecificValidationException surveyUnitsSpecificValidationException = new SurveyUnitsSpecificValidationException("main error message", new ArrayList<>());
         when(surveyUnitCsvUseCase.validateSurveyUnits(surveyUnitData, "l8wwljbo")).thenThrow(surveyUnitsSpecificValidationException);
 
-        mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
+        mockMvc.perform(multipart("/api/questionnaires/add")
+                        .file(surveyUnitMockPart)
+                        .part(questionnaireMockPart)
+                        .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
 

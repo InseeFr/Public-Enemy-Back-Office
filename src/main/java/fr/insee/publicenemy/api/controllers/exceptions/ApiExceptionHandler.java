@@ -2,12 +2,12 @@ package fr.insee.publicenemy.api.controllers.exceptions;
 
 import fr.insee.publicenemy.api.application.exceptions.ApiException;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithFields;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiFieldError;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.LunaticJsonNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
-import fr.insee.publicenemy.api.infrastructure.i18n.I18nMessageServiceImpl;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -43,9 +44,9 @@ public class ApiExceptionHandler {
 
     private final fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent errorComponent;
 
-    private final I18nMessageServiceImpl messageService;
+    private final I18nMessagePort messageService;
 
-    public ApiExceptionHandler(ApiExceptionComponent errorComponent, I18nMessageServiceImpl messageService) {
+    public ApiExceptionHandler(ApiExceptionComponent errorComponent, I18nMessagePort messageService) {
         this.errorComponent = errorComponent;
         this.messageService = messageService;
     }
@@ -362,5 +363,13 @@ public class ApiExceptionHandler {
             WebRequest request) {
         ApiError error = errorComponent.buildApiErrorObject(request, HttpStatus.NOT_FOUND, ex.getMessage());
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler({AccessDeniedException.class})
+    public ResponseEntity<ApiError> handleAccessDeniedException(
+            AccessDeniedException ex,
+            WebRequest request) {
+        ApiError error = errorComponent.buildApiErrorObject(request, HttpStatus.FORBIDDEN, ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 }

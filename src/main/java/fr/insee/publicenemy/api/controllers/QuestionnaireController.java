@@ -21,12 +21,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+
+import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
 @RestController
 @RequestMapping("/api/questionnaires")
@@ -62,6 +65,7 @@ public class QuestionnaireController {
      * @return all questionnaires
      */
     @GetMapping("")
+    @PreAuthorize(HAS_ANY_ROLE)
     public List<QuestionnaireRest> getQuestionnaires() {
         return questionnaireUseCase.getQuestionnaires().stream()
                 .map(questionnaireComponent::createFromModel)
@@ -73,6 +77,7 @@ public class QuestionnaireController {
      * @return questionnaire
      */
     @GetMapping("/{id}")
+    @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest getQuestionnaire(@PathVariable Long id) {
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(id);
         return questionnaireComponent.createFromModel(questionnaire);
@@ -83,6 +88,7 @@ public class QuestionnaireController {
      * @return questionnaire
      */
     @GetMapping("/{poguesId}/db")
+    @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest getQuestionnaire(@PathVariable String poguesId) {
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
         return questionnaireComponent.createFromModel(questionnaire);
@@ -93,6 +99,7 @@ public class QuestionnaireController {
      * @return questionnaire
      */
     @GetMapping(value = "/{id}/data", produces = "text/csv")
+    @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<byte[]> getSurveyUnitData(@PathVariable Long id) {
         String filename = String.format("questionnaire-%s-data.csv", id);
 
@@ -109,6 +116,7 @@ public class QuestionnaireController {
      * @return questionnaire informations from ddi
      */
     @GetMapping("/pogues/{poguesId}")
+    @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {
         Questionnaire questionnaire = ddiUseCase.getQuestionnaire(poguesId);
         return questionnaireComponent.createFromModel(questionnaire);
@@ -120,6 +128,7 @@ public class QuestionnaireController {
      * @return the saved questionnaire
      */
     @PostMapping(path = "/add", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest addQuestionnaire(
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
             @RequestPart(name = "surveyUnitData") MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
@@ -139,6 +148,7 @@ public class QuestionnaireController {
      * @return the updated questionnaire
      */
     @PostMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest saveQuestionnaire(
             @PathVariable Long questionnaireId,
             @RequestPart(name = "context") ContextRest context,
@@ -162,6 +172,7 @@ public class QuestionnaireController {
      * @param id questionnaire id to delete
      */
     @DeleteMapping(path = "/{id}/delete")
+    @PreAuthorize(HAS_ANY_ROLE)
     public String deleteQuestionnaire(
             @PathVariable Long id) {
         questionnaireUseCase.deleteQuestionnaire(id);

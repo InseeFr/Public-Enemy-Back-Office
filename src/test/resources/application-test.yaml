@@ -1,6 +1,7 @@
 application:
   mode:
     handle-only-cawi: false
+  corsOrigins: '*'
 spring:
   datasource:
     driver-class-name: org.h2.Driver
@@ -16,3 +17,9 @@ spring:
     enabled: true
     change-log: classpath:/db/changelog/test/init-schema-test.xml
     contexts: test
+  feature:
+    oidc:
+      enabled: false
+    swagger:
+      enabled: true
+
