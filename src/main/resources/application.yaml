@@ -66,6 +66,13 @@ feature:
     role-claim: 'role-claim' # can be a json Path like 'deep.value.to.roles'
   swagger:
     enabled: true
+  proxy:
+    enabled: false
+    url:
+    port:
+  debug:
+    webclient: false
+
 
 springdoc:
   swagger-ui:
@@ -78,12 +85,6 @@ springdoc:
     doc-expansion: none
 
 application:
-  debug:
-    webclient: false
-  proxy:
-    enable: false
-    url:
-    port:
   public-urls:
     - /swagger-ui/**
     - /v3/api-docs/**
