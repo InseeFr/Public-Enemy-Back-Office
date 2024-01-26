@@ -8,10 +8,10 @@ server:
 
 # LOGGING
 logging:
-  file:
-    path: /var/log
-    name: publicenemy/publicenemy.log
-    maxHistory: 365
+#  file:
+#    path: /var/log
+#    name: publicenemy/publicenemy.log
+#    maxHistory: 365
   level:
     root: INFO
     org:
@@ -73,7 +73,6 @@ feature:
   debug:
     webclient: false
 
-
 springdoc:
   swagger-ui:
     oauth:
@@ -86,6 +85,7 @@ springdoc:
 
 application:
   public-urls:
+    - /actuator/**
     - /swagger-ui/**
     - /v3/api-docs/**
     - /api/healthcheck
