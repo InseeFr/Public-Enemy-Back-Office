@@ -89,7 +89,7 @@ class SurveyUnitSerializerTest {
                                  }
                               },
                               "stateData":{
-                                 "currentPage":"",
+                                 "currentPage":"1",
                                  "date":0,
                                  "state":"INIT"
                               }
@@ -128,7 +128,7 @@ class SurveyUnitSerializerTest {
                                  }
                               },
                               "stateData":{
-                                 "currentPage":"",
+                                 "currentPage":"1",
                                  "date":0,
                                  "state":"INIT"
                               }
