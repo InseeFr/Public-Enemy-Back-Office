@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -57,7 +58,8 @@ public class QueenUseCase {
     public void resetSurveyUnit(String surveyUnitId, byte[] surveyUnitData) {
         SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(surveyUnitId);
         SurveyUnit surveyUnit = surveyUnitCsvService.getCsvSurveyUnit(identifierHandler.getSurveyUnitIdentifier(), surveyUnitData, identifierHandler.getQuestionnaireModelId());
-        queenService.updateSurveyUnit(surveyUnit);
+        queenService.deteteSurveyUnit(surveyUnit);
+        createSurveyUnit(surveyUnit.questionnaireId(), surveyUnit);
     }
 
     /**
@@ -179,6 +181,9 @@ public class QueenUseCase {
         // try to delete campaign if exists
         try {
             log.info(String.format("%s: delete campaign %s", questionnaire.getPoguesId(), questionnaireModelId));
+            surveyUnits.stream().forEach(
+                    surveyUnit -> queenService.deteteSurveyUnit(surveyUnit)
+            );
             queenService.deleteCampaign(questionnaireModelId);
             questionnaireMode.setSynchronisationState(null);
         } catch (CampaignNotFoundException ex) {
@@ -186,13 +191,7 @@ public class QueenUseCase {
             log.debug(ex.getMessage());
         }
 
-        if (!queenService.hasQuestionnaireModel(questionnaireModelId)) {
-            log.info(String.format("%s: questionnaire model %s does not exist", questionnaire.getPoguesId(), questionnaireModelId));
-            createQuestionnaireModel(questionnaireModelId, ddi, questionnaire.getContext(), questionnaireMode);
-        }
-
-        createCampaign(questionnaireModelId, ddi, questionnaire, questionnaireMode);
-        createSurveyUnits(questionnaireModelId, surveyUnits, questionnaireMode);
+        createQueenCampaign(ddi, questionnaire, questionnaireMode);
         questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
     }
 
@@ -252,6 +251,11 @@ public class QueenUseCase {
         log.info(String.format("create survey units for campaign %s", campaignId));
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_SURVEY_UNIT.name());
         queenService.createSurveyUnits(campaignId, surveyUnits);
+    }
+
+    private void createSurveyUnit(String campaignId, SurveyUnit surveyUnit) {
+        log.info(String.format("create survey unit %s for campaign %s", surveyUnit.id(), campaignId));
+        queenService.createSurveyUnit(campaignId, surveyUnit);
     }
 
     private boolean isModeAllowed(Mode mode) {
