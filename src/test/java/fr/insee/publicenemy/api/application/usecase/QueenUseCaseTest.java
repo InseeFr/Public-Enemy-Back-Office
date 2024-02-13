@@ -231,6 +231,7 @@ class QueenUseCaseTest {
         SurveyUnit su = new SurveyUnit(surveyUnitId, "11", null, SurveyUnitStateData.createInitialStateData());
         when(surveyUnitServicePort.getCsvSurveyUnit(identifierHandler.getSurveyUnitIdentifier(), data, identifierHandler.getQuestionnaireModelId())).thenReturn(su);
         queenUseCase.resetSurveyUnit(surveyUnitId, data);
-        verify(queenServicePort).updateSurveyUnit(su);
+        verify(queenServicePort).deteteSurveyUnit(su);
+        verify(queenServicePort).createSurveyUnit(su.questionnaireId(),su);
     }
 }

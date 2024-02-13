@@ -89,11 +89,7 @@ class SurveyUnitUpdateSerializerTest {
                                     ]
                                  }
                               },
-                              "stateData":{
-                                 "currentPage":"1",
-                                 "date":0,
-                                 "state":"INIT"
-                              }
+                              "stateData": null
                            },
                            {
                               "personalization":[
@@ -126,11 +122,7 @@ class SurveyUnitUpdateSerializerTest {
                                     ]
                                  }
                               },
-                              "stateData":{
-                                 "currentPage":"1",
-                                 "date":0,
-                                 "state":"INIT"
-                              }
+                              "stateData": null
                            }
                         ]""".replaceAll("\\s+", "")
                 , jsonSurveyUnits.replaceAll("\\s+", ""));
