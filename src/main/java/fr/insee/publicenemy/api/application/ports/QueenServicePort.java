@@ -61,4 +61,8 @@ public interface QueenServicePort {
      * @param surveyUnit survey unit to update
      */
     void updateSurveyUnit(SurveyUnit surveyUnit);
+
+    void deteteSurveyUnit(SurveyUnit surveyUnit);
+
+    void createSurveyUnit(String questionnaireId, SurveyUnit surveyUnit);
 }

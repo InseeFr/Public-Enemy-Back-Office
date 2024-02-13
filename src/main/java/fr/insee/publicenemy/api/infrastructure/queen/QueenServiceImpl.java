@@ -157,6 +157,24 @@ public class QueenServiceImpl implements QueenServicePort {
                         .block());
     }
 
+    public void createSurveyUnit(@NotNull String questionnaireModelId, @NotNull SurveyUnit surveyUnit) {
+
+        SurveyUnitDto surveyUnitsDto = SurveyUnitDto.fromModel(surveyUnit);
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(queenUrl)
+                .path("/api/campaign/{id}/survey-unit")
+                .build(questionnaireModelId);
+
+        webClient.post().uri(uri)
+                .body(BodyInserters.fromValue(surveyUnitsDto))
+                .retrieve()
+                .onStatus(HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), messageService.getMessage("queen.error.campaign.su.create", surveyUnit.id(), questionnaireModelId)))
+                )
+                .toBodilessEntity()
+                .block();
+    }
+
     public List<SurveyUnit> getSurveyUnits(@NotNull String campaignId) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
@@ -194,6 +212,29 @@ public class QueenServiceImpl implements QueenServicePort {
                         HttpStatusCode::isError,
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                 messageService.getMessage("queen.error.campaign.su.update", surveyUnit.id(), surveyUnit.questionnaireId())))
+                )
+                .toBodilessEntity()
+                .block();
+    }
+
+    @Override
+    public void deteteSurveyUnit(SurveyUnit surveyUnit) {
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(queenUrl)
+                .path("/api/survey-unit/{id}")
+                .build(surveyUnit.id());
+
+        webClient.delete()
+                .uri(uri)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> Mono.error(new SurveyUnitsNotFoundException(messageService.getMessage("surveyunit.csv.not-found", surveyUnit.id())))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                messageService.getMessage("surveyunit.error.delete", surveyUnit.id())))
                 )
                 .toBodilessEntity()
                 .block();
