@@ -5,7 +5,7 @@
 
     <groupId>fr.insee</groupId>
     <artifactId>public-enemy-api</artifactId>
-    <version>2.2.6</version>
+    <version>2.3.0</version>
     <packaging>jar</packaging>
 
     <name>public-enemy-api</name>
@@ -14,12 +14,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.1</version>
+        <version>3.2.4</version>
     </parent>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <start-class>fr.insee.publicenemy.api.PublicEnemyApplication</start-class>
         <sonar.organization>inseefr</sonar.organization>
         <sonar.projectKey>InseeFr_Public-Enemy-Back-Office</sonar.projectKey>
@@ -205,7 +205,7 @@
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>42.7.2</version>
+                        <version>42.6.2</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -232,10 +232,6 @@
                     <verbose>true</verbose>
                     <logging>debug</logging>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
