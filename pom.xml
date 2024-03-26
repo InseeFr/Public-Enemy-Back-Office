@@ -19,7 +19,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <start-class>fr.insee.publicenemy.api.PublicEnemyApplication</start-class>
         <sonar.organization>inseefr</sonar.organization>
         <sonar.projectKey>InseeFr_Public-Enemy-Back-Office</sonar.projectKey>
