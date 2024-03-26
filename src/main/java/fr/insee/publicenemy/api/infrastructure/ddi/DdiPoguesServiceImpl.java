@@ -99,7 +99,7 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
      * @return the json from pogues
      */
     private JsonNode getJsonPogues(@NonNull String questionnaireId) {
-        return webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}", questionnaireId)
+        return webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}?references=true", questionnaireId)
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
