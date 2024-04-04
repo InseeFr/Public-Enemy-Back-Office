@@ -59,7 +59,7 @@ feature:
   oidc:
     enabled: false
     auth-server-host: https://auth-server.host
-    auth-server-url: ${feature.oidc.auth-server-host}/auth
+    auth-server-url: ${feature.oidc.auth-server-host}
     client-id: my-client-id
     realm: my-realm
     principal-attribute: id-claim
