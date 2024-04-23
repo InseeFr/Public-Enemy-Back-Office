@@ -71,8 +71,6 @@ public class QueenUseCase {
     public void synchronizeCreate(Ddi ddi, Questionnaire questionnaire) {
         questionnaire.getQuestionnaireModes().stream()
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
                 .forEach(questionnaireMode -> createQueenCampaign(ddi, questionnaire, questionnaireMode));
     }
 
@@ -111,8 +109,6 @@ public class QueenUseCase {
         // get modes that exist in DDI but not in questionnaire (these modes need to be added)
         ddiModes.stream()
                 .filter(mode -> !modesFromQuestionnaire.contains(mode))
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(mode -> isModeAllowed(Mode.CAWI))
                 .forEach(mode -> {
                     log.info(String.format("%s: mode to add: %s", questionnaire.getPoguesId(), mode.name()));
                     questionnaireModes.add(
@@ -124,8 +120,6 @@ public class QueenUseCase {
         // Often it will cause unnecessary checks for created modes, but synchronisation is safer this way
         questionnaireModes.stream()
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
                 .forEach(questionnaireMode -> {
                     log.info(String.format("%s: mode to update: %s", questionnaire.getPoguesId(), questionnaireMode.getMode().name()));
                     updateQueenCampaign(ddi, questionnaire, questionnaireMode);
@@ -143,8 +137,6 @@ public class QueenUseCase {
         questionnaire.getQuestionnaireModes().stream()
                 .map(QuestionnaireMode::getMode)
                 .filter(Mode::isWebMode)
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(mode -> isModeAllowed(mode))
                 .forEach(mode ->
                         deleteQueenCampaign(IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode)));
     }
