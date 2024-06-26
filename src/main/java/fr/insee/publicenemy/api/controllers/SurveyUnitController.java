@@ -1,11 +1,13 @@
 package fr.insee.publicenemy.api.controllers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
@@ -13,9 +15,7 @@ import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUti
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
-import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
+import fr.insee.publicenemy.api.application.usecase.*;
 import fr.insee.publicenemy.api.controllers.dto.SurveyUnitErrors;
 import fr.insee.publicenemy.api.controllers.dto.SurveyUnitsRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
@@ -35,6 +35,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
@@ -46,9 +47,13 @@ public class SurveyUnitController {
 
     private final QueenUseCase queenUseCase;
 
+    private final DDIUseCase ddiUseCase;
+
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final SurveyUnitCsvUseCase surveyUnitUseCase;
+    private final SurveyUnitCsvUseCase surveyUnitCsvUseCase;
+
+    private final SurveyUnitUseCase surveyUnitUseCase;
 
     private final I18nMessagePort messageService;
 
@@ -58,15 +63,17 @@ public class SurveyUnitController {
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
-    public SurveyUnitController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, SurveyUnitCsvUseCase surveyUnitUseCase,
+    public SurveyUnitController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, SurveyUnitCsvUseCase surveyUnitCsvUseCase,
                                 I18nMessagePort messageService, SurveyUnitMessagesComponent messageComponent,
-                                ApiExceptionComponent errorComponent) {
+                                ApiExceptionComponent errorComponent, DDIUseCase ddiUseCase, SurveyUnitUseCase surveyUnitUseCase) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
+        this.surveyUnitCsvUseCase = surveyUnitCsvUseCase;
         this.surveyUnitUseCase = surveyUnitUseCase;
         this.messageService = messageService;
         this.messageComponent = messageComponent;
         this.errorComponent = errorComponent;
+        this.ddiUseCase = ddiUseCase;
     }
 
     /**
@@ -77,9 +84,25 @@ public class SurveyUnitController {
     @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/survey-units")
     @PreAuthorize(HAS_ANY_ROLE)
     public SurveyUnitsRest getSurveyUnits(@PathVariable Long questionnaireId, @PathVariable String modeName) {
+
+        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
+        JsonNode nomenclatures = ddiUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
         List<SurveyUnit> surveyUnits = queenUseCase.getSurveyUnits(questionnaireModelId);
-        return SurveyUnitsRest.fromModel(surveyUnits, questionnaireModelId);
+
+        return new SurveyUnitsRest(
+                surveyUnits.stream().map(surveyUnit -> {
+                    try {
+                        return surveyUnitUseCase.buildSurveyUnitRest(
+                                surveyUnit,
+                                questionnaireModelId,
+                                Mode.valueOf(modeName),
+                                nomenclatures);
+                    } catch (UnsupportedEncodingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList(),
+                questionnaireModelId);
     }
 
     /**
@@ -113,7 +136,7 @@ public class SurveyUnitController {
                 String.format("attachment; filename=\"%s\"", filename));
 
         CSVWriter writer = new CSVWriter(response.getWriter());
-        SurveyUnitCsvHeaderLine attributes = surveyUnitUseCase.getHeadersLine(poguesId);
+        SurveyUnitCsvHeaderLine attributes = surveyUnitCsvUseCase.getHeadersLine(poguesId);
         writer.writeNext(attributes.headers().toArray(String[]::new));
         writer.close();
     }
@@ -135,7 +158,7 @@ public class SurveyUnitController {
             @PathVariable String poguesId,
             @RequestPart(name = "surveyUnitData") @NonNull MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
         byte[] csvContent = surveyUnitData.getBytes();
-        List<ValidationWarningMessage> validationMessages = surveyUnitUseCase.validateSurveyUnits(csvContent, poguesId);
+        List<ValidationWarningMessage> validationMessages = surveyUnitCsvUseCase.validateSurveyUnits(csvContent, poguesId);
 
         return validationMessages.stream()
                 .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))

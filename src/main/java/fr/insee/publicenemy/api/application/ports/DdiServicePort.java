@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.application.ports;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
@@ -20,6 +21,14 @@ public interface DdiServicePort {
      * @return questionnaire details from pogues
      */
     Questionnaire getQuestionnaire(String poguesId);
+
+    /**
+     * Get nomenclature
+     *
+     * @param poguesId questionnaire pogues id
+     * @return the nomenclature of questionnaire
+     */
+    JsonNode getNomenclaturesByQuestionnaire(String poguesId);
 
     /**
      * Get Json Pogues variables

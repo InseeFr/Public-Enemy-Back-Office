@@ -1,6 +1,8 @@
 package fr.insee.publicenemy.api.controllers;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationErrorMessage;
@@ -13,6 +15,7 @@ import fr.insee.publicenemy.api.application.exceptions.SurveyUnitExceptionCode;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
@@ -25,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -63,6 +68,9 @@ class SurveyUnitControllerTest {
     private QueenUseCase queenUseCase;
 
     @MockBean
+    private DDIUseCase ddiUseCase;
+
+    @MockBean
     private SurveyUnitCsvUseCase csvUseCase;
 
     @MockBean
@@ -85,6 +93,9 @@ class SurveyUnitControllerTest {
     @Mock
     private List<SurveyUnit> surveyUnits;
 
+    @Mock
+    private Questionnaire questionnaire;
+
 
     @BeforeEach
     public void init() {
@@ -93,6 +104,8 @@ class SurveyUnitControllerTest {
         surveyUnits.add(new SurveyUnit("11-CAPI-1", "q1", data, SurveyUnitStateData.createInitialStateData()));
         surveyUnits.add(new SurveyUnit("11-CAPI-2", "q1", data, SurveyUnitStateData.createInitialStateData()));
         surveyUnits.add(new SurveyUnit("11-CAPI-3", "q1", data, SurveyUnitStateData.createInitialStateData()));
+
+        questionnaire = new Questionnaire("poguesId","label",List.of(Mode.valueOf("CAWI"), Mode.valueOf("CATI")));
     }
 
     @Test
@@ -100,6 +113,8 @@ class SurveyUnitControllerTest {
         Long questionnaireId = 12L;
         Mode cawi = Mode.valueOf("CAWI");
         String questionnaireModelId = String.format("%s-%s", questionnaireId, cawi.name());
+        when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
+        when(ddiUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
         when(queenUseCase.getSurveyUnits(questionnaireModelId)).thenReturn(surveyUnits);
         mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/survey-units", questionnaireId, cawi.name())
                         .with(authentication(authenticatedUserTestHelper.getUser())))
