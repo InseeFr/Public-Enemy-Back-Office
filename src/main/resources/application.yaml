@@ -101,10 +101,17 @@ application:
   eno:
     url: https://eno-url.insee.fr
   # when generating csv headers for csv schema, indicate the number of headers to generate for array variables
+  orchestrator:
+    cawi:
+      url:
+      visualize-schema: '%s/questionnaire/%s/unite-enquetee/%s'
+    capi-cati:
+      url:
+      visualize-schema: '%s/queen/visualize?questionnaire=%s&data=%s&nomenclature=%s'
   csv:
     iteration-header-count: 1
   mode:
-    handle-only-cawi: true
+    handle-only-cawi: false
   questionnaire:
     metadata:
       -
