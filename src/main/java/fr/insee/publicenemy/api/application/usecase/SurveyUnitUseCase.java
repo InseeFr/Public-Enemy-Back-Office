@@ -27,7 +27,7 @@ public class SurveyUnitUseCase {
     @Value("${application.orchestrator.capi-cati.visualize-schema}")
     private String capiCatiVisuSchema;
 
-    @Value("${application.queen.url}")
+    @Value("${application.queen.public-url}")
     private String apiQuestionnaire;
 
     public String getUrlOfSurveyUnit(SurveyUnit surveyUnit, String questionnaireModelId, Mode mode, JsonNode nomenclatures) throws UnsupportedEncodingException {
