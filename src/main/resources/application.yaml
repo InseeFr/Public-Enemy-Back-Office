@@ -98,6 +98,7 @@ application:
     url: https://pogues-url.insee.fr
   queen:
     url: https://queen-url.insee.fr
+    public-url: ${application.queen.url}
   eno:
     url: https://eno-url.insee.fr
   # when generating csv headers for csv schema, indicate the number of headers to generate for array variables
