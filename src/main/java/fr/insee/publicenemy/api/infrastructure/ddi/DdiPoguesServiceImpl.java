@@ -64,6 +64,11 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
         return new Questionnaire(poguesId, summary.label(), summary.modes());
     }
 
+    @Override
+    public JsonNode getNomenclaturesByQuestionnaire(String poguesId) {
+        return getNomeclatureOfQuestionnaire(poguesId);
+    }
+
     /**
      * Retrieve summary details from JSON Pogues
      *
@@ -100,6 +105,23 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
      */
     private JsonNode getJsonPogues(@NonNull String questionnaireId) {
         return webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}?references=true", questionnaireId)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR))))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
+                )
+                .bodyToMono(JsonNode.class)
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
+    }
+
+    private JsonNode getNomeclatureOfQuestionnaire(@NonNull String questionnaireId) {
+        return webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}/nomenclatures", questionnaireId)
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,

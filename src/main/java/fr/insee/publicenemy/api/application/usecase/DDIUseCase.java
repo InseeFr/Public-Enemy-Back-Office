@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.application.usecase;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
@@ -68,5 +69,10 @@ public class DDIUseCase {
         List<VariableType> variables = ddiService.getQuestionnaireVariables(questionnaireId);
         // return only external variables types (may be extended later)
         return variables.stream().filter(variable -> variable.type() == VariableTypeEnum.EXTERNAL).toList();
+    }
+
+    public JsonNode getNomenclatureOfQuestionnaire(String poguesId){
+        log.info(poguesId + ": get nomenclatures");
+        return ddiService.getNomenclaturesByQuestionnaire(poguesId);
     }
 }
