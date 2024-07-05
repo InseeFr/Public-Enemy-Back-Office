@@ -39,7 +39,9 @@ public class EnoServiceImpl implements EnoServicePort {
         Resource ddiResource = new FileNameAwareByteArrayResource("resource.json", ddi.content(), "description");
         resourceBuilder.part("in", ddiResource);
 
-        String lunaticJson = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}", context.name(), mode.name())
+        boolean dsfr = mode == Mode.CAWI;
+
+        String lunaticJson = webClient.post().uri(enoUrl + "/questionnaire/{context}/lunatic-json/{mode}?dsfr={dsfr}", context.name(), mode.name(), dsfr)
                 .accept(MediaType.APPLICATION_OCTET_STREAM)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(resourceBuilder.build()))
