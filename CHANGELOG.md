@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.12] - 2025-01-08
+### :bug: Bug Fixes
+- [`fbd02de`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/fbd02de1caa58cd4d82c6c7bc912432220ae416d) - **deps**: update all minor dependencies *(PR [#113](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/113) by [@renovate[bot]](https://github.com/apps/renovate))*
+
+
 ## [2.3.11] - 2024-12-10
 ### :bug: Bug Fixes
 - [`5da9b56`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/5da9b56f1bb07965f32a0b66afd0922085c99840) - **deps**: update all minor dependencies *(PR [#112](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/112) by [@renovate[bot]](https://github.com/apps/renovate))*
@@ -24,3 +29,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.3.8]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.7...2.3.8
 [2.3.9]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.8...2.3.9
 [2.3.11]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.10...2.3.11
+[2.3.12]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.11...2.3.12
