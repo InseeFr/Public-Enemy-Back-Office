@@ -5,7 +5,7 @@
 
     <groupId>fr.insee</groupId>
     <artifactId>public-enemy-api</artifactId>
-    <version>2.3.14</version>
+    <version>2.3.15</version>
     <packaging>jar</packaging>
 
     <name>public-enemy-api</name>
@@ -47,6 +47,19 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+            <!-- TODO: remove when spring-boot-starter-parent upgrade this dependency with CVE -->
+            <exclusions>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-handler</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- TODO: remove when spring-boot-starter-parent upgrade this dependency with CVE -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler</artifactId>
+            <version>4.1.118.Final</version>
         </dependency>
 
         <dependency>
