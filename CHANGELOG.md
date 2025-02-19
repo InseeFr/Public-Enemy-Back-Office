@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.15] - 2025-02-19
+### :bug: Bug Fixes
+- [`f438de5`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/f438de526ef2d5c8a1042e76fd7c115a7d2f3bcf) - **deps**: cves of netty *(PR [#116](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/116) by [@laurentC35](https://github.com/laurentC35))*
+
+
 ## [2.3.14] - 2025-02-17
 ### :bug: Bug Fixes
 - [`eb2d02b`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/eb2d02b4f9150ca183cc008cc4ac9c3a84be79a7) - **deps**: update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.5 *(PR [#115](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/115) by [@renovate[bot]](https://github.com/apps/renovate))*
@@ -42,3 +47,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.3.12]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.11...2.3.12
 [2.3.13]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.12...2.3.13
 [2.3.14]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.13...2.3.14
+[2.3.15]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.14...2.3.15
