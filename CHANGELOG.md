@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.17] - 2025-03-25
+### :bug: Bug Fixes
+- [`ccaef05`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/ccaef053928a932be24d3c0d55a9affca25312ab) - **deps**: update all minor dependencies *(PR [#118](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/118) by [@renovate[bot]](https://github.com/apps/renovate))*
+
+
 ## [2.3.16] - 2025-02-25
 ### :bug: Bug Fixes
 - [`afd891f`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/afd891fe270312ced8ab91d55469e00e034f9287) - **deps**: update dependency org.springframework.boot:spring-boot-starter-parent to v3.4.3 *(PR [#117](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/117) by [@renovate[bot]](https://github.com/apps/renovate))*
@@ -54,3 +59,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.3.14]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.13...2.3.14
 [2.3.15]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.14...2.3.15
 [2.3.16]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.15...2.3.16
+[2.3.17]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.16...2.3.17
