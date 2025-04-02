@@ -49,11 +49,11 @@ public class Questionnaire {
         this.isSynchronized = false;
     }
 
-    public Questionnaire(Ddi ddi, Context context, byte[] surveyUnitData) {
-        this.poguesId = ddi.poguesId();
-        this.label = ddi.label();
+    public Questionnaire(QuestionnaireModel questionnaireModel, Context context, byte[] surveyUnitData) {
+        this.poguesId = questionnaireModel.poguesId();
+        this.label = questionnaireModel.label();
         this.context = context;
-        this.questionnaireModes = QuestionnaireMode.toModel(ddi.modes());
+        this.questionnaireModes = QuestionnaireMode.toModel(questionnaireModel.modes());
         this.surveyUnitData = surveyUnitData;
         this.isSynchronized = false;
     }

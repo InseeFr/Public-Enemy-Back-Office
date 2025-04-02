@@ -1,8 +1,8 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
@@ -28,9 +28,9 @@ class QuestionnaireUseCaseTest {
     private I18nMessagePort messagePort;
 
     @Mock
-    private DDIUseCase ddiUseCase;
+    private PoguesUseCase poguesUseCase;
     @Mock
-    private Ddi ddi;
+    private QuestionnaireModel questionnaireModel;
     @Mock
     private Questionnaire questionnaire;
 
@@ -38,18 +38,18 @@ class QuestionnaireUseCaseTest {
 
     @BeforeEach
     public void init() {
-        questionnaireUseCase = new QuestionnaireUseCase(questionnairePort, ddiUseCase, queenUseCase, messagePort);
+        questionnaireUseCase = new QuestionnaireUseCase(questionnairePort, poguesUseCase, queenUseCase, messagePort);
     }
 
     @Test
     void onAddQuestionnaireShouldInvokeCampaignCreationInQueen() {
         String poguesId = "l8wwljbo";
         Context context = Context.BUSINESS;
-        when(ddiUseCase.getDdi(any())).thenReturn(ddi);
+        when(poguesUseCase.getQuestionnaireModel(any())).thenReturn(questionnaireModel);
         when(questionnairePort.hasQuestionnaire(poguesId)).thenReturn(false);
         when(questionnairePort.addQuestionnaire(any())).thenReturn(questionnaire);
         questionnaireUseCase.addQuestionnaire(poguesId, context, new byte[0]);
-        verify(queenUseCase, times(1)).synchronizeCreate(ddi, questionnaire);
+        verify(queenUseCase, times(1)).synchronizeCreate(questionnaireModel, questionnaire);
     }
 
     @Test
@@ -72,9 +72,9 @@ class QuestionnaireUseCaseTest {
     void onUpdateQuestionnaireShouldInvokeCampaignUpdateInQueen() {
         Long questionnaireId = 1L;
         when(questionnairePort.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
-        when(ddiUseCase.getDdi(any())).thenReturn(ddi);
+        when(poguesUseCase.getQuestionnaireModel(any())).thenReturn(questionnaireModel);
         questionnaireUseCase.updateQuestionnaire(questionnaireId, Context.BUSINESS, "data".getBytes());
-        verify(queenUseCase, times(1)).synchronizeUpdate(ddi, questionnaire);
+        verify(queenUseCase, times(1)).synchronizeUpdate(questionnaireModel, questionnaire);
         verify(questionnairePort, times(1)).updateQuestionnaire(questionnaire);
         verify(questionnaire).setSynchronized(true);
     }

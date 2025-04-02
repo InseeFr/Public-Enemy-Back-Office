@@ -1,17 +1,19 @@
 package fr.insee.publicenemy.api.application.ports;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
+
+import java.io.IOException;
 
 public interface EnoServicePort {
     /**
      * Retrieve content as JSON Lunatic format from ENO 
-     * @param ddi ddi content
+     * @param questionnaireModel questionnaireModel content
      * @param context insee context
      * @param mode questionnaire mode
      * @return Json Lunatic
      */
-    JsonLunatic getJsonLunatic(Ddi ddi, Context context, Mode mode);
+    JsonLunatic getJsonLunatic(QuestionnaireModel questionnaireModel, Context context, Mode mode) throws IOException;
 }
