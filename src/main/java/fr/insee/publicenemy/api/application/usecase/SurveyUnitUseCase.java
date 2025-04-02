@@ -30,7 +30,7 @@ public class SurveyUnitUseCase {
     @Value("${application.queen.public-url}")
     private String apiQuestionnaire;
 
-    public String getUrlOfSurveyUnit(SurveyUnit surveyUnit, String questionnaireModelId, Mode mode, JsonNode nomenclatures) throws UnsupportedEncodingException {
+    public String getUrlOfSurveyUnit(SurveyUnit surveyUnit, String questionnaireModelId, Mode mode, JsonNode nomenclatures) {
         String surveyUnitId = surveyUnit.id();
         switch (mode){
             case CAWI -> {

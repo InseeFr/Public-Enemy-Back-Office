@@ -162,11 +162,10 @@ class QueenUseCaseTest {
         List<Mode> modes = List.of();
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
-        /*
-        when(poguesUseCase.getJsonLunatic(eq(questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);*/
-        QuestionnaireModel questionnaireModel = new QuestionnaireModel(poguesId, "Label", modes, null);
+
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
         Questionnaire questionnaire = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
-        queenUseCase.synchronizeUpdate(questionnaireModel, questionnaire);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaire);
         verify(queenServicePort, times(0)).deleteCampaign("1-PAPI");
         verify(queenServicePort, times(1)).deleteCampaign("1-CAWI");
         verify(queenServicePort, times(1)).deleteCampaign("1-CAPI");
@@ -181,13 +180,13 @@ class QueenUseCaseTest {
         Context context = Context.HOUSEHOLD;
 
         Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
-        QuestionnaireModel questionnaireModel = new QuestionnaireModel(poguesId, "Label", modes, null);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
         Questionnaire questionnaire = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
-        queenUseCase.synchronizeUpdate(questionnaireModel, questionnaire);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaire);
 
-        verify(queenServicePort, times(0)).createCampaign("1-PAPI", questionnaire, questionnaireModel);
-        verify(queenServicePort, times(1)).createCampaign("1-CATI", questionnaire, questionnaireModel);
-        verify(queenServicePort, times(1)).createCampaign("1-CAPI", questionnaire, questionnaireModel);
+        verify(queenServicePort, times(0)).createCampaign("1-PAPI", questionnaire, questionnaireModelTest);
+        verify(queenServicePort, times(1)).createCampaign("1-CATI", questionnaire, questionnaireModelTest);
+        verify(queenServicePort, times(1)).createCampaign("1-CAPI", questionnaire, questionnaireModelTest);
     }
 
     @Test
@@ -198,11 +197,10 @@ class QueenUseCaseTest {
         List<Mode> modes = List.of(Mode.CAWI);
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
-        /*
-        when(poguesUseCase.getJsonLunatic(eq(questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);*/
-        QuestionnaireModel questionnaireModel = new QuestionnaireModel(poguesId, "Label", modes, null);
+
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
         Questionnaire questionnaire = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
-        queenUseCase.synchronizeUpdate(questionnaireModel, questionnaire);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaire);
 
         questionnaire.getQuestionnaireModes().stream()
                 .map(QuestionnaireMode::getMode)
@@ -219,9 +217,9 @@ class QueenUseCaseTest {
         Context context = Context.HOUSEHOLD;
 
         Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
-        QuestionnaireModel questionnaireModel = new QuestionnaireModel(poguesId, "Label", modes, null);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
         Questionnaire questionnaire = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
-        queenUseCase.synchronizeUpdate(questionnaireModel, questionnaire);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaire);
 
         for (QuestionnaireMode questionnaireMode : questionnaire.getQuestionnaireModes()) {
             Mode mode = questionnaireMode.getMode();

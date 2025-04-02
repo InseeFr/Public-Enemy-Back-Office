@@ -51,7 +51,7 @@ class EnoServiceTest {
     }
 
     @BeforeEach
-    public void init() throws JsonProcessingException {
+    void init() throws JsonProcessingException {
         String enoUrl = String.format("http://localhost:%s", mockWebServer.getPort());
         service = new EnoServiceImpl(webClient, enoUrl);
         when(questionnaireModel.content()).thenReturn(new ObjectMapper().readTree("{}"));

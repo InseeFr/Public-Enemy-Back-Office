@@ -54,7 +54,7 @@ class PoguesServiceTest {
     }
 
     @BeforeEach
-    public void init() {
+    void init() {
         String poguesUrl = String.format("http://localhost:%s",
                 mockWebServer.getPort());
         service = new PoguesPoguesServiceImpl(webClient, poguesUrl, messageService);
@@ -182,18 +182,6 @@ class PoguesServiceTest {
                         .setBody(
                                 String.format("{\"TargetMode\": [\"%s\",\"%s\"], \"Label\": [\"%s\"]}", modes.get(0).name(), modes.get(1).name(), "questionnaire label")
                         )
-        );
-    }
-
-    /**
-     * Create pogues api empty response with status 200
-     */
-    private void createMockEnoResponseSuccess() {
-        mockWebServer.enqueue(
-                new MockResponse()
-                        .setResponseCode(200)
-                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM)
-                        .setBody(poguesContent)
         );
     }
 

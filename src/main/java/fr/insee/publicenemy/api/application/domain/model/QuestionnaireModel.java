@@ -27,7 +27,7 @@ public record QuestionnaireModel(String poguesId, String label, List<Mode> modes
                 "poguesId='" + poguesId + '\'' +
                 ", label='" + label + '\'' +
                 ", modes=" + modes +
-                ", content=" + content.toString() +
+                ", content=" + content +
                 '}';
     }
 }
