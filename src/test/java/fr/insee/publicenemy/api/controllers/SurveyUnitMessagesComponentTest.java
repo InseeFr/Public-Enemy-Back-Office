@@ -1,8 +1,8 @@
 package fr.insee.publicenemy.api.controllers;
 
 
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataAttributeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataValidationResult;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;

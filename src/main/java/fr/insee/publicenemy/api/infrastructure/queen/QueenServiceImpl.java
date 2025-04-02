@@ -1,9 +1,9 @@
 package fr.insee.publicenemy.api.infrastructure.queen;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
@@ -46,8 +46,8 @@ public class QueenServiceImpl implements QueenServicePort {
         this.messageService = messagePort;
     }
 
-    public void createQuestionnaireModel(String questionnaireModelId, @NotNull Ddi ddi, @NotNull JsonLunatic jsonLunatic) {
-        QuestionnaireModelDto questionnaireModel = new QuestionnaireModelDto(questionnaireModelId, ddi.label(), new ArrayList<>(), jsonLunatic.jsonContent());
+    public void createQuestionnaireModel(String questionnaireModelId, @NotNull QuestionnaireModel questionnaireModel, @NotNull JsonLunatic jsonLunatic) {
+        QuestionnaireModelDto questionnaireModelDto = new QuestionnaireModelDto(questionnaireModelId, questionnaireModel.label(), new ArrayList<>(), jsonLunatic.jsonContent());
 
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
@@ -56,7 +56,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .toUri();
 
         webClient.post().uri(uri)
-                .body(BodyInserters.fromValue(questionnaireModel))
+                .body(BodyInserters.fromValue(questionnaireModelDto))
                 .retrieve()
                 .onStatus(
                         HttpStatusCode::isError,
@@ -92,9 +92,9 @@ public class QueenServiceImpl implements QueenServicePort {
         return result != null && !result.isEmpty();
     }
 
-    public void createCampaign(@NotNull String campaignId, @NotNull Questionnaire questionnaire, Ddi ddi) {
+    public void createCampaign(@NotNull String campaignId, @NotNull Questionnaire questionnaire, QuestionnaireModel questionnaireModel) {
         QuestionnaireMetadataDto metadata = QuestionnaireMetadataDto.createDefaultQuestionnaireMetadata(questionnaire, metadataProps.getMetadata());
-        CampaignDto campaign = new CampaignDto(campaignId, ddi.label(), metadata);
+        CampaignDto campaign = new CampaignDto(campaignId, questionnaireModel.label(), metadata);
 
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)

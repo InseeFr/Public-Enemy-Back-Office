@@ -1,4 +1,4 @@
-package fr.insee.publicenemy.api.infrastructure.ddi;
+package fr.insee.publicenemy.api.infrastructure.pogues;
 
 import org.springframework.core.io.Resource;
 import org.springframework.util.ResourceUtils;
