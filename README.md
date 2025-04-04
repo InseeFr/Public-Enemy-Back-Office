@@ -28,7 +28,7 @@ For building and running the application you need:
 - [JDK 17](https://jdk.java.net/archive/)
 - Maven 3
 
-## Install and excute unit tests
+## Install and execute unit tests
 Use the maven clean and maven install
 ```shell
 mvn clean install
@@ -61,8 +61,8 @@ spring:
   # public-enemy db
   datasource:
     url: jdbc:postgresql://localhost:5432/public-enemy-db
-    username: public-enemy
-    password: public-enemyPassword
+    username:
+    password: 
     hikari.maximumPoolSize: 2
   # where logs are stored
 logging:
