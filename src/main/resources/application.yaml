@@ -26,9 +26,9 @@ logging:
 spring:
   # DB
   datasource:
-    url: jdbc:postgresql://localhost:53941/public-enemy
-    username: stromae
-    password: stromaePassword
+    url:
+    username:
+    password:
     hikari.maximumPoolSize: 5
   # LIQUIBASE
   liquibase:
