@@ -28,7 +28,7 @@ class SurveyUnitCsvUseCaseTest {
     private SurveyUnitCsvUseCase usecase;
 
     @Mock
-    private DDIUseCase ddiUseCase;
+    private PoguesUseCase poguesUseCase;
 
     @Mock
     private QuestionnaireUseCase questionnaireUseCase;
@@ -47,13 +47,13 @@ class SurveyUnitCsvUseCaseTest {
 
     @BeforeEach
     void init() {
-        usecase = new SurveyUnitCsvUseCase(surveyUnitService, ddiUseCase, questionnaireUseCase, messageService);
+        usecase = new SurveyUnitCsvUseCase(surveyUnitService, poguesUseCase, questionnaireUseCase, messageService);
     }
 
     @Test
     void onGetHeadersLineReturnHeaderLines() {
         String poguesId = "l8wwljbo";
-        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variables);
+        when(poguesUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variables);
         usecase.getHeadersLine(poguesId);
         verify(surveyUnitService, times(1)).getSurveyUnitsCsvHeaders(variables);
     }
@@ -64,7 +64,7 @@ class SurveyUnitCsvUseCaseTest {
         byte[] surveyUnitDataByte = "data".getBytes();
 
         when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, null)).thenReturn(new ArrayList<>());
-        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(new ArrayList<>());
+        when(poguesUseCase.getQuestionnaireVariables(poguesId)).thenReturn(new ArrayList<>());
 
         SurveyUnitsGlobalValidationException ex = assertThrows(SurveyUnitsGlobalValidationException.class, () -> usecase.validateSurveyUnits(surveyUnitDataByte, poguesId));
         ValidationErrorMessage message = ex.getGlobalErrorMessages().get(0);
@@ -81,7 +81,7 @@ class SurveyUnitCsvUseCaseTest {
             surveyUnits.add(new SurveyUnit(i + "", "q1", data, SurveyUnitStateData.createInitialStateData()));
         }
         when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, null)).thenReturn(surveyUnits);
-        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(new ArrayList<>());
+        when(poguesUseCase.getQuestionnaireVariables(poguesId)).thenReturn(new ArrayList<>());
 
         SurveyUnitsGlobalValidationException ex = assertThrows(SurveyUnitsGlobalValidationException.class, () -> usecase.validateSurveyUnits(surveyUnitDataByte, poguesId));
         ValidationErrorMessage message = ex.getGlobalErrorMessages().get(0);
@@ -105,7 +105,7 @@ class SurveyUnitCsvUseCaseTest {
         List<VariableType> variablesTypes = new ArrayList<>();
         variablesTypes.add(new VariableType(VariableTypeEnum.EXTERNAL, "name", null, new BooleanDatatypeType()));
         variablesTypes.add(new VariableType(VariableTypeEnum.EXTERNAL, "label", "dsgdfg", new BooleanDatatypeType()));
-        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
+        when(poguesUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
 
         SurveyUnitsGlobalValidationException ex = assertThrows(SurveyUnitsGlobalValidationException.class, () -> usecase.validateSurveyUnits(surveyUnitDataByte, poguesId));
         ValidationErrorMessage message = ex.getGlobalErrorMessages().get(0);
@@ -127,7 +127,7 @@ class SurveyUnitCsvUseCaseTest {
 
         List<VariableType> variablesTypes = new ArrayList<>();
         variablesTypes.add(new VariableType(VariableTypeEnum.EXTERNAL, "isCorrect", null, new BooleanDatatypeType()));
-        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
+        when(poguesUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
         when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, null)).thenReturn(surveyUnits);
 
         assertThrows(SurveyUnitsSpecificValidationException.class, () -> usecase.validateSurveyUnits(surveyUnitDataByte, poguesId));
@@ -149,7 +149,7 @@ class SurveyUnitCsvUseCaseTest {
 
         List<VariableType> variablesTypes = new ArrayList<>();
         variablesTypes.add(new VariableType(VariableTypeEnum.EXTERNAL, "isCorrect", null, new BooleanDatatypeType()));
-        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
+        when(poguesUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
         when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, null)).thenReturn(surveyUnits);
 
         List<ValidationWarningMessage> messages = usecase.validateSurveyUnits(surveyUnitDataByte, poguesId);
@@ -176,7 +176,7 @@ class SurveyUnitCsvUseCaseTest {
 
         List<VariableType> variablesTypes = new ArrayList<>();
         variablesTypes.add(new VariableType(VariableTypeEnum.EXTERNAL, "isCorrect", null, new BooleanDatatypeType()));
-        when(ddiUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
+        when(poguesUseCase.getQuestionnaireVariables(poguesId)).thenReturn(variablesTypes);
         when(surveyUnitService.initSurveyUnits(surveyUnitDataByte, null)).thenReturn(surveyUnits);
 
         List<ValidationWarningMessage> messages = usecase.validateSurveyUnits(surveyUnitDataByte, questionnaireId);

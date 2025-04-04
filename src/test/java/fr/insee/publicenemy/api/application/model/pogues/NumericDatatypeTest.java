@@ -1,6 +1,8 @@
 package fr.insee.publicenemy.api.application.model.pogues;
 
-import fr.insee.publicenemy.api.application.domain.model.pogues.*;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NumericDatatypeType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

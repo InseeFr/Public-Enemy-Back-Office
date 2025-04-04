@@ -36,7 +36,7 @@ class QueenServiceTest {
     @Mock
     private JsonLunatic jsonLunatic;
     @Mock
-    private Ddi ddi;
+    private QuestionnaireModel questionnaireModel;
     @Mock
     private MetadataProps metadataProps;
     @Mock
@@ -84,20 +84,20 @@ class QueenServiceTest {
     void onCreateQuestionnaireModelWhenApiResponseErrorThrowsServiceException() {
         createMockResponseError();
         when(jsonLunatic.jsonContent()).thenReturn("{}");
-        assertThrows(ServiceException.class, () -> service.createQuestionnaireModel("l8wwljbo", ddi, jsonLunatic));
+        assertThrows(ServiceException.class, () -> service.createQuestionnaireModel("l8wwljbo", questionnaireModel, jsonLunatic));
     }
 
     @Test
     void onCreateQuestionnaireModelWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
         when(jsonLunatic.jsonContent()).thenReturn("{}");
-        assertAll(() -> service.createQuestionnaireModel("l8wwljbo", ddi, jsonLunatic));
+        assertAll(() -> service.createQuestionnaireModel("l8wwljbo", questionnaireModel, jsonLunatic));
     }
 
     @Test
     void onCreateCampaignWhenApiResponseErrorThrowsServiceException() {
         createMockResponseError();
-        assertThrows(ServiceException.class, () -> service.createCampaign("l8wwljbo-CAPI", questionnaire, ddi));
+        assertThrows(ServiceException.class, () -> service.createCampaign("l8wwljbo-CAPI", questionnaire, questionnaireModel));
     }
 
     @Test
@@ -132,7 +132,7 @@ class QueenServiceTest {
     @Test
     void onCreateCampaignWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
-        assertAll(() -> service.createCampaign("l8wwljbo-CAPI", questionnaire, ddi));
+        assertAll(() -> service.createCampaign("l8wwljbo-CAPI", questionnaire, questionnaireModel));
     }
 
     @Test

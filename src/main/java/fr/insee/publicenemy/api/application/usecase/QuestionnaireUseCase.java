@@ -1,8 +1,8 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
@@ -19,13 +19,13 @@ public class QuestionnaireUseCase {
 
     private final QueenUseCase queenUseCase;
 
-    private final DDIUseCase ddiUseCase;
+    private final PoguesUseCase poguesUseCase;
 
     private final I18nMessagePort messageService;
 
-    public QuestionnaireUseCase(QuestionnairePort questionnairePort, DDIUseCase ddiUseCase, QueenUseCase queenUseCase, I18nMessagePort messageService) {
+    public QuestionnaireUseCase(QuestionnairePort questionnairePort, PoguesUseCase poguesUseCase, QueenUseCase queenUseCase, I18nMessagePort messageService) {
         this.questionnairePort = questionnairePort;
-        this.ddiUseCase = ddiUseCase;
+        this.poguesUseCase = poguesUseCase;
         this.queenUseCase = queenUseCase;
         this.messageService = messageService;
     }
@@ -43,12 +43,12 @@ public class QuestionnaireUseCase {
         if (questionnairePort.hasQuestionnaire(poguesId)) {
             throw new ServiceException(HttpStatus.CONFLICT, messageService.getMessage("questionnaire.exists", poguesId));
         }
-        Ddi ddi = ddiUseCase.getDdi(poguesId);
+        QuestionnaireModel questionnaireModel = poguesUseCase.getQuestionnaireModel(poguesId);
 
-        Questionnaire questionnaire = new Questionnaire(ddi, context, csvContent);
+        Questionnaire questionnaire = new Questionnaire(questionnaireModel, context, csvContent);
         questionnaire = questionnairePort.addQuestionnaire(questionnaire);
 
-        queenUseCase.synchronizeCreate(ddi, questionnaire);
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
         questionnaire.setSynchronized(true);
         // update questionnaire to save the synchronisation state (unsuccessful in case of throwed ServiceException)
         questionnairePort.updateQuestionnaireState(questionnaire);
@@ -120,11 +120,11 @@ public class QuestionnaireUseCase {
         // new synchronisation, first, set the questionnaire as not synchronized
         questionnaire.setSynchronized(false);
         questionnairePort.updateQuestionnaireState(questionnaire);
-        Ddi ddi = ddiUseCase.getDdi(questionnaire.getPoguesId());
+        QuestionnaireModel questionnaireModel = poguesUseCase.getQuestionnaireModel(questionnaire.getPoguesId());
         questionnaire.setContext(context);
         questionnaire.setSurveyUnitData(surveyUnitData);
-        questionnaire.setLabel(ddi.label());
-        queenUseCase.synchronizeUpdate(ddi, questionnaire);
+        questionnaire.setLabel(questionnaireModel.label());
+        queenUseCase.synchronizeUpdate(questionnaireModel, questionnaire);
         questionnaire.setSynchronized(true);
         return questionnairePort.updateQuestionnaire(questionnaire);
     }

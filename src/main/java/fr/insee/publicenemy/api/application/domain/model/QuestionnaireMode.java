@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.application.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +13,7 @@ public class QuestionnaireMode {
 
     private Long id;
     private Mode mode;
+    @Setter
     private String synchronisationState;
 
     public QuestionnaireMode(Mode mode) {
@@ -24,10 +26,6 @@ public class QuestionnaireMode {
 
     public static List<QuestionnaireMode> toModel(List<Mode> modes) {
         return modes.stream().map(QuestionnaireMode::new).toList();
-    }
-
-    public void setSynchronisationState(String synchronisationState) {
-        this.synchronisationState = synchronisationState;
     }
 
     @Override

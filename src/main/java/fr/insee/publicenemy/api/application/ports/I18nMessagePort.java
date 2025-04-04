@@ -1,9 +1,6 @@
 package fr.insee.publicenemy.api.application.ports;
 
 import org.springframework.context.MessageSourceResolvable;
-import org.springframework.context.i18n.LocaleContextHolder;
-
-import java.util.Locale;
 
 public interface I18nMessagePort {
     /**

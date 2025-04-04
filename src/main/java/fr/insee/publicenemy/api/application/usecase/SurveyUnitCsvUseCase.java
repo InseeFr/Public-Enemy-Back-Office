@@ -28,16 +28,16 @@ public class SurveyUnitCsvUseCase {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final DDIUseCase ddiUseCase;
+    private final PoguesUseCase poguesUseCase;
 
     private final I18nMessagePort messageService;
 
     private static final String VALIDATION_ERROR = "validation.errors";
 
-    public SurveyUnitCsvUseCase(SurveyUnitCsvPort surveyUnitCsvService, DDIUseCase ddiUseCase,
+    public SurveyUnitCsvUseCase(SurveyUnitCsvPort surveyUnitCsvService, PoguesUseCase poguesUseCase,
                                 QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort) {
         this.surveyUnitCsvService = surveyUnitCsvService;
-        this.ddiUseCase = ddiUseCase;
+        this.poguesUseCase = poguesUseCase;
         this.questionnaireUseCase = questionnaireUseCase;
         this.messageService = messagePort;
     }
@@ -47,7 +47,7 @@ public class SurveyUnitCsvUseCase {
      * @return Headers for csv file
      */
     public SurveyUnitCsvHeaderLine getHeadersLine(String poguesId) {
-        List<VariableType> variables = ddiUseCase.getQuestionnaireVariables(poguesId);
+        List<VariableType> variables = poguesUseCase.getQuestionnaireVariables(poguesId);
         return surveyUnitCsvService.getSurveyUnitsCsvHeaders(variables);
     }
 
@@ -72,7 +72,7 @@ public class SurveyUnitCsvUseCase {
      */
     public List<ValidationWarningMessage> validateSurveyUnits(byte[] surveyUnitData, String poguesId) throws SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
         List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(surveyUnitData, null);
-        List<VariableType> variablesType = ddiUseCase.getQuestionnaireVariables(poguesId);
+        List<VariableType> variablesType = poguesUseCase.getQuestionnaireVariables(poguesId);
 
         if (surveyUnits.isEmpty()) {
             ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.no-exist");

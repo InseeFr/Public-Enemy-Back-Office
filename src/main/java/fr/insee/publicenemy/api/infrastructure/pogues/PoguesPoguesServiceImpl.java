@@ -1,26 +1,23 @@
-package fr.insee.publicenemy.api.infrastructure.ddi;
+package fr.insee.publicenemy.api.infrastructure.pogues;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
-import fr.insee.publicenemy.api.application.ports.DdiServicePort;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.DdiNotFoundException;
-import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.PoguesJsonNotFoundException;
+import fr.insee.publicenemy.api.application.ports.PoguesServicePort;
+import fr.insee.publicenemy.api.infrastructure.pogues.exceptions.PoguesJsonNotFoundException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -29,7 +26,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class DdiPoguesServiceImpl implements DdiServicePort {
+public class PoguesPoguesServiceImpl implements PoguesServicePort {
 
     private final WebClient webClient;
     private final String poguesUrl;
@@ -44,18 +41,17 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
      * @param webClient webclient
      * @param poguesUrl pogues url
      */
-    public DdiPoguesServiceImpl(WebClient webClient, @Value("${application.pogues.url}") String poguesUrl, I18nMessagePort messagePort) {
+    public PoguesPoguesServiceImpl(WebClient webClient, @Value("${application.pogues.url}") String poguesUrl, I18nMessagePort messagePort) {
         this.webClient = webClient;
         this.poguesUrl = poguesUrl;
         this.messageService = messagePort;
     }
 
     @Override
-    public Ddi getDdi(@NonNull String poguesId) {
+    public QuestionnaireModel getQuestionnaireModel(@NonNull String poguesId) {
         JsonNode jsonPogues = getJsonPogues(poguesId);
         PoguesDataSummary summary = getPoguesSummary(jsonPogues);
-        byte[] xmlDdi = getXmlDdi(poguesId, jsonPogues);
-        return new Ddi(poguesId, summary.label(), summary.modes(), xmlDdi);
+        return new QuestionnaireModel(poguesId, summary.label(), summary.modes(), jsonPogues);
     }
 
     @Override
@@ -162,29 +158,5 @@ public class DdiPoguesServiceImpl implements DdiServicePort {
             log.error(String.format("Exception during variables deserialization of questionnaire id: %s", questionnaireId), e);
             throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Error retrieving variables from questionnaire id %s", questionnaireId));
         }
-    }
-
-    /**
-     * Get DDI
-     *
-     * @param jsonPogues Json from Pogues
-     * @return the DDI
-     */
-    private byte[] getXmlDdi(@NonNull String poguesId, @NonNull JsonNode jsonPogues) {
-        return webClient.post().uri(poguesUrl + "/api/transform/visualize-ddi")
-                .accept(MediaType.APPLICATION_OCTET_STREAM)
-                .body(BodyInserters.fromValue(jsonPogues))
-                .retrieve()
-                .onStatus(
-                        HttpStatus.NOT_FOUND::equals,
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new DdiNotFoundException(poguesId)))
-                )
-                .onStatus(
-                        HttpStatusCode::isError,
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
-                )
-                .bodyToMono(byte[].class).blockOptional().orElseThrow(() -> new DdiNotFoundException(poguesId));
     }
 }

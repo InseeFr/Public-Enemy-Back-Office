@@ -5,14 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.ISurveyUnitDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataAttributeValueList;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataAttributeValue;
+import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitDataAttributeValueList;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

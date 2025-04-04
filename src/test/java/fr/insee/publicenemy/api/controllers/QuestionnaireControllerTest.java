@@ -8,17 +8,15 @@ import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
+import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
-import fr.insee.publicenemy.api.configuration.auth.AuthorityRoleEnum;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.ModeRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,7 +25,6 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
@@ -73,7 +70,7 @@ class QuestionnaireControllerTest {
     private QuestionnaireComponent questionnaireComponent;
 
     @MockBean
-    private DDIUseCase ddiUseCase;
+    private PoguesUseCase poguesUseCase;
 
     @Autowired
     private MockMvc mockMvc;
@@ -179,7 +176,7 @@ class QuestionnaireControllerTest {
     @Test
     void onGetQuestionnaireFromPoguesShouldFetchQuestionnaireAttributes() throws Exception {
         String poguesId = questionnaire.getPoguesId();
-        when(ddiUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
+        when(poguesUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
 
         mockMvc.perform(get("/api/questionnaires/pogues/{poguesId}", poguesId)
                         .with(authentication(authenticatedUserTestHelper.getUser())))

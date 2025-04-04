@@ -1,7 +1,7 @@
 package fr.insee.publicenemy.api.application.domain.model.surveyunit;
 
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

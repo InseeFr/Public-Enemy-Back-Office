@@ -8,7 +8,7 @@ import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
+import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
@@ -39,7 +39,7 @@ public class QuestionnaireController {
     private final QuestionnaireUseCase questionnaireUseCase;
 
     private final SurveyUnitCsvUseCase csvUseCase;
-    private final DDIUseCase ddiUseCase;
+    private final PoguesUseCase poguesUseCase;
 
     private final ApiExceptionComponent errorComponent;
 
@@ -49,12 +49,12 @@ public class QuestionnaireController {
 
     private static final String VALIDATION_ERROR = "validation.errors";
 
-    public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, DDIUseCase ddiUseCase,
+    public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, PoguesUseCase poguesUseCase,
                                    SurveyUnitCsvUseCase csvUseCase,
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
                                    ApiExceptionComponent errorComponent) {
         this.questionnaireUseCase = questionnaireUseCase;
-        this.ddiUseCase = ddiUseCase;
+        this.poguesUseCase = poguesUseCase;
         this.csvUseCase = csvUseCase;
         this.questionnaireComponent = questionnaireComponent;
         this.messageService = messagePort;
@@ -118,7 +118,7 @@ public class QuestionnaireController {
     @GetMapping("/pogues/{poguesId}")
     @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {
-        Questionnaire questionnaire = ddiUseCase.getQuestionnaire(poguesId);
+        Questionnaire questionnaire = poguesUseCase.getQuestionnaire(poguesId);
         return questionnaireComponent.createFromModel(questionnaire);
     }
 

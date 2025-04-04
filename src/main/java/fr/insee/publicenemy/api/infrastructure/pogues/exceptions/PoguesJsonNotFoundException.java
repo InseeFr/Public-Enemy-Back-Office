@@ -1,4 +1,4 @@
-package fr.insee.publicenemy.api.infrastructure.ddi.exceptions;
+package fr.insee.publicenemy.api.infrastructure.pogues.exceptions;
 
 import java.io.Serial;
 
