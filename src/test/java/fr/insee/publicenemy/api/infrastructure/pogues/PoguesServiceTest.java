@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class PoguesServiceTest {
 
-    private PoguesPoguesServiceImpl service;
+    private PoguesServiceImpl service;
 
     private static MockWebServer mockWebServer;
 
@@ -57,7 +57,7 @@ class PoguesServiceTest {
     void init() {
         String poguesUrl = String.format("http://localhost:%s",
                 mockWebServer.getPort());
-        service = new PoguesPoguesServiceImpl(webClient, poguesUrl, messageService);
+        service = new PoguesServiceImpl(webClient, poguesUrl, messageService);
 
 
     }

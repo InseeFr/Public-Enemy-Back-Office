@@ -15,5 +15,5 @@ public interface EnoServicePort {
      * @param mode questionnaire mode
      * @return Json Lunatic
      */
-    JsonLunatic getJsonLunatic(QuestionnaireModel questionnaireModel, Context context, Mode mode) throws IOException;
+    JsonLunatic getJsonLunatic(QuestionnaireModel questionnaireModel, Context context, Mode mode) ;
 }

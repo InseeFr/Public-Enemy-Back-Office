@@ -103,13 +103,7 @@ class QueenUseCaseTest {
         List<QuestionnaireMode> questionnaireModes = modes.stream().map(QuestionnaireMode::new).toList();
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
-        modes.forEach(mode -> {
-            try {
-                when(poguesUseCase.getJsonLunatic(questionnaireModel, context, mode)).thenReturn(map.get(mode));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        modes.forEach(mode -> when(poguesUseCase.getJsonLunatic(questionnaireModel, context, mode)).thenReturn(map.get(mode)));
 
         when(questionnaire.getContext()).thenReturn(context);
         queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
@@ -172,7 +166,7 @@ class QueenUseCaseTest {
     }
 
     @Test
-    void onSynchronizeUpdateVerifyOnlyWebModesAreAddedOrUpdated() throws IOException {
+    void onSynchronizeUpdateVerifyOnlyWebModesAreAddedOrUpdated() {
         String poguesId = "l8wwljbo";
         List<Mode> qModes = List.of(Mode.PAPI, Mode.CAPI);
         List<Mode> modes = List.of(Mode.PAPI, Mode.CAPI, Mode.CATI);

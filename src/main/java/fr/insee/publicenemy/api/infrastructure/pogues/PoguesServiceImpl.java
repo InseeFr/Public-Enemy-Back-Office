@@ -26,7 +26,7 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class PoguesPoguesServiceImpl implements PoguesServicePort {
+public class PoguesServiceImpl implements PoguesServicePort {
 
     private final WebClient webClient;
     private final String poguesUrl;
@@ -41,7 +41,7 @@ public class PoguesPoguesServiceImpl implements PoguesServicePort {
      * @param webClient webclient
      * @param poguesUrl pogues url
      */
-    public PoguesPoguesServiceImpl(WebClient webClient, @Value("${application.pogues.url}") String poguesUrl, I18nMessagePort messagePort) {
+    public PoguesServiceImpl(WebClient webClient, @Value("${application.pogues.url}") String poguesUrl, I18nMessagePort messagePort) {
         this.webClient = webClient;
         this.poguesUrl = poguesUrl;
         this.messageService = messagePort;

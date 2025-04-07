@@ -73,13 +73,7 @@ public class QueenUseCase {
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
                 // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
                 .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
-                .forEach(questionnaireMode -> {
-                    try {
-                        createQueenCampaign(questionnaireModel, questionnaire, questionnaireMode);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                .forEach(questionnaireMode -> createQueenCampaign(questionnaireModel, questionnaire, questionnaireMode));
     }
 
     /**
@@ -134,11 +128,7 @@ public class QueenUseCase {
                 .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
                 .forEach(questionnaireMode -> {
                     log.info(String.format("%s: mode to update: %s", questionnaire.getPoguesId(), questionnaireMode.getMode().name()));
-                    try {
-                        updateQueenCampaign(questionnaireModel, questionnaire, questionnaireMode);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                    updateQueenCampaign(questionnaireModel, questionnaire, questionnaireMode);
                 });
         questionnaire.setQuestionnaireModes(questionnaireModes);
     }
@@ -167,7 +157,7 @@ public class QueenUseCase {
      * @param questionnaireMode questionnaire mode
      * @throws CampaignNotFoundException exception thrown if the campaign was not found
      */
-    private void createQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException, IOException {
+    private void createQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireMode.getMode());
         List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
         createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode);
@@ -184,7 +174,7 @@ public class QueenUseCase {
      * @param questionnaire     questionnaire
      * @param questionnaireMode questionnaire mode
      */
-    private void updateQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws IOException {
+    private void updateQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
         Mode mode = questionnaireMode.getMode();
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
         List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
@@ -227,7 +217,7 @@ public class QueenUseCase {
      * @param context              context
      * @param questionnaireMode    questionnaire mode
      */
-    private void createQuestionnaireModel(String questionnaireModelId, QuestionnaireModel questionnaireModel, Context context, QuestionnaireMode questionnaireMode) throws IOException {
+    private void createQuestionnaireModel(String questionnaireModelId, QuestionnaireModel questionnaireModel, Context context, QuestionnaireMode questionnaireMode) {
         log.info(String.format("create questionnaire model %s", questionnaireModelId));
         JsonLunatic jsonLunatic = poguesUseCase.getJsonLunatic(questionnaireModel, context, questionnaireMode.getMode());
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
@@ -270,9 +260,6 @@ public class QueenUseCase {
         if(!onlyCAWIMode) {
             return true;
         }
-        if(mode.equals(Mode.CAWI)) {
-            return true;
-        }
-        return false;
+        return mode.equals(Mode.CAWI);
     }
 }

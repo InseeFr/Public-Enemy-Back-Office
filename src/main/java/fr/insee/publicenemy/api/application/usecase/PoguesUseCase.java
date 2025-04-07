@@ -55,7 +55,7 @@ public class PoguesUseCase {
      * @param mode    questionnaire mode
      * @return Json Lunatic
      */
-    public JsonLunatic getJsonLunatic(QuestionnaireModel questionnaireModel, Context context, Mode mode) throws IOException {
+    public JsonLunatic getJsonLunatic(QuestionnaireModel questionnaireModel, Context context, Mode mode) {
         log.info(questionnaireModel.poguesId() + ": get JSON Lunatic for mode " + mode.name());
         return enoService.getJsonLunatic(questionnaireModel, context, mode);
     }

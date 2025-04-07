@@ -36,7 +36,7 @@ public class EnoServiceImpl implements EnoServicePort {
     }
 
     @Override
-    public JsonLunatic getJsonLunatic(@NonNull QuestionnaireModel questionnaireModel, @NonNull Context context, @NonNull Mode mode) throws IOException {
+    public JsonLunatic getJsonLunatic(@NonNull QuestionnaireModel questionnaireModel, @NonNull Context context, @NonNull Mode mode) {
 
         MultipartBodyBuilder resourceBuilder = new MultipartBodyBuilder();
         Resource poguesResource = new FileNameAwareByteArrayResource("resource.json", questionnaireModel.content().toString().getBytes(StandardCharsets.UTF_8), "description");
