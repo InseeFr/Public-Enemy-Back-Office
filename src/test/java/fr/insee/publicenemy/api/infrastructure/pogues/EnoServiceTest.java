@@ -1,11 +1,13 @@
-package fr.insee.publicenemy.api.infrastructure.ddi;
+package fr.insee.publicenemy.api.infrastructure.pogues;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Ddi;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
-import fr.insee.publicenemy.api.infrastructure.ddi.exceptions.LunaticJsonNotFoundException;
+import fr.insee.publicenemy.api.infrastructure.pogues.exceptions.LunaticJsonNotFoundException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -35,7 +37,7 @@ class EnoServiceTest {
     private final WebClient webClient = WebClient.create();
 
     @Mock
-    private Ddi ddi;
+    private QuestionnaireModel questionnaireModel;
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -49,11 +51,10 @@ class EnoServiceTest {
     }
 
     @BeforeEach
-    public void init() {
-        String enoUrl = String.format("http://localhost:%s",
-                mockWebServer.getPort());
+    void init() throws JsonProcessingException {
+        String enoUrl = String.format("http://localhost:%s", mockWebServer.getPort());
         service = new EnoServiceImpl(webClient, enoUrl);
-        when(ddi.content()).thenReturn("<xml></xml>".getBytes());
+        when(questionnaireModel.content()).thenReturn(new ObjectMapper().readTree("{}"));
     }
 
     @Test
@@ -69,7 +70,7 @@ class EnoServiceTest {
                         .setBody(jsonContent)
         );
 
-        JsonLunatic jsonLunatic = service.getJsonLunatic(ddi, context, mode);
+        JsonLunatic jsonLunatic = service.getJsonLunatic(questionnaireModel, context, mode);
 
         assertEquals(jsonLunatic, new JsonLunatic(jsonContent));
     }
@@ -86,7 +87,7 @@ class EnoServiceTest {
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         );
 
-        assertThrows(LunaticJsonNotFoundException.class, () -> service.getJsonLunatic(ddi, context, mode));
+        assertThrows(LunaticJsonNotFoundException.class, () -> service.getJsonLunatic(questionnaireModel, context, mode));
     }
 
     @Test
@@ -101,7 +102,7 @@ class EnoServiceTest {
                         .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         );
 
-        assertThrows(LunaticJsonNotFoundException.class, () -> service.getJsonLunatic(ddi, context, mode));
+        assertThrows(LunaticJsonNotFoundException.class, () -> service.getJsonLunatic(questionnaireModel, context, mode));
     }
 
     @Test
@@ -116,6 +117,6 @@ class EnoServiceTest {
                         .setBody("{}")
         );
 
-        assertThrows(ServiceException.class, () -> service.getJsonLunatic(ddi, context, mode));
+        assertThrows(ServiceException.class, () -> service.getJsonLunatic(questionnaireModel, context, mode));
     }
 }

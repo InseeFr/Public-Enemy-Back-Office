@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,15 +27,15 @@ public class QueenUseCase {
 
     private final SurveyUnitCsvPort surveyUnitCsvService;
 
-    private final DDIUseCase ddiUseCase;
+    private final PoguesUseCase poguesUseCase;
 
-    private boolean onlyCAWIMode;
+    private final boolean onlyCAWIMode;
 
-    public QueenUseCase(DDIUseCase ddiUseCase,
+    public QueenUseCase(PoguesUseCase poguesUseCase,
                         QueenServicePort queenService,
                         SurveyUnitCsvPort surveyUnitCsvService,
                         @Value("${application.mode.handle-only-cawi}") boolean onlyCAWIMode) {
-        this.ddiUseCase = ddiUseCase;
+        this.poguesUseCase = poguesUseCase;
         this.queenService = queenService;
         this.surveyUnitCsvService = surveyUnitCsvService;
         this.onlyCAWIMode = onlyCAWIMode;
@@ -65,15 +65,15 @@ public class QueenUseCase {
     /**
      * Create campaign in queen, with one questionnaire-model for each mode
      *
-     * @param ddi           DDI for the questionnaire
+     * @param questionnaireModel           DDI for the questionnaire
      * @param questionnaire questionnaire
      */
-    public void synchronizeCreate(Ddi ddi, Questionnaire questionnaire) {
+    public void synchronizeCreate(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
         questionnaire.getQuestionnaireModes().stream()
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
                 // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
                 .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
-                .forEach(questionnaireMode -> createQueenCampaign(ddi, questionnaire, questionnaireMode));
+                .forEach(questionnaireMode -> createQueenCampaign(questionnaireModel, questionnaire, questionnaireMode));
     }
 
     /**
@@ -82,19 +82,19 @@ public class QueenUseCase {
      * - simply updating a questionnaire (context/survey unit data)
      * - for updating a not well synchronized questionnaire (problems during previous sync, questionnaire changed in pogues, ...)
      *
-     * @param ddi           DDI for the questionnaire
+     * @param questionnaireModel           DDI for the questionnaire
      * @param questionnaire questionnaire
      */
-    public void synchronizeUpdate(Ddi ddi, Questionnaire questionnaire) {
+    public void synchronizeUpdate(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
 
-        List<Mode> ddiModes = ddi.modes();
+        List<Mode> modes = questionnaireModel.modes();
         List<QuestionnaireMode> questionnaireModes = new ArrayList<>(questionnaire.getQuestionnaireModes());
 
         log.info(String.format("%s is synchronized: %b", questionnaire.getPoguesId(), questionnaire.isSynchronized()));
 
         // retrieve questionnaire modes not in DDI (these modes need to be deleted) and delete them
         questionnaire.getQuestionnaireModes().stream()
-                .filter(questionnaireMode -> !ddiModes.contains(questionnaireMode.getMode()))
+                .filter(questionnaireMode -> !modes.contains(questionnaireMode.getMode()))
                 .forEach(questionnaireModeToDelete -> {
                     log.info(String.format("%s: mode to delete: %s", questionnaire.getPoguesId(), questionnaireModeToDelete.getMode().name()));
                     questionnaireModes.remove(questionnaireModeToDelete);
@@ -109,7 +109,7 @@ public class QueenUseCase {
                 .toList();
 
         // get modes that exist in DDI but not in questionnaire (these modes need to be added)
-        ddiModes.stream()
+        modes.stream()
                 .filter(mode -> !modesFromQuestionnaire.contains(mode))
                 // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
                 .filter(mode -> isModeAllowed(Mode.CAWI))
@@ -128,7 +128,7 @@ public class QueenUseCase {
                 .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
                 .forEach(questionnaireMode -> {
                     log.info(String.format("%s: mode to update: %s", questionnaire.getPoguesId(), questionnaireMode.getMode().name()));
-                    updateQueenCampaign(ddi, questionnaire, questionnaireMode);
+                    updateQueenCampaign(questionnaireModel, questionnaire, questionnaireMode);
                 });
         questionnaire.setQuestionnaireModes(questionnaireModes);
     }
@@ -144,7 +144,7 @@ public class QueenUseCase {
                 .map(QuestionnaireMode::getMode)
                 .filter(Mode::isWebMode)
                 // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(mode -> isModeAllowed(mode))
+                .filter(this::isModeAllowed)
                 .forEach(mode ->
                         deleteQueenCampaign(IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode)));
     }
@@ -152,16 +152,16 @@ public class QueenUseCase {
     /**
      * Create campaign in queen (questionnaire model, campaign, survey units) and update synchronisation state for questionnaire mode
      *
-     * @param ddi               ddi
+     * @param questionnaireModel               questionnaireModel
      * @param questionnaire     questionnaire
      * @param questionnaireMode questionnaire mode
      * @throws CampaignNotFoundException exception thrown if the campaign was not found
      */
-    private void createQueenCampaign(Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
+    private void createQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireMode.getMode());
         List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
-        createQuestionnaireModel(questionnaireModelId, ddi, questionnaire.getContext(), questionnaireMode);
-        createCampaign(questionnaireModelId, ddi, questionnaire, questionnaireMode);
+        createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode);
+        createCampaign(questionnaireModelId, questionnaireModel, questionnaire, questionnaireMode);
         createSurveyUnits(questionnaireModelId, surveyUnits, questionnaireMode);
         questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
     }
@@ -170,20 +170,18 @@ public class QueenUseCase {
      * Update queen campaign, resolve synchronisation problems and update synchronisation state for questionnaire mode
      * The update recreates a complete campaign (delete then create) for campaign, questionnaire model and survey units
      *
-     * @param ddi               ddi
+     * @param questionnaireModel               questionnaireModel
      * @param questionnaire     questionnaire
      * @param questionnaireMode questionnaire mode
      */
-    private void updateQueenCampaign(Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
+    private void updateQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
         Mode mode = questionnaireMode.getMode();
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
         List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
         // try to delete campaign if exists
         try {
             log.info(String.format("%s: delete campaign %s", questionnaire.getPoguesId(), questionnaireModelId));
-            surveyUnits.stream().forEach(
-                    surveyUnit -> queenService.deteteSurveyUnit(surveyUnit)
-            );
+            surveyUnits.forEach(queenService::deteteSurveyUnit);
             queenService.deleteCampaign(questionnaireModelId);
             questionnaireMode.setSynchronisationState(null);
         } catch (CampaignNotFoundException ex) {
@@ -191,7 +189,7 @@ public class QueenUseCase {
             log.debug(ex.getMessage());
         }
 
-        createQueenCampaign(ddi, questionnaire, questionnaireMode);
+        createQueenCampaign(questionnaireModel, questionnaire, questionnaireMode);
         questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
     }
 
@@ -215,29 +213,29 @@ public class QueenUseCase {
      * Create a questionnaire model in orchestrator backoffice and update synchronisation state for questionnaire mode
      *
      * @param questionnaireModelId questionnaire model id
-     * @param ddi                  ddi
+     * @param questionnaireModel                  questionnaireModel
      * @param context              context
      * @param questionnaireMode    questionnaire mode
      */
-    private void createQuestionnaireModel(String questionnaireModelId, Ddi ddi, Context context, QuestionnaireMode questionnaireMode) {
+    private void createQuestionnaireModel(String questionnaireModelId, QuestionnaireModel questionnaireModel, Context context, QuestionnaireMode questionnaireMode) {
         log.info(String.format("create questionnaire model %s", questionnaireModelId));
-        JsonLunatic jsonLunatic = ddiUseCase.getJsonLunatic(ddi, context, questionnaireMode.getMode());
+        JsonLunatic jsonLunatic = poguesUseCase.getJsonLunatic(questionnaireModel, context, questionnaireMode.getMode());
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
-        queenService.createQuestionnaireModel(questionnaireModelId, ddi, jsonLunatic);
+        queenService.createQuestionnaireModel(questionnaireModelId, questionnaireModel, jsonLunatic);
     }
 
     /**
      * Create campaign in queen and update synchronisation state for questionnaire mode
      *
      * @param questionnaireModelId questionnaire model id
-     * @param ddi                  ddi
+     * @param questionnaireModel                  questionnaireModel
      * @param questionnaire        questionnaire
      * @param questionnaireMode    questionnaire mode
      */
-    private void createCampaign(String questionnaireModelId, Ddi ddi, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
+    private void createCampaign(String questionnaireModelId, QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
         log.info(String.format("create campaign %s", questionnaireModelId));
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_CAMPAIGN.name());
-        queenService.createCampaign(questionnaireModelId, questionnaire, ddi);
+        queenService.createCampaign(questionnaireModelId, questionnaire, questionnaireModel);
     }
 
     /**
@@ -262,9 +260,6 @@ public class QueenUseCase {
         if(!onlyCAWIMode) {
             return true;
         }
-        if(mode.equals(Mode.CAWI)) {
-            return true;
-        }
-        return false;
+        return mode.equals(Mode.CAWI);
     }
 }

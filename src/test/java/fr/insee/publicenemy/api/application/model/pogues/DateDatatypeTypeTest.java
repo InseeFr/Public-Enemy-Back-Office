@@ -1,7 +1,7 @@
 package fr.insee.publicenemy.api.application.model.pogues;
 
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DateDatatypeType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DateFormatEnum;
 import org.junit.jupiter.api.Test;

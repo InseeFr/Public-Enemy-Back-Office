@@ -5,12 +5,12 @@ import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
 import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
 import fr.insee.publicenemy.api.controllers.dto.SurveyUnitRest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class SurveyUnitUseCase {
@@ -30,7 +30,7 @@ public class SurveyUnitUseCase {
     @Value("${application.queen.public-url}")
     private String apiQuestionnaire;
 
-    public String getUrlOfSurveyUnit(SurveyUnit surveyUnit, String questionnaireModelId, Mode mode, JsonNode nomenclatures) throws UnsupportedEncodingException {
+    public String getUrlOfSurveyUnit(SurveyUnit surveyUnit, String questionnaireModelId, Mode mode, JsonNode nomenclatures) {
         String surveyUnitId = surveyUnit.id();
         switch (mode){
             case CAWI -> {
@@ -48,9 +48,9 @@ public class SurveyUnitUseCase {
                         surveyUnitId);
                 return String.format(capiCatiVisuSchema,
                         capiCatiOrchestratorUrl,
-                        URLEncoder.encode(questionnaireUrl, "UTF-8"),
-                        URLEncoder.encode(dataUrl, "UTF-8"),
-                        URLEncoder.encode(nomenclatures.toString(), "UTF-8"));
+                        URLEncoder.encode(questionnaireUrl, StandardCharsets.UTF_8),
+                        URLEncoder.encode(dataUrl, StandardCharsets.UTF_8),
+                        URLEncoder.encode(nomenclatures.toString(), StandardCharsets.UTF_8));
             }
             case null, default -> {
                 return null;

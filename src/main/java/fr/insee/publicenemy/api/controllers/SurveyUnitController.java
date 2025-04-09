@@ -47,7 +47,7 @@ public class SurveyUnitController {
 
     private final QueenUseCase queenUseCase;
 
-    private final DDIUseCase ddiUseCase;
+    private final PoguesUseCase poguesUseCase;
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
@@ -65,7 +65,7 @@ public class SurveyUnitController {
 
     public SurveyUnitController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, SurveyUnitCsvUseCase surveyUnitCsvUseCase,
                                 I18nMessagePort messageService, SurveyUnitMessagesComponent messageComponent,
-                                ApiExceptionComponent errorComponent, DDIUseCase ddiUseCase, SurveyUnitUseCase surveyUnitUseCase) {
+                                ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, SurveyUnitUseCase surveyUnitUseCase) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
         this.surveyUnitCsvUseCase = surveyUnitCsvUseCase;
@@ -73,7 +73,7 @@ public class SurveyUnitController {
         this.messageService = messageService;
         this.messageComponent = messageComponent;
         this.errorComponent = errorComponent;
-        this.ddiUseCase = ddiUseCase;
+        this.poguesUseCase = poguesUseCase;
     }
 
     /**
@@ -86,7 +86,7 @@ public class SurveyUnitController {
     public SurveyUnitsRest getSurveyUnits(@PathVariable Long questionnaireId, @PathVariable String modeName) {
 
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
-        JsonNode nomenclatures = ddiUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
+        JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
         List<SurveyUnit> surveyUnits = queenUseCase.getSurveyUnits(questionnaireModelId);
 

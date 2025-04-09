@@ -1,32 +1,33 @@
 package fr.insee.publicenemy.api.application.domain.model;
 
-import java.util.Arrays;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.List;
 import java.util.Objects;
 
-public record Ddi(String poguesId, String label, List<Mode> modes, byte[] content) {
+public record QuestionnaireModel(String poguesId, String label, List<Mode> modes, JsonNode content) {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Ddi ddi = (Ddi) o;
-        return Objects.equals(poguesId, ddi.poguesId) && Objects.equals(label, ddi.label) && Objects.equals(modes, ddi.modes) && Arrays.equals(content, ddi.content);
+        QuestionnaireModel questionnaireModel = (QuestionnaireModel) o;
+        return Objects.equals(poguesId, questionnaireModel.poguesId) && Objects.equals(label, questionnaireModel.label) && Objects.equals(modes, questionnaireModel.modes) && Objects.equals(content, questionnaireModel.content);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(poguesId, label, modes);
-        result = 31 * result + Arrays.hashCode(content);
+        result = 31 * result + content.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
-        return "Ddi{" +
+        return "QuestionnaireModel{" +
                 "poguesId='" + poguesId + '\'' +
                 ", label='" + label + '\'' +
                 ", modes=" + modes +
-                ", content=" + Arrays.toString(content) +
+                ", content=" + content +
                 '}';
     }
 }

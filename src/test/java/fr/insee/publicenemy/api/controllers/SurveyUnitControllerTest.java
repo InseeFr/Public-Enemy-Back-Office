@@ -15,24 +15,19 @@ import fr.insee.publicenemy.api.application.exceptions.SurveyUnitExceptionCode;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.application.usecase.DDIUseCase;
+import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
-import fr.insee.publicenemy.api.infrastructure.i18n.I18nMessageServiceImpl;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -54,7 +49,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -68,7 +62,7 @@ class SurveyUnitControllerTest {
     private QueenUseCase queenUseCase;
 
     @MockBean
-    private DDIUseCase ddiUseCase;
+    private PoguesUseCase poguesUseCase;
 
     @MockBean
     private SurveyUnitCsvUseCase csvUseCase;
@@ -114,7 +108,7 @@ class SurveyUnitControllerTest {
         Mode cawi = Mode.valueOf("CAWI");
         String questionnaireModelId = String.format("%s-%s", questionnaireId, cawi.name());
         when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
-        when(ddiUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
+        when(poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
         when(queenUseCase.getSurveyUnits(questionnaireModelId)).thenReturn(surveyUnits);
         mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/survey-units", questionnaireId, cawi.name())
                         .with(authentication(authenticatedUserTestHelper.getUser())))

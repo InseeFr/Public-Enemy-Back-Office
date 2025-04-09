@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,9 +32,9 @@ class QueenUseCaseTest {
     @Mock
     private SurveyUnitCsvPort surveyUnitServicePort;
     @Mock
-    private DDIUseCase ddiUseCase;
+    private PoguesUseCase poguesUseCase;
     @Mock
-    private Ddi ddi;
+    private QuestionnaireModel questionnaireModel;
     @Mock
     private Questionnaire questionnaire;
     @Mock
@@ -42,7 +43,7 @@ class QueenUseCaseTest {
 
     @BeforeEach
     public void init() {
-        queenUseCase = new QueenUseCase(ddiUseCase, queenServicePort, surveyUnitServicePort, false);
+        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, false);
     }
 
     @Test
@@ -51,21 +52,21 @@ class QueenUseCaseTest {
         QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
         when(questionnaire.getQuestionnaireModes()).thenReturn(List.of(questionnaireMode));
         when(questionnaire.getContext()).thenReturn(context);
-        queenUseCase.synchronizeCreate(ddi, questionnaire);
-        verify(queenServicePort).createCampaign(any(), eq(questionnaire), eq(ddi));
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+        verify(queenServicePort).createCampaign(any(), eq(questionnaire), eq(questionnaireModel));
     }
 
     @Test
-    void onSynchronizeShouldInvokeQuestionnaireModelCreationInQueen() {
+    void onSynchronizeShouldInvokeQuestionnaireModelCreationInQueen() throws IOException {
         Context context = Context.BUSINESS;
         Mode mode = Mode.CAWI;
 
         QuestionnaireMode questionnaireMode = new QuestionnaireMode(mode);
         when(questionnaire.getQuestionnaireModes()).thenReturn(List.of(questionnaireMode));
-        when(ddiUseCase.getJsonLunatic(ddi, context, mode)).thenReturn(jsonLunatic);
+        when(poguesUseCase.getJsonLunatic(questionnaireModel, context, mode)).thenReturn(jsonLunatic);
         when(questionnaire.getContext()).thenReturn(context);
-        queenUseCase.synchronizeCreate(ddi, questionnaire);
-        verify(queenServicePort).createQuestionnaireModel(any(), eq(ddi), eq(jsonLunatic));
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+        verify(queenServicePort).createQuestionnaireModel(any(), eq(questionnaireModel), eq(jsonLunatic));
     }
 
     @Test
@@ -76,8 +77,8 @@ class QueenUseCaseTest {
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
         when(questionnaire.getContext()).thenReturn(context);
-        queenUseCase.synchronizeCreate(ddi, questionnaire);
-        verify(queenServicePort, times(modes.size())).createCampaign(any(), eq(questionnaire), eq(ddi));
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+        verify(queenServicePort, times(modes.size())).createCampaign(any(), eq(questionnaire), eq(questionnaireModel));
     }
 
     @Test
@@ -88,8 +89,8 @@ class QueenUseCaseTest {
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
         when(questionnaire.getContext()).thenReturn(context);
-        queenUseCase.synchronizeCreate(ddi, questionnaire);
-        verify(queenServicePort, times(2)).createCampaign(any(), eq(questionnaire), eq(ddi));
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+        verify(queenServicePort, times(2)).createCampaign(any(), eq(questionnaire), eq(questionnaireModel));
     }
 
     @Test
@@ -102,24 +103,24 @@ class QueenUseCaseTest {
         List<QuestionnaireMode> questionnaireModes = modes.stream().map(QuestionnaireMode::new).toList();
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
-        modes.forEach(mode -> when(ddiUseCase.getJsonLunatic(ddi, context, mode)).thenReturn(map.get(mode)));
+        modes.forEach(mode -> when(poguesUseCase.getJsonLunatic(questionnaireModel, context, mode)).thenReturn(map.get(mode)));
 
         when(questionnaire.getContext()).thenReturn(context);
-        queenUseCase.synchronizeCreate(ddi, questionnaire);
-        modes.forEach(mode -> verify(queenServicePort).createQuestionnaireModel(any(), eq(ddi), eq(map.get(mode))));
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+        modes.forEach(mode -> verify(queenServicePort).createQuestionnaireModel(any(), eq(questionnaireModel), eq(map.get(mode))));
     }
 
     @Test
-    void onSynchronizeShouldNotInvokeQuestionnaireModelCreationInQueenForNonWebMode() {
+    void onSynchronizeShouldNotInvokeQuestionnaireModelCreationInQueenForNonWebMode() throws IOException {
         List<Mode> modes = List.of(Mode.CAWI, Mode.CATI, Mode.PAPI);
         Context context = Context.BUSINESS;
         List<QuestionnaireMode> questionnaireModes = modes.stream().map(QuestionnaireMode::new).toList();
 
         when(questionnaire.getQuestionnaireModes()).thenReturn(questionnaireModes);
-        Mockito.lenient().when(ddiUseCase.getJsonLunatic(ddi, context, Mode.PAPI)).thenReturn(jsonLunatic);
+        Mockito.lenient().when(poguesUseCase.getJsonLunatic(questionnaireModel, context, Mode.PAPI)).thenReturn(jsonLunatic);
         when(questionnaire.getContext()).thenReturn(context);
-        queenUseCase.synchronizeCreate(ddi, questionnaire);
-        verify(queenServicePort, times(0)).createQuestionnaireModel(any(), eq(ddi), eq(jsonLunatic));
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+        verify(queenServicePort, times(0)).createQuestionnaireModel(any(), eq(questionnaireModel), eq(jsonLunatic));
     }
 
     @Test
@@ -152,14 +153,13 @@ class QueenUseCaseTest {
         String poguesId = "l8wwljbo";
         Long questionnaireId = 1L;
         List<Mode> qModes = List.of(Mode.CAWI, Mode.CAPI, Mode.PAPI);
-        List<Mode> ddiModes = List.of();
+        List<Mode> modes = List.of();
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
-        /*
-        when(ddiUseCase.getJsonLunatic(eq(ddi), eq(context), any())).thenReturn(jsonLunatic);*/
-        Ddi ddi = new Ddi(poguesId, "Label", ddiModes, "data".getBytes());
-        Questionnaire questionnaire = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
-        queenUseCase.synchronizeUpdate(ddi, questionnaire);
+
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
         verify(queenServicePort, times(0)).deleteCampaign("1-PAPI");
         verify(queenServicePort, times(1)).deleteCampaign("1-CAWI");
         verify(queenServicePort, times(1)).deleteCampaign("1-CAPI");
@@ -169,18 +169,18 @@ class QueenUseCaseTest {
     void onSynchronizeUpdateVerifyOnlyWebModesAreAddedOrUpdated() {
         String poguesId = "l8wwljbo";
         List<Mode> qModes = List.of(Mode.PAPI, Mode.CAPI);
-        List<Mode> ddiModes = List.of(Mode.PAPI, Mode.CAPI, Mode.CATI);
+        List<Mode> modes = List.of(Mode.PAPI, Mode.CAPI, Mode.CATI);
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
 
-        Mockito.lenient().when(ddiUseCase.getJsonLunatic(eq(ddi), eq(context), any())).thenReturn(jsonLunatic);
-        Ddi ddi = new Ddi(poguesId, "Label", ddiModes, "data".getBytes());
-        Questionnaire questionnaire = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
-        queenUseCase.synchronizeUpdate(ddi, questionnaire);
+        Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
-        verify(queenServicePort, times(0)).createCampaign("1-PAPI", questionnaire, ddi);
-        verify(queenServicePort, times(1)).createCampaign("1-CATI", questionnaire, ddi);
-        verify(queenServicePort, times(1)).createCampaign("1-CAPI", questionnaire, ddi);
+        verify(queenServicePort, times(0)).createCampaign("1-PAPI", questionnaireTest, questionnaireModelTest);
+        verify(queenServicePort, times(1)).createCampaign("1-CATI", questionnaireTest, questionnaireModelTest);
+        verify(queenServicePort, times(1)).createCampaign("1-CAPI", questionnaireTest, questionnaireModelTest);
     }
 
     @Test
@@ -188,39 +188,38 @@ class QueenUseCaseTest {
         String poguesId = "l8wwljbo";
         Long questionnaireId = 1L;
         List<Mode> qModes = List.of(Mode.CAWI, Mode.CAPI, Mode.PAPI);
-        List<Mode> ddiModes = List.of(Mode.CAWI);
+        List<Mode> modes = List.of(Mode.CAWI);
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
-        /*
-        when(ddiUseCase.getJsonLunatic(eq(ddi), eq(context), any())).thenReturn(jsonLunatic);*/
-        Ddi ddi = new Ddi(poguesId, "Label", ddiModes, "data".getBytes());
-        Questionnaire questionnaire = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
-        queenUseCase.synchronizeUpdate(ddi, questionnaire);
 
-        questionnaire.getQuestionnaireModes().stream()
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
+
+        questionnaireTest.getQuestionnaireModes().stream()
                 .map(QuestionnaireMode::getMode)
-                .forEach(mode -> assertTrue(ddiModes.contains(mode)));
-        assertEquals(ddiModes.size(), questionnaire.getQuestionnaireModes().size());
+                .forEach(mode -> assertTrue(modes.contains(mode)));
+        assertEquals(modes.size(), questionnaireTest.getQuestionnaireModes().size());
     }
 
     @Test
-    void onSynchronizeUpdateVerifyQuestionnaireModesAreAdded() {
+    void onSynchronizeUpdateVerifyQuestionnaireModesAreAdded() throws IOException {
         String poguesId = "l8wwljbo";
         List<Mode> qModes = List.of(Mode.PAPI, Mode.CAPI);
-        List<Mode> ddiModes = List.of(Mode.PAPI, Mode.CAPI, Mode.CATI);
+        List<Mode> modes = List.of(Mode.PAPI, Mode.CAPI, Mode.CATI);
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
 
-        Mockito.lenient().when(ddiUseCase.getJsonLunatic(eq(ddi), eq(context), any())).thenReturn(jsonLunatic);
-        Ddi ddi = new Ddi(poguesId, "Label", ddiModes, "data".getBytes());
-        Questionnaire questionnaire = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
-        queenUseCase.synchronizeUpdate(ddi, questionnaire);
+        Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
+        queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
-        for (QuestionnaireMode questionnaireMode : questionnaire.getQuestionnaireModes()) {
+        for (QuestionnaireMode questionnaireMode : questionnaireTest.getQuestionnaireModes()) {
             Mode mode = questionnaireMode.getMode();
-            assertTrue(ddiModes.contains(mode));
+            assertTrue(modes.contains(mode));
         }
-        assertEquals(ddiModes.size(), questionnaire.getQuestionnaireModes().size());
+        assertEquals(modes.size(), questionnaireTest.getQuestionnaireModes().size());
     }
 
     @Test

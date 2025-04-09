@@ -2,7 +2,6 @@ package fr.insee.publicenemy.api.utils;
 
 import fr.insee.publicenemy.api.configuration.auth.AuthConstants;
 import fr.insee.publicenemy.api.configuration.auth.AuthorityRoleEnum;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -10,7 +9,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
