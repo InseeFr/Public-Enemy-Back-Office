@@ -58,7 +58,7 @@ class EnoServiceTest {
     }
 
     @Test
-    void onGetJsonLunaticReturnsJsonLunatic() throws IOException {
+    void onGetJsonLunaticReturnsJsonLunatic() {
         Context context = Context.BUSINESS;
         Mode mode = Mode.CAWI;
         String jsonContent = "{\"id\": \"l8wwljbo\"}";

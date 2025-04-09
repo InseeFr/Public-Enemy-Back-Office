@@ -5,8 +5,6 @@ import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 
-import java.io.IOException;
-
 public interface EnoServicePort {
     /**
      * Retrieve content as JSON Lunatic format from ENO 
