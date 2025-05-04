@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.6_7-jre
+FROM eclipse-temurin:21.0.7_6-jre
 
 ENV LANG=fr_FR.UTF-8 LANGUAGE=fr_FR:fr LC_ALL=fr_FR.UTF-8
 
