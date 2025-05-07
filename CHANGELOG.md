@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.2] - 2025-05-07
+### :bug: Bug Fixes
+- [`c790a2b`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/c790a2bf4f808626cde3909dfed4e96eb7b0bf04) - **deps**: update all minor dependencies *(PR [#122](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/122) by [@renovate[bot]](https://github.com/apps/renovate))*
+
+
 ## [2.4.0] - 2025-04-09
 ### :sparkles: New Features
 - [`622779f`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/622779ff1916df1a44afe6468891799075c29074) - use direct pogues eno lunatic *(PR [#119](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/119) by [@laurentC35](https://github.com/laurentC35))*
@@ -69,3 +74,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.3.16]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.15...2.3.16
 [2.3.17]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.16...2.3.17
 [2.4.0]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.3.17...2.4.0
+[2.4.2]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.1...2.4.2
