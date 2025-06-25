@@ -99,7 +99,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/campaigns")
+                .path("/api/campaign")
                 .build()
                 .toUri();
 
