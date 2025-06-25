@@ -4,14 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationStateDataState;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.*;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
-import fr.insee.publicenemy.api.infrastructure.queen.exceptions.SurveyUnitsNotFoundException;
+import fr.insee.publicenemy.api.infrastructure.queen.exceptions.InterrogationsNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,7 +73,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/questionnaire/{id}")
+                .path("/api/questionnaire/{id}/data")
                 .build(questionnaireModelId);
 
         JsonNode result = webClient.get().uri(uri)
@@ -137,104 +138,105 @@ public class QueenServiceImpl implements QueenServicePort {
                 .block();
     }
 
-    public void createSurveyUnits(@NotNull String questionnaireModelId, @NotNull List<SurveyUnit> surveyUnits) {
+    public void createInterrogations(@NotNull String questionnaireModelId, @NotNull List<Interrogation> interrogations) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/campaign/{id}/survey-unit")
+                .path("/api/campaign/{id}/interrogation")
                 .build(questionnaireModelId);
 
-        List<SurveyUnitDto> surveyUnitsDto = surveyUnits.stream().map(SurveyUnitDto::fromModel).toList();
-        surveyUnitsDto.forEach(surveyUnit ->
+        List<InterrogationDto> interrogationDtos = interrogations.stream().map(InterrogationDto::fromModel).toList();
+        interrogationDtos.forEach(interrogationDto ->
                 webClient.post().uri(uri)
-                        .body(BodyInserters.fromValue(surveyUnit))
+                        .body(BodyInserters.fromValue(interrogationDto))
                         .retrieve()
                         .onStatus(
                                 HttpStatusCode::isError,
                                 response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
-                                        messageService.getMessage("queen.error.campaign.su.create", surveyUnit.id(), questionnaireModelId)))
+                                        messageService.getMessage("queen.error.campaign.su.create", interrogationDto.id(), questionnaireModelId)))
                         )
                         .toBodilessEntity()
                         .block());
     }
 
-    public void createSurveyUnit(@NotNull String questionnaireModelId, @NotNull SurveyUnit surveyUnit) {
+    public void createInterrogation(@NotNull String questionnaireModelId, @NotNull Interrogation interrogation) {
 
-        SurveyUnitDto surveyUnitsDto = SurveyUnitDto.fromModel(surveyUnit);
+        InterrogationDto interrogationDto = InterrogationDto.fromModel(interrogation);
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/campaign/{id}/survey-unit")
+                .path("/api/campaign/{id}/interrogation")
                 .build(questionnaireModelId);
 
         webClient.post().uri(uri)
-                .body(BodyInserters.fromValue(surveyUnitsDto))
+                .body(BodyInserters.fromValue(interrogationDto))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError,
-                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), messageService.getMessage("queen.error.campaign.su.create", surveyUnit.id(), questionnaireModelId)))
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), messageService.getMessage("queen.error.campaign.su.create", interrogation.id(), questionnaireModelId)))
                 )
                 .toBodilessEntity()
                 .block();
     }
 
-    public List<SurveyUnit> getSurveyUnits(@NotNull String campaignId) {
+    public List<Interrogation> getInterrogations(@NotNull String campaignId) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/campaign/{id}/survey-units")
+                .path("/api/campaign/{id}/interrogations")
                 .build(campaignId);
 
         return webClient.get().uri(uri)
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
-                        response -> Mono.error(new SurveyUnitsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)))
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)))
                 )
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                 messageService.getMessage("queen.error.campaign.su", campaignId)))
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<SurveyUnit>>() {
+                .bodyToMono(new ParameterizedTypeReference<List<Interrogation>>() {
                 })
                 .blockOptional()
-                .orElseThrow(() -> new SurveyUnitsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)));
+                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)));
     }
 
-    public void updateSurveyUnit(@NotNull SurveyUnit surveyUnit) {
-        SurveyUnitUpdateDto surveyUnitDto = SurveyUnitUpdateDto.fromModel(surveyUnit);
+
+    public void updateInterrogation(@NotNull Interrogation interrogation) {
+        InterrogationUpdateDto interrogationUpdateDto = InterrogationUpdateDto.fromModel(interrogation);
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/survey-unit/{id}")
-                .build(surveyUnit.id());
+                .path("/api/interrogations/{id}")
+                .build(interrogation.id());
 
         webClient.put().uri(uri)
-                .body(BodyInserters.fromValue(surveyUnitDto))
+                .body(BodyInserters.fromValue(interrogationUpdateDto))
                 .retrieve()
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
-                                messageService.getMessage("queen.error.campaign.su.update", surveyUnit.id(), surveyUnit.questionnaireId())))
+                                messageService.getMessage("queen.error.campaign.su.update", interrogation.id(), interrogation.questionnaireId())))
                 )
                 .toBodilessEntity()
                 .block();
     }
 
     @Override
-    public void deteteSurveyUnit(SurveyUnit surveyUnit) {
+    public void deteteInterrogation(Interrogation interrogation) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/survey-unit/{id}")
-                .build(surveyUnit.id());
+                .path("/api/interrogations/{id}")
+                .build(interrogation.id());
 
         webClient.delete()
                 .uri(uri)
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
-                        response -> Mono.error(new SurveyUnitsNotFoundException(messageService.getMessage("surveyunit.csv.not-found", surveyUnit.id())))
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("interrogation.csv.not-found", interrogation.id())))
                 )
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
-                                messageService.getMessage("surveyunit.error.delete", surveyUnit.id())))
+                                messageService.getMessage("interrogation.error.delete", interrogation.id())))
                 )
                 .toBodilessEntity()
                 .block();
