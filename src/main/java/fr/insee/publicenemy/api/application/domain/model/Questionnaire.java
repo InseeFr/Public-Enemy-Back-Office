@@ -23,22 +23,22 @@ public class Questionnaire {
     @NotNull
     private List<QuestionnaireMode> questionnaireModes;
     @NotNull
-    private byte[] surveyUnitData;
+    private byte[] interrogationData;
     private boolean isSynchronized;
 
-    public Questionnaire(String poguesId, String label, Context context, List<Mode> modes, byte[] surveyUnitData) {
+    public Questionnaire(String poguesId, String label, Context context, List<Mode> modes, byte[] interrogationData) {
         this.poguesId = poguesId;
         this.label = label;
         this.context = context;
         this.questionnaireModes = QuestionnaireMode.toModel(modes);
-        this.surveyUnitData = surveyUnitData;
+        this.interrogationData = interrogationData;
         this.isSynchronized = false;
     }
 
-    public Questionnaire(Long id, Context context, byte[] surveyUnitData) {
+    public Questionnaire(Long id, Context context, byte[] interrogationData) {
         this.id = id;
         this.context = context;
-        this.surveyUnitData = surveyUnitData;
+        this.interrogationData = interrogationData;
         this.isSynchronized = false;
     }
 
@@ -49,12 +49,12 @@ public class Questionnaire {
         this.isSynchronized = false;
     }
 
-    public Questionnaire(QuestionnaireModel questionnaireModel, Context context, byte[] surveyUnitData) {
+    public Questionnaire(QuestionnaireModel questionnaireModel, Context context, byte[] interrogationData) {
         this.poguesId = questionnaireModel.poguesId();
         this.label = questionnaireModel.label();
         this.context = context;
         this.questionnaireModes = QuestionnaireMode.toModel(questionnaireModel.modes());
-        this.surveyUnitData = surveyUnitData;
+        this.interrogationData = interrogationData;
         this.isSynchronized = false;
     }
 
@@ -68,13 +68,13 @@ public class Questionnaire {
                 && Objects.equals(poguesId, that.poguesId)
                 && Objects.equals(label, that.label) && context == that.context
                 && Objects.equals(questionnaireModes, that.questionnaireModes)
-                && Arrays.equals(surveyUnitData, that.surveyUnitData);
+                && Arrays.equals(interrogationData, that.interrogationData);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(id, poguesId, label, context, questionnaireModes, isSynchronized);
-        result = 31 * result + Arrays.hashCode(surveyUnitData);
+        result = 31 * result + Arrays.hashCode(interrogationData);
         return result;
     }
 
