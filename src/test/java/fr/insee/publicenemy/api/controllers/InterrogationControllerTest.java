@@ -92,7 +92,7 @@ class InterrogationControllerTest {
 
 
     @BeforeEach
-    public void init() {
+    void init() {
         InterrogationData data = new InterrogationData(new ArrayList<>());
         interrogations = new ArrayList<>();
         interrogations.add(new Interrogation("11-CAPI-1", "q1", data, InterrogationStateData.createInitialStateData()));

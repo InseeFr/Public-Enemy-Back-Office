@@ -56,7 +56,7 @@ public class InterrogationUseCase {
                 return null;
             }
         }
-    };
+    }
 
     public InterrogationRest buildInterrogationRest(Interrogation interrogation, String questionnaireModelId, Mode mode, JsonNode nomenclatures) throws UnsupportedEncodingException {
         String queenIdentifier = interrogation.id();
