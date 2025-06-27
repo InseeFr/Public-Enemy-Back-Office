@@ -14,6 +14,7 @@ import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValida
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitCsvHeaderLine;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ import java.util.Set;
 
 @Service
 public class SurveyUnitCsvUseCase {
+
+    private int maxSurveyUnitsToAdd;
 
     private final SurveyUnitCsvPort surveyUnitCsvService;
 
@@ -35,11 +38,13 @@ public class SurveyUnitCsvUseCase {
     private static final String VALIDATION_ERROR = "validation.errors";
 
     public SurveyUnitCsvUseCase(SurveyUnitCsvPort surveyUnitCsvService, PoguesUseCase poguesUseCase,
-                                QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort) {
+                                QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort,
+                                @Value("${application.campaign.max-interrogations}") int maxSurveyUnitsToAdd) {
         this.surveyUnitCsvService = surveyUnitCsvService;
         this.poguesUseCase = poguesUseCase;
         this.questionnaireUseCase = questionnaireUseCase;
         this.messageService = messagePort;
+        this.maxSurveyUnitsToAdd = maxSurveyUnitsToAdd;
     }
 
     /**
@@ -79,7 +84,6 @@ public class SurveyUnitCsvUseCase {
             throw new SurveyUnitsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), errorMessage);
         }
 
-        int maxSurveyUnitsToAdd = 10;
         if (surveyUnits.size() > maxSurveyUnitsToAdd) {
             ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.max-size", maxSurveyUnitsToAdd + "");
             throw new SurveyUnitsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), errorMessage);
