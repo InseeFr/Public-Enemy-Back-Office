@@ -47,7 +47,7 @@ class SurveyUnitCsvUseCaseTest {
 
     @BeforeEach
     void init() {
-        usecase = new SurveyUnitCsvUseCase(surveyUnitService, poguesUseCase, questionnaireUseCase, messageService);
+        usecase = new SurveyUnitCsvUseCase(surveyUnitService, poguesUseCase, questionnaireUseCase, messageService, 10);
     }
 
     @Test
