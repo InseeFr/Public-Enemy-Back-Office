@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.6] - 2025-06-27
+### :sparkles: New Features
+- [`f9627e8`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/f9627e8dadd276293884a4716b22a019a9fec560) - max interrogations *(PR [#129](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/129) by [@laurentC35](https://github.com/laurentC35))*
+
+
 ## [2.4.5] - 2025-06-24
 ### :bug: Bug Fixes
 - [`6c6db3c`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/6c6db3cda2de743d5fefaddcda6f0e6a22f1c377) - **deps**: update all minor dependencies *(PR [#127](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/127) by [@renovate[bot]](https://github.com/apps/renovate))*
@@ -93,3 +98,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.4.3]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.2...2.4.3
 [2.4.4]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.3...2.4.4
 [2.4.5]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.4...2.4.5
+[2.4.6]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.5...2.4.6
