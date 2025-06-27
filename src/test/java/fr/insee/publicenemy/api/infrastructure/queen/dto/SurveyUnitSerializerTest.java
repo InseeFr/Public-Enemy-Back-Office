@@ -61,20 +61,7 @@ class SurveyUnitSerializerTest {
                            {
                               "id":"1",
                               "questionnaireId":"q1",
-                              "personalization":[
-                                 {
-                                    "name":"whoAnswers1",
-                                    "value":"MrDupond"
-                                 },
-                                 {
-                                    "name":"whoAnswers2",
-                                    "value":""
-                                 },
-                                 {
-                                    "name":"whoAnswers3",
-                                    "value":""
-                                 }
-                              ],
+                              "personalization":[],
                               "comment":{
                               },
                               "data":{
@@ -96,20 +83,7 @@ class SurveyUnitSerializerTest {
                            {
                               "id":"2",
                               "questionnaireId":"q2",
-                              "personalization":[
-                                 {
-                                    "name":"whoAnswers1",
-                                    "value":"MrDupond"
-                                 },
-                                 {
-                                    "name":"whoAnswers2",
-                                    "value":""
-                                 },
-                                 {
-                                    "name":"whoAnswers3",
-                                    "value":""
-                                 }
-                              ],
+                              "personalization":[],
                               "comment":{
                               },
                               "data":{
