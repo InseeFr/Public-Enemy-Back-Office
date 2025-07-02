@@ -59,20 +59,7 @@ class InterrogationUpdateSerializerTest {
         assertEquals("""
                         [
                            {
-                              "personalization":[
-                                 {
-                                    "name":"whoAnswers1",
-                                    "value":"MrDupond"
-                                 },
-                                 {
-                                    "name":"whoAnswers2",
-                                    "value":""
-                                 },
-                                 {
-                                    "name":"whoAnswers3",
-                                    "value":""
-                                 }
-                              ],
+                              "personalization":[],
                               "comment":{
                               },
                               "data":{
@@ -92,20 +79,7 @@ class InterrogationUpdateSerializerTest {
                               "stateData": null
                            },
                            {
-                              "personalization":[
-                                 {
-                                    "name":"whoAnswers1",
-                                    "value":"MrDupond"
-                                 },
-                                 {
-                                    "name":"whoAnswers2",
-                                    "value":""
-                                 },
-                                 {
-                                    "name":"whoAnswers3",
-                                    "value":""
-                                 }
-                              ],
+                              "personalization":[],
                               "comment":{
                               },
                               "data":{

@@ -111,6 +111,8 @@ application:
       visualize-schema: '%s/queen/visualize?questionnaire=%s&data=%s&nomenclature=%s'
   csv:
     iteration-header-count: 1
+  campaign:
+    max-interrogations: 10
   mode:
     handle-only-cawi: false
   questionnaire:
