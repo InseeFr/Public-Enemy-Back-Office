@@ -105,7 +105,7 @@ application:
   orchestrator:
     cawi:
       url:
-      visualize-schema: '%s/questionnaire/%s/unite-enquetee/%s'
+      visualize-schema: '%s/interrogation/%s'
     capi-cati:
       url:
       visualize-schema: '%s/queen/visualize?questionnaire=%s&data=%s&nomenclature=%s'

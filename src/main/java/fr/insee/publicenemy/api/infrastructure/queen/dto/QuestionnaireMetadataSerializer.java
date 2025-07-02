@@ -22,7 +22,6 @@ public class QuestionnaireMetadataSerializer extends StdSerializer<Questionnaire
             throws IOException {
 
         jgen.writeStartObject();
-            jgen.writeObjectFieldStart("value");
             jgen.writeStringField("inseeContext", metadata.inseeContext());
             jgen.writeObjectField("variables", metadata.metadataAttributes());
         jgen.writeEndObject();
