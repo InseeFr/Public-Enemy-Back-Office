@@ -14,6 +14,7 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificVal
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ import java.util.Set;
 
 @Service
 public class InterrogationCsvUseCase {
+
+    private int maxInterrogationsDataToAdd;
 
     private final InterrogationCsvPort interrogationCsvPort;
 
@@ -35,7 +38,8 @@ public class InterrogationCsvUseCase {
     private static final String VALIDATION_ERROR = "validation.errors";
 
     public InterrogationCsvUseCase(InterrogationCsvPort interrogationCsvPort, PoguesUseCase poguesUseCase,
-                                   QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort) {
+                                   QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort,
+                                   @Value("${application.campaign.max-interrogations}") int maxInterrogationsDataToAdd) {
         this.interrogationCsvPort = interrogationCsvPort;
         this.poguesUseCase = poguesUseCase;
         this.questionnaireUseCase = questionnaireUseCase;
@@ -78,8 +82,6 @@ public class InterrogationCsvUseCase {
             ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.no-exist");
             throw new InterrogationsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), errorMessage);
         }
-
-        int maxInterrogationsDataToAdd = 10;
 
         if (interrogations.size() > maxInterrogationsDataToAdd) {
             ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.max-size", maxInterrogationsDataToAdd + "");
