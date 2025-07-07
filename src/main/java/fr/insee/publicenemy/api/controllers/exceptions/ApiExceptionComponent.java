@@ -1,6 +1,6 @@
 package fr.insee.publicenemy.api.controllers.exceptions;
 
-import fr.insee.publicenemy.api.controllers.dto.SurveyUnitErrors;
+import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.*;
 import lombok.NonNull;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -70,11 +70,11 @@ public class ApiExceptionComponent {
      * @param errors fields errors objects
      * @return error object used for JSON response
      */
-    public ApiErrorWithSurveyUnits buildApiErrorWithSurveyUnits(WebRequest request, int code, String errorMessage,
-                                                                @NonNull List<SurveyUnitErrors> errors) {
+    public ApiErrorWithInterrogations buildApiErrorWithInterrogations(WebRequest request, int code, String errorMessage,
+                                                                      @NonNull List<InterrogationErrors> errors) {
         String path = getPath(request);
         Date timestamp = getTimeStamp(request);
-        return new ApiErrorWithSurveyUnits(code, path, timestamp, errorMessage, errors);
+        return new ApiErrorWithInterrogations(code, path, timestamp, errorMessage, errors);
     }
 
     /**

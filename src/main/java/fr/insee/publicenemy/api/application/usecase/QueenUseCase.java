@@ -1,18 +1,17 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
-import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
+import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +24,7 @@ public class QueenUseCase {
 
     private final QueenServicePort queenService;
 
-    private final SurveyUnitCsvPort surveyUnitCsvService;
+    private final InterrogationCsvPort interrogationService;
 
     private final PoguesUseCase poguesUseCase;
 
@@ -33,33 +32,33 @@ public class QueenUseCase {
 
     public QueenUseCase(PoguesUseCase poguesUseCase,
                         QueenServicePort queenService,
-                        SurveyUnitCsvPort surveyUnitCsvService,
+                        InterrogationCsvPort interrogationService,
                         @Value("${application.mode.handle-only-cawi}") boolean onlyCAWIMode) {
         this.poguesUseCase = poguesUseCase;
         this.queenService = queenService;
-        this.surveyUnitCsvService = surveyUnitCsvService;
+        this.interrogationService = interrogationService;
         this.onlyCAWIMode = onlyCAWIMode;
     }
 
     /**
      * @param questionnaireModelId questionnaire model id
-     * @return all survey units linked to the campaign
+     * @return all interrogations linked to the campaign
      */
-    public List<SurveyUnit> getSurveyUnits(String questionnaireModelId) {
-        return queenService.getSurveyUnits(questionnaireModelId);
+    public List<Interrogation> getInterrogations(String questionnaireModelId) {
+        return queenService.getInterrogations(questionnaireModelId);
     }
 
     /**
-     * reset data/state data for a specific survey unit
+     * reset data/state data for a specific interrogation
      *
-     * @param surveyUnitId   survey unit id
-     * @param surveyUnitData survey units csv data
+     * @param interrogationId   interrogation id
+     * @param interrogationData interrogations csv data
      */
-    public void resetSurveyUnit(String surveyUnitId, byte[] surveyUnitData) {
-        SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(surveyUnitId);
-        SurveyUnit surveyUnit = surveyUnitCsvService.getCsvSurveyUnit(identifierHandler.getSurveyUnitIdentifier(), surveyUnitData, identifierHandler.getQuestionnaireModelId());
-        queenService.deteteSurveyUnit(surveyUnit);
-        createSurveyUnit(surveyUnit.questionnaireId(), surveyUnit);
+    public void resetInterrogation(String interrogationId, byte[] interrogationData) {
+        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
+        Interrogation interrogation = interrogationService.getCsvInterrogation(identifierHandler.getInterrogationIdentifier(), interrogationData, identifierHandler.getQuestionnaireModelId());
+        queenService.deteteInterrogation(interrogation);
+        createInterrogation(interrogation.questionnaireId(), interrogation);
     }
 
     /**
@@ -159,10 +158,10 @@ public class QueenUseCase {
      */
     private void createQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireMode.getMode());
-        List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
+        List<Interrogation> interrogations = interrogationService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
         createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode);
         createCampaign(questionnaireModelId, questionnaireModel, questionnaire, questionnaireMode);
-        createSurveyUnits(questionnaireModelId, surveyUnits, questionnaireMode);
+        createInterrogations(questionnaireModelId, interrogations, questionnaireMode);
         questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
     }
 
@@ -177,11 +176,11 @@ public class QueenUseCase {
     private void updateQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
         Mode mode = questionnaireMode.getMode();
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
-        List<SurveyUnit> surveyUnits = surveyUnitCsvService.initSurveyUnits(questionnaire.getSurveyUnitData(), questionnaireModelId);
+        List<Interrogation> interrogations = interrogationService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
         // try to delete campaign if exists
         try {
             log.info(String.format("%s: delete campaign %s", questionnaire.getPoguesId(), questionnaireModelId));
-            surveyUnits.forEach(queenService::deteteSurveyUnit);
+            interrogations.forEach(queenService::deteteInterrogation);
             queenService.deleteCampaign(questionnaireModelId);
             questionnaireMode.setSynchronisationState(null);
         } catch (CampaignNotFoundException ex) {
@@ -239,21 +238,21 @@ public class QueenUseCase {
     }
 
     /**
-     * Create survey units in queen and update synchronisation state for questionnaire mode
+     * Create interrogations in queen and update synchronisation state for questionnaire mode
      *
      * @param campaignId        campaign id
-     * @param surveyUnits       survey units list
+     * @param interrogations       interrogations list
      * @param questionnaireMode questionnaire mode
      */
-    private void createSurveyUnits(String campaignId, List<SurveyUnit> surveyUnits, QuestionnaireMode questionnaireMode) {
-        log.info(String.format("create survey units for campaign %s", campaignId));
+    private void createInterrogations(String campaignId, List<Interrogation> interrogations, QuestionnaireMode questionnaireMode) {
+        log.info(String.format("create interrogations for campaign %s", campaignId));
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_SURVEY_UNIT.name());
-        queenService.createSurveyUnits(campaignId, surveyUnits);
+        queenService.createInterrogations(campaignId, interrogations);
     }
 
-    private void createSurveyUnit(String campaignId, SurveyUnit surveyUnit) {
-        log.info(String.format("create survey unit %s for campaign %s", surveyUnit.id(), campaignId));
-        queenService.createSurveyUnit(campaignId, surveyUnit);
+    private void createInterrogation(String campaignId, Interrogation interrogation) {
+        log.info(String.format("create interrogation %s for campaign %s", interrogation.id(), campaignId));
+        queenService.createInterrogation(campaignId, interrogation);
     }
 
     private boolean isModeAllowed(Mode mode) {

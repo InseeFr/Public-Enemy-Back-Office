@@ -76,13 +76,13 @@ public class QuestionnaireUseCase {
     }
 
     /**
-     * Get survey units data from questionnaire
+     * Get interrogation data from questionnaire
      *
      * @param questionnaireId questionnaire id
-     * @return csv of survey units
+     * @return csv of interrogation
      */
-    public byte[] getSurveyUnitData(Long questionnaireId) {
-        return questionnairePort.getSurveyUnitData(questionnaireId);
+    public byte[] getInterrogationData(Long questionnaireId) {
+        return questionnairePort.getInterrogationData(questionnaireId);
     }
 
     /**
@@ -111,10 +111,10 @@ public class QuestionnaireUseCase {
      *
      * @param id             questionnaire id
      * @param context        insee context
-     * @param surveyUnitData survey unit data file in csv format
+     * @param interrogationData survey unit data file in csv format
      * @return the saved questionnaire
      */
-    public Questionnaire updateQuestionnaire(Long id, Context context, byte[] surveyUnitData) {
+    public Questionnaire updateQuestionnaire(Long id, Context context, byte[] interrogationData) {
         Questionnaire questionnaire = getQuestionnaire(id);
         log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
         // new synchronisation, first, set the questionnaire as not synchronized
@@ -122,7 +122,7 @@ public class QuestionnaireUseCase {
         questionnairePort.updateQuestionnaireState(questionnaire);
         QuestionnaireModel questionnaireModel = poguesUseCase.getQuestionnaireModel(questionnaire.getPoguesId());
         questionnaire.setContext(context);
-        questionnaire.setSurveyUnitData(surveyUnitData);
+        questionnaire.setInterrogationData(interrogationData);
         questionnaire.setLabel(questionnaireModel.label());
         queenUseCase.synchronizeUpdate(questionnaireModel, questionnaire);
         questionnaire.setSynchronized(true);
