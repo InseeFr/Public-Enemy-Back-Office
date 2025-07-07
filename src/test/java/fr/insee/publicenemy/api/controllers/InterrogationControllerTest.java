@@ -113,7 +113,7 @@ class InterrogationControllerTest {
         mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/interrogations", questionnaireId, cawi.name())
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.interrogationRests.size()", is(interrogations.size())))
+                .andExpect(jsonPath("$.interrogations.size()", is(interrogations.size())))
                 .andExpect(jsonPath("$.questionnaireModelId", is(questionnaireModelId)));
     }
 
