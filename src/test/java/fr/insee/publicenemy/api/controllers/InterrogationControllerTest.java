@@ -110,7 +110,7 @@ class InterrogationControllerTest {
         when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
         when(poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
         when(queenUseCase.getInterrogations(questionnaireModelId)).thenReturn(interrogations);
-        mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/survey-units", questionnaireId, cawi.name())
+        mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/interrogations", questionnaireId, cawi.name())
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.interrogationRests.size()", is(interrogations.size())))
@@ -139,7 +139,7 @@ class InterrogationControllerTest {
         byte[] surveyUnitData = "".getBytes();
 
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenReturn(new ArrayList<>());
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -157,7 +157,7 @@ class InterrogationControllerTest {
         messages.add(new ValidationWarningMessage(code, "plop"));
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenReturn(messages);
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -176,7 +176,7 @@ class InterrogationControllerTest {
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
         InterrogationsGlobalValidationException surveyUnitsValidationException = new InterrogationsGlobalValidationException("main error message", messages);
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenThrow(surveyUnitsValidationException);
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -207,7 +207,7 @@ class InterrogationControllerTest {
         InterrogationsSpecificValidationException ex = new InterrogationsSpecificValidationException("main error message", interrogationDataValidationResults);
 
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenThrow(ex);
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -223,7 +223,7 @@ class InterrogationControllerTest {
         byte[] surveyUnitData = "".getBytes();
         when(questionnaireUseCase.getInterrogationData(11L)).thenReturn(surveyUnitData);
 
-        mockMvc.perform(put("/api/survey-units/{InterrogationId}/reset", surveyUnitId)
+        mockMvc.perform(put("/api/interrogations/{InterrogationId}/reset", surveyUnitId)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
