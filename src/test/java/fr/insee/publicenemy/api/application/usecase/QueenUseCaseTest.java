@@ -1,11 +1,11 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
-import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
-import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
+import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
+import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ class QueenUseCaseTest {
     @Mock
     private QueenServicePort queenServicePort;
     @Mock
-    private SurveyUnitCsvPort surveyUnitServicePort;
+    private InterrogationCsvPort surveyUnitServicePort;
     @Mock
     private PoguesUseCase poguesUseCase;
     @Mock
@@ -142,10 +142,10 @@ class QueenUseCaseTest {
     }
 
     @Test
-    void onGetSurveyUnitsReturnSurveyUnits() {
+    void onGetSurveyUnitsReturnInterrogations() {
         String questionnaireModelId = "13-CAWI";
-        queenUseCase.getSurveyUnits(questionnaireModelId);
-        verify(queenServicePort, times(1)).getSurveyUnits(questionnaireModelId);
+        queenUseCase.getInterrogations(questionnaireModelId);
+        verify(queenServicePort, times(1)).getInterrogations(questionnaireModelId);
     }
 
     @Test
@@ -226,11 +226,11 @@ class QueenUseCaseTest {
     void onResetSurveyUnitCallResetService() {
         String surveyUnitId = "11-CAPI-1";
         byte[] data = "data".getBytes();
-        SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(surveyUnitId);
-        SurveyUnit su = new SurveyUnit(surveyUnitId, "11", null, SurveyUnitStateData.createInitialStateData());
-        when(surveyUnitServicePort.getCsvSurveyUnit(identifierHandler.getSurveyUnitIdentifier(), data, identifierHandler.getQuestionnaireModelId())).thenReturn(su);
-        queenUseCase.resetSurveyUnit(surveyUnitId, data);
-        verify(queenServicePort).deteteSurveyUnit(su);
-        verify(queenServicePort).createSurveyUnit(su.questionnaireId(),su);
+        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(surveyUnitId);
+        Interrogation su = new Interrogation(surveyUnitId, "11", null, InterrogationStateData.createInitialStateData());
+        when(surveyUnitServicePort.getCsvInterrogation(identifierHandler.getInterrogationIdentifier(), data, identifierHandler.getQuestionnaireModelId())).thenReturn(su);
+        queenUseCase.resetInterrogation(surveyUnitId, data);
+        verify(queenServicePort).deteteInterrogation(su);
+        verify(queenServicePort).createInterrogation(su.questionnaireId(),su);
     }
 }

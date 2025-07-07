@@ -5,12 +5,12 @@ import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
+import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
+import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
+import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
@@ -38,7 +38,7 @@ public class QuestionnaireController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final SurveyUnitCsvUseCase csvUseCase;
+    private final InterrogationCsvUseCase csvUseCase;
     private final PoguesUseCase poguesUseCase;
 
     private final ApiExceptionComponent errorComponent;
@@ -50,7 +50,7 @@ public class QuestionnaireController {
     private static final String VALIDATION_ERROR = "validation.errors";
 
     public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, PoguesUseCase poguesUseCase,
-                                   SurveyUnitCsvUseCase csvUseCase,
+                                   InterrogationCsvUseCase csvUseCase,
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
                                    ApiExceptionComponent errorComponent) {
         this.questionnaireUseCase = questionnaireUseCase;
@@ -100,15 +100,15 @@ public class QuestionnaireController {
      */
     @GetMapping(value = "/{id}/data", produces = "text/csv")
     @PreAuthorize(HAS_ANY_ROLE)
-    public ResponseEntity<byte[]> getSurveyUnitData(@PathVariable Long id) {
+    public ResponseEntity<byte[]> getInterrogationData(@PathVariable Long id) {
         String filename = String.format("questionnaire-%s-data.csv", id);
 
-        byte[] surveyUnitsData = questionnaireUseCase.getSurveyUnitData(id);
+        byte[] interrogationsData = questionnaireUseCase.getInterrogationData(id);
 
         return ResponseEntity
                 .ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
-                .body(surveyUnitsData);
+                .body(interrogationsData);
     }
 
     /**
@@ -131,11 +131,11 @@ public class QuestionnaireController {
     @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest addQuestionnaire(
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
-            @RequestPart(name = "surveyUnitData") MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
+            @RequestPart(name = "surveyUnitData") MultipartFile surveyUnitData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
         byte[] csvContent = surveyUnitData.getBytes();
 
-        csvUseCase.validateSurveyUnits(csvContent, questionnaireRest.poguesId());
+        csvUseCase.validateInterrogations(csvContent, questionnaireRest.poguesId());
 
         Questionnaire questionnaire = questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), ContextRest.toModel(questionnaireRest.context()), csvContent);
         return questionnaireComponent.createFromModel(questionnaire);
@@ -152,15 +152,15 @@ public class QuestionnaireController {
     public QuestionnaireRest saveQuestionnaire(
             @PathVariable Long questionnaireId,
             @RequestPart(name = "context") ContextRest context,
-            @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException, SurveyUnitsGlobalValidationException, SurveyUnitsSpecificValidationException {
+            @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
         byte[] csvContent = null;
         if (surveyUnitData != null) {
             csvContent = surveyUnitData.getBytes();
-            csvUseCase.validateSurveyUnits(csvContent, questionnaireId);
+            csvUseCase.validateInterrogations(csvContent, questionnaireId);
         } else {
-            csvContent = questionnaireUseCase.getSurveyUnitData(questionnaireId);
-            csvUseCase.validateSurveyUnits(csvContent, questionnaireId);
+            csvContent = questionnaireUseCase.getInterrogationData(questionnaireId);
+            csvUseCase.validateInterrogations(csvContent, questionnaireId);
         }
         Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(questionnaireId, ContextRest.toModel(context), csvContent);
         return questionnaireComponent.createFromModel(questionnaire);
@@ -183,10 +183,10 @@ public class QuestionnaireController {
     /**
      * @return generic errors when csv parsing errors
      */
-    @ExceptionHandler({SurveyUnitsGlobalValidationException.class,
+    @ExceptionHandler({InterrogationsGlobalValidationException.class,
             CsvException.class,
             CsvRuntimeException.class,
-            SurveyUnitsSpecificValidationException.class,
+            InterrogationsSpecificValidationException.class,
             CsvMultilineLimitBrokenException.class,
             CsvMalformedLineException.class
     })

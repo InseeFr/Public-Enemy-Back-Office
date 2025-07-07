@@ -70,5 +70,5 @@ public interface QuestionnairePort {
      * @param questionnaireId questionnaire id
      * @return survey units csv data
      */
-    byte[] getSurveyUnitData(Long questionnaireId);
+    byte[] getInterrogationData(Long questionnaireId);
 }
