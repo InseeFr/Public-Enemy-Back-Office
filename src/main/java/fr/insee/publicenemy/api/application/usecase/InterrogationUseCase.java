@@ -36,7 +36,6 @@ public class InterrogationUseCase {
             case CAWI -> {
                 return String.format(cawiVisuSchema,
                         cawiOrchestratorUrl,
-                        questionnaireModelId,
                         interrogationId);
             }
             case CAPI,CATI -> {

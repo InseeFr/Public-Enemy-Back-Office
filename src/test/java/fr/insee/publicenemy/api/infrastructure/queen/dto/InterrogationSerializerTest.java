@@ -45,8 +45,8 @@ class InterrogationSerializerTest {
 
         InterrogationData data = new InterrogationData(attributes);
 
-        surveyUnits.add(new InterrogationDto("1", "q1", data, InterrogationStateData.createInitialStateData()));
-        surveyUnits.add(new InterrogationDto("2", "q2", data, InterrogationStateData.createInitialStateData()));
+        surveyUnits.add(new InterrogationDto("1", "su-1","q1", data, InterrogationStateData.createInitialStateData()));
+        surveyUnits.add(new InterrogationDto("2", "su-2","q2", data, InterrogationStateData.createInitialStateData()));
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -60,6 +60,7 @@ class InterrogationSerializerTest {
                         [
                            {
                               "id":"1",
+                              "surveyUnitId": "su-1",
                               "questionnaireId":"q1",
                               "personalization":[],
                               "comment":{
@@ -82,6 +83,7 @@ class InterrogationSerializerTest {
                            },
                            {
                               "id":"2",
+                              "surveyUnitId": "su-2",
                               "questionnaireId":"q2",
                               "personalization":[],
                               "comment":{
