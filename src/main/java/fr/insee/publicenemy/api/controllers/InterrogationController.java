@@ -79,9 +79,9 @@ public class InterrogationController {
     /**
      * @param questionnaireId questionnaire id
      * @param modeName        insee mode
-     * @return all survey units fro the questionnaire
+     * @return all interrogations fro the questionnaire
      */
-    @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/survey-units")
+    @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/interrogations")
     @PreAuthorize(HAS_ANY_ROLE)
     public InterrogationsRest getInterrogations(@PathVariable Long questionnaireId, @PathVariable String modeName) {
 
@@ -106,11 +106,11 @@ public class InterrogationController {
     }
 
     /**
-     * reset survey unit data/state data
+     * reset interrogation data/state data
      *
-     * @param interrogationId survey unit id
+     * @param interrogationId interrogation id
      */
-    @PutMapping("/survey-units/{interrogationId}/reset")
+    @PutMapping("/interrogations/{interrogationId}/reset")
     @PreAuthorize(HAS_ANY_ROLE)
     public String resetInterrogation(@PathVariable String interrogationId) {
         InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
@@ -146,7 +146,7 @@ public class InterrogationController {
      * Check Data from interrogation csv data
      *
      * @param poguesId       questionnaire pogues id
-     * @param surveyUnitData interrogation data
+     * @param interrogation interrogation data
      * @return result of checking csv file
      * @throws IOException                            IO Exception
      * @throws InterrogationsGlobalValidationException   global exceptions occurred when validating interrogation data csv file
@@ -156,8 +156,8 @@ public class InterrogationController {
     @PreAuthorize(HAS_ANY_ROLE)
     public List<String> checkInterrogationsData(
             @PathVariable String poguesId,
-            @RequestPart(name = "surveyUnitData") @NonNull MultipartFile surveyUnitData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
-        byte[] csvContent = surveyUnitData.getBytes();
+            @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
+        byte[] csvContent = interrogation.getBytes();
         List<ValidationWarningMessage> validationMessages = interrogationCsvUseCase.validateInterrogations(csvContent, poguesId);
 
         return validationMessages.stream()

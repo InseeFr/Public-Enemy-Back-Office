@@ -124,16 +124,16 @@ public class QuestionnaireController {
 
     /**
      * @param questionnaireRest questionnaire form
-     * @param surveyUnitData    csv content of survey units
+     * @param interrogationData    csv content of survey units
      * @return the saved questionnaire
      */
     @PostMapping(path = "/add", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
     public QuestionnaireRest addQuestionnaire(
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
-            @RequestPart(name = "surveyUnitData") MultipartFile surveyUnitData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
+            @RequestPart(name = "interrogationData") MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
-        byte[] csvContent = surveyUnitData.getBytes();
+        byte[] csvContent = interrogationData.getBytes();
 
         csvUseCase.validateInterrogations(csvContent, questionnaireRest.poguesId());
 
@@ -144,7 +144,7 @@ public class QuestionnaireController {
     /**
      * @param questionnaireId questionnaire id
      * @param context         insee context
-     * @param surveyUnitData  csv content of survey units
+     * @param interrogationData  csv content of survey units
      * @return the updated questionnaire
      */
     @PostMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -152,11 +152,11 @@ public class QuestionnaireController {
     public QuestionnaireRest saveQuestionnaire(
             @PathVariable Long questionnaireId,
             @RequestPart(name = "context") ContextRest context,
-            @RequestPart(name = "surveyUnitData", required = false) MultipartFile surveyUnitData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
+            @RequestPart(name = "interrogationData", required = false) MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
         byte[] csvContent = null;
-        if (surveyUnitData != null) {
-            csvContent = surveyUnitData.getBytes();
+        if (interrogationData != null) {
+            csvContent = interrogationData.getBytes();
             csvUseCase.validateInterrogations(csvContent, questionnaireId);
         } else {
             csvContent = questionnaireUseCase.getInterrogationData(questionnaireId);
