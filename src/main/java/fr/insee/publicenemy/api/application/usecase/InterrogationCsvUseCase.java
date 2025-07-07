@@ -44,6 +44,7 @@ public class InterrogationCsvUseCase {
         this.poguesUseCase = poguesUseCase;
         this.questionnaireUseCase = questionnaireUseCase;
         this.messageService = messagePort;
+        this.maxInterrogationsDataToAdd = maxInterrogationsDataToAdd;
     }
 
     /**
