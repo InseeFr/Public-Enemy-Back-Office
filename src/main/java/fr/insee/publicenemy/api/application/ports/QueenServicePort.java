@@ -3,7 +3,7 @@ package fr.insee.publicenemy.api.application.ports;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 
 import java.util.List;
@@ -36,18 +36,18 @@ public interface QueenServicePort {
     void deleteCampaign(String campaignId) throws CampaignNotFoundException;
 
     /**
-     * Create survey units for campaign
+     * Create interrogations for campaign
      *
      * @param questionnaireModelId questionnaire model id
-     * @param surveyUnits          survey units to save
+     * @param interrogations          interrogations to save
      */
-    void createSurveyUnits(String questionnaireModelId, List<SurveyUnit> surveyUnits);
+    void createInterrogations(String questionnaireModelId, List<Interrogation> interrogations);
 
     /**
      * @param campaignId campaign id
-     * @return list of all survey units for a campaign
+     * @return list of all interrogations for a campaign
      */
-    List<SurveyUnit> getSurveyUnits(String campaignId);
+    List<Interrogation> getInterrogations(String campaignId);
 
     /**
      * @param questionnaireModelId questionnaire model id
@@ -56,13 +56,13 @@ public interface QueenServicePort {
     boolean hasQuestionnaireModel(String questionnaireModelId);
 
     /**
-     * Update a survey unit
+     * Update a interrogation
      *
-     * @param surveyUnit survey unit to update
+     * @param interrogation interrogation to update
      */
-    void updateSurveyUnit(SurveyUnit surveyUnit);
+    void updateInterrogation(Interrogation interrogation);
 
-    void deteteSurveyUnit(SurveyUnit surveyUnit);
+    void deteteInterrogation(Interrogation interrogation);
 
-    void createSurveyUnit(String questionnaireId, SurveyUnit surveyUnit);
+    void createInterrogation(String questionnaireId, Interrogation interrogation);
 }

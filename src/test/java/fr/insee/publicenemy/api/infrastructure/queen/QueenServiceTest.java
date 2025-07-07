@@ -1,13 +1,13 @@
 package fr.insee.publicenemy.api.infrastructure.queen;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitData;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
-import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
-import fr.insee.publicenemy.api.infrastructure.queen.exceptions.SurveyUnitsNotFoundException;
+import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.queen.exceptions.InterrogationsNotFoundException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -70,14 +70,14 @@ class QueenServiceTest {
 
     @Test
     void onCreateSurveyUnitsWhenApiResponseSuccessfulReturnNothing() {
-        SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
-        List<SurveyUnit> surveyUnits = new ArrayList<>();
+        InterrogationData data = new InterrogationData(new ArrayList<>());
+        List<Interrogation> interrogations = new ArrayList<>();
         // Create success response for each survey unit creation
         for (long nbSurveyUnits = 1; nbSurveyUnits <= 4; nbSurveyUnits++) {
-            surveyUnits.add(new SurveyUnit("id" + nbSurveyUnits, "q" + nbSurveyUnits, data, SurveyUnitStateData.createInitialStateData()));
+            interrogations.add(new Interrogation("id" + nbSurveyUnits, "q" + nbSurveyUnits, data, InterrogationStateData.createInitialStateData()));
             createMockResponseSuccess();
         }
-        assertAll(() -> service.createSurveyUnits("12-CAWI", surveyUnits));
+        assertAll(() -> service.createInterrogations("12-CAWI", interrogations));
     }
 
     @Test
@@ -103,30 +103,30 @@ class QueenServiceTest {
     @Test
     void onCreateSurveyUnitsWhenApiResponseErrorThrowsServiceException() {
         createMockResponseError();
-        SurveyUnitData data = new SurveyUnitData(new ArrayList<>());
-        List<SurveyUnit> surveyUnits = new ArrayList<>();
-        surveyUnits.add(new SurveyUnit("1", "q1", data, SurveyUnitStateData.createInitialStateData()));
-        surveyUnits.add(new SurveyUnit("2", "q1", data, SurveyUnitStateData.createInitialStateData()));
-        surveyUnits.add(new SurveyUnit("3", "q1", data, SurveyUnitStateData.createInitialStateData()));
-        assertThrows(ServiceException.class, () -> service.createSurveyUnits("12-CAWI", surveyUnits));
+        InterrogationData data = new InterrogationData(new ArrayList<>());
+        List<Interrogation> interrogations = new ArrayList<>();
+        interrogations.add(new Interrogation("1", "q1", data, InterrogationStateData.createInitialStateData()));
+        interrogations.add(new Interrogation("2", "q1", data, InterrogationStateData.createInitialStateData()));
+        interrogations.add(new Interrogation("3", "q1", data, InterrogationStateData.createInitialStateData()));
+        assertThrows(ServiceException.class, () -> service.createInterrogations("12-CAWI", interrogations));
     }
 
     @Test
     void onGetSurveyUnitsWhenEmptyResponseThrowsSurveyUnitsNotFoundException() {
         createMockEmptyResponse();
-        assertThrows(SurveyUnitsNotFoundException.class, () -> service.getSurveyUnits("1"));
+        assertThrows(InterrogationsNotFoundException.class, () -> service.getInterrogations("1"));
     }
 
     @Test
     void onGetSurveyUnitsWhenNotFoundResponseThrowsSurveyUnitsNotFoundException() {
         createMockNotFoundResponse();
-        assertThrows(SurveyUnitsNotFoundException.class, () -> service.getSurveyUnits("1"));
+        assertThrows(InterrogationsNotFoundException.class, () -> service.getInterrogations("1"));
     }
 
     @Test
     void onGetSurveyUnitsWhenErrordResponseThrowsServiceException() {
         createMockResponseError();
-        assertThrows(ServiceException.class, () -> service.getSurveyUnits("1"));
+        assertThrows(ServiceException.class, () -> service.getInterrogations("1"));
     }
 
     @Test
@@ -151,15 +151,15 @@ class QueenServiceTest {
     void onUpdateSurveyUnitWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
 
-        SurveyUnit su = new SurveyUnit("11-CAPI-1", "11", null, SurveyUnitStateData.createInitialStateData());
-        assertAll(() -> service.updateSurveyUnit(su));
+        Interrogation su = new Interrogation("11-CAPI-1", "11", null, InterrogationStateData.createInitialStateData());
+        assertAll(() -> service.updateInterrogation(su));
     }
 
     @Test
     void onUpdateSurveyUnitWhenApiResponseIncorrectThrowsServiceException() {
         createMockResponseError();
-        SurveyUnit su = new SurveyUnit("11-CAPI-1", "11", null, SurveyUnitStateData.createInitialStateData());
-        assertThrows(ServiceException.class, () -> service.updateSurveyUnit(su));
+        Interrogation su = new Interrogation("11-CAPI-1", "11", null, InterrogationStateData.createInitialStateData());
+        assertThrows(ServiceException.class, () -> service.updateInterrogation(su));
     }
 
     @Test
