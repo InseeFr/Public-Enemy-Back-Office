@@ -16,18 +16,16 @@ import java.util.*;
 @AllArgsConstructor
 public class InterrogationData {
 
-    private final Map<String, IInterrogationDataAttributeValue> externalAttributes;
-    private final Map<String, IInterrogationDataAttributeValue> collectedAttributes;
+    private Map<String, IInterrogationDataAttributeValue> externalAttributes =  new HashMap<>();
+    private Map<String, IInterrogationDataAttributeValue> collectedAttributes =  new HashMap<>();
 
 
     public InterrogationData(List<Map.Entry<String, String>> externalFields) {
         this.externalAttributes = getAttributesFromFields(externalFields);
-        this.collectedAttributes = null;
     }
 
     public InterrogationData(Map<String, IInterrogationDataAttributeValue> externalAttributes) {
         this.externalAttributes = externalAttributes;
-        this.collectedAttributes = null;
     }
 
     public InterrogationData (InterrogationJsonLine interrogationJsonLine){

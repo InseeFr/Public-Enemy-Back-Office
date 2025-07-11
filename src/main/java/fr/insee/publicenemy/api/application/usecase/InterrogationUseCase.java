@@ -142,18 +142,18 @@ public class InterrogationUseCase {
     }
 
     private List<ValidationWarningMessage> getAdditionalAttributesMessages(Interrogation interrogation, List<VariableType> variablesType) {
-        Set<String> externalAttributesKeys = interrogation.data().getExternalAttributes().keySet();
-        Set<String> collectedAttributesKeys = interrogation.data().getCollectedAttributes().keySet();
+        Map<String, IInterrogationDataAttributeValue> externalAttributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> collectedAttributes = interrogation.data().getCollectedAttributes();
         List<String> variablesName = variablesType.stream().map(VariableType::name).toList();
 
         List<ValidationWarningMessage> warningMessagesValidation = new ArrayList<>();
 
         // check if non existing attributes are added to CSV schema
-        List<ValidationWarningMessage> externalVariablesWarning = externalAttributesKeys.stream()
+        List<ValidationWarningMessage> externalVariablesWarning = externalAttributes.keySet().stream()
                 .filter(attributeName -> variablesName.stream().noneMatch(attributeName::equalsIgnoreCase))
                 .map(attributeName -> new ValidationWarningMessage("validation.attribute.not-exist", attributeName))
                 .toList();
-        List<ValidationWarningMessage> collectedVariablesWarning = collectedAttributesKeys.stream()
+        List<ValidationWarningMessage> collectedVariablesWarning = collectedAttributes.keySet().stream()
                 .filter(attributeName -> variablesName.stream().noneMatch(attributeName::equalsIgnoreCase))
                 .map(attributeName -> new ValidationWarningMessage("validation.attribute.not-exist", attributeName))
                 .toList();
@@ -186,6 +186,7 @@ public class InterrogationUseCase {
                 attributesErrors.add(attributeValidationObject);
             }
         }
+
         // validate collected variables in survey units data
         for (Map.Entry<String, IInterrogationDataAttributeValue> entry : collectedAttributes.entrySet()) {
             String attributeKey = entry.getKey();
@@ -197,6 +198,8 @@ public class InterrogationUseCase {
                 attributesErrors.add(attributeValidationObject);
             }
         }
+
+
         return new InterrogationDataValidationResult(interrogation.id(), attributesErrors);
     }
 
