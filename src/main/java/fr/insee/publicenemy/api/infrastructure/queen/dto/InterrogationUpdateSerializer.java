@@ -11,7 +11,6 @@ import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("rawtypes")
 public class InterrogationUpdateSerializer extends StdSerializer<InterrogationUpdateDto> {
 
     @Serial

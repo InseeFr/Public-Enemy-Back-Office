@@ -123,8 +123,6 @@ class InterrogationSerializerTest {
         String resourcePath = "src/test/resources/interrogation-data.json";
         File file = new File(resourcePath);
 
-
-
         InterrogationJsonLine interrogationJsonLine = new InterrogationJsonLine(readJsonFromFile(file));
 
         InterrogationData data = new InterrogationData(interrogationJsonLine);
@@ -141,159 +139,171 @@ class InterrogationSerializerTest {
         String jsonSurveyUnits = mapper.writeValueAsString(surveyUnits);
         assertEquals("""
                         [
-                           {
-                             "id": "1",
-                             "surveyUnitId": "su-1",
-                             "questionnaireId": "q1",
-                             "personalization": [],
-                             "comment": {},
-                             "data": {
-                               "EXTERNAL": {
-                                 "TEST_ARRAY": [
-                                   "YOUHOU 1",
-                                   "YOUHOU 2"
-                                 ],
-                                 "TEST": "YOUHOU !!"
-                               },
-                               "COLLECTED": {
-                                 "TABLEAU_CODE21": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU_CODE11": {
-                                   "COLLECTED": null
-                                 },
-                                 "QUESTIONNOMBRE": {
-                                   "COLLECTED": 39
-                                 },
-                                 "TABLEAUDYN_MIN_MAX_VTL1": {
-                                   "COLLECTED": []
-                                 },
-                                 "PRENOM": {
-                                   "COLLECTED": [
-                                     "Alice",
-                                     "Bob"
-                                   ]
-                                 },
-                                 "TABLEAUDYN_FIXED_SIZE1": {
-                                   "COLLECTED": []
-                                 },
-                                 "TABLEAU_CODE_COLONNES11": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU_CODE_COLONNES22": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU_CODE_COLONNES12": {
-                                   "COLLECTED": [
-                                     [
-                                       1,
-                                       2
-                                     ],
-                                     [
-                                       3,
-                                       null
-                                     ]
-                                   ]
-                                 },
-                                 "TABLEAU_CODE_COLONNES21": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU2D11": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU2D22": {
-                                   "COLLECTED": null
-                                 },
-                                 "QUESTIONTEXT": {
-                                   "COLLECTED": "Bonjour"
-                                 },
-                                 "TABLEAU2D12": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU2D21": {
-                                   "COLLECTED": null
-                                 }
-                               }
-                             },
-                             "stateData": null
-                           },
-                           {
-                             "id": "2",
-                             "surveyUnitId": "su-2",
-                             "questionnaireId": "q2",
-                             "personalization": [],
-                             "comment": {},
-                             "data": {
-                               "EXTERNAL": {
-                                 "TEST_ARRAY": [
-                                   "YOUHOU 1",
-                                   "YOUHOU 2"
-                                 ],
-                                 "TEST": "YOUHOU !!"
-                               },
-                               "COLLECTED": {
-                                 "TABLEAU_CODE21": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU_CODE11": {
-                                   "COLLECTED": null
-                                 },
-                                 "QUESTIONNOMBRE": {
-                                   "COLLECTED": 39
-                                 },
-                                 "TABLEAUDYN_MIN_MAX_VTL1": {
-                                   "COLLECTED": []
-                                 },
-                                 "PRENOM": {
-                                   "COLLECTED": [
-                                     "Alice",
-                                     "Bob"
-                                   ]
-                                 },
-                                 "TABLEAUDYN_FIXED_SIZE1": {
-                                   "COLLECTED": []
-                                 },
-                                 "TABLEAU_CODE_COLONNES11": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU_CODE_COLONNES22": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU_CODE_COLONNES12": {
-                                   "COLLECTED": [
-                                     [
-                                       1,
-                                       2
-                                     ],
-                                     [
-                                       3,
-                                       null
-                                     ]
-                                   ]
-                                 },
-                                 "TABLEAU_CODE_COLONNES21": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU2D11": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU2D22": {
-                                   "COLLECTED": null
-                                 },
-                                 "QUESTIONTEXT": {
-                                   "COLLECTED": "Bonjour"
-                                 },
-                                 "TABLEAU2D12": {
-                                   "COLLECTED": null
-                                 },
-                                 "TABLEAU2D21": {
-                                   "COLLECTED": null
-                                 }
-                               }
-                             },
-                             "stateData": null
-                           }
-                         ]""".replaceAll("\\s+", "")
+                            {
+                              "id": "1",
+                              "surveyUnitId": "su-1",
+                              "questionnaireId": "q1",
+                              "personalization": [],
+                              "comment": {},
+                              "data": {
+                                "EXTERNAL": {
+                                  "TEST_ARRAY": [
+                                    "YOUHOU 1",
+                                    "YOUHOU 2"
+                                  ],
+                                  "TEST": "YOUHOU !!"
+                                },
+                                "COLLECTED": {
+                                  "TABLEAU_CODE21": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU_CODE11": {
+                                    "COLLECTED": null
+                                  },
+                                  "QUESTIONNOMBRE": {
+                                    "COLLECTED": 39
+                                  },
+                                  "TABLEAUDYN_MIN_MAX_VTL1": {
+                                    "COLLECTED": []
+                                  },
+                                  "PRENOM": {
+                                    "COLLECTED": [
+                                      "Alice",
+                                      "Bob"
+                                    ]
+                                  },
+                                  "TABLEAUDYN_FIXED_SIZE1": {
+                                    "COLLECTED": [
+                                      null,
+                                      null,
+                                      null,
+                                      null,
+                                      null
+                                    ]
+                                  },
+                                  "TABLEAU_CODE_COLONNES11": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU_CODE_COLONNES22": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU_CODE_COLONNES12": {
+                                    "COLLECTED": [
+                                      [
+                                        1,
+                                        2
+                                      ],
+                                      [
+                                        3,
+                                        null
+                                      ]
+                                    ]
+                                  },
+                                  "TABLEAU_CODE_COLONNES21": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU2D11": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU2D22": {
+                                    "COLLECTED": null
+                                  },
+                                  "QUESTIONTEXT": {
+                                    "COLLECTED": "Bonjour"
+                                  },
+                                  "TABLEAU2D12": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU2D21": {
+                                    "COLLECTED": null
+                                  }
+                                }
+                              },
+                              "stateData": null
+                            },
+                            {
+                              "id": "2",
+                              "surveyUnitId": "su-2",
+                              "questionnaireId": "q2",
+                              "personalization": [],
+                              "comment": {},
+                              "data": {
+                                "EXTERNAL": {
+                                  "TEST_ARRAY": [
+                                    "YOUHOU 1",
+                                    "YOUHOU 2"
+                                  ],
+                                  "TEST": "YOUHOU !!"
+                                },
+                                "COLLECTED": {
+                                  "TABLEAU_CODE21": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU_CODE11": {
+                                    "COLLECTED": null
+                                  },
+                                  "QUESTIONNOMBRE": {
+                                    "COLLECTED": 39
+                                  },
+                                  "TABLEAUDYN_MIN_MAX_VTL1": {
+                                    "COLLECTED": []
+                                  },
+                                  "PRENOM": {
+                                    "COLLECTED": [
+                                      "Alice",
+                                      "Bob"
+                                    ]
+                                  },
+                                  "TABLEAUDYN_FIXED_SIZE1": {
+                                    "COLLECTED": [
+                                      null,
+                                      null,
+                                      null,
+                                      null,
+                                      null
+                                    ]
+                                  },
+                                  "TABLEAU_CODE_COLONNES11": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU_CODE_COLONNES22": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU_CODE_COLONNES12": {
+                                    "COLLECTED": [
+                                      [
+                                        1,
+                                        2
+                                      ],
+                                      [
+                                        3,
+                                        null
+                                      ]
+                                    ]
+                                  },
+                                  "TABLEAU_CODE_COLONNES21": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU2D11": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU2D22": {
+                                    "COLLECTED": null
+                                  },
+                                  "QUESTIONTEXT": {
+                                    "COLLECTED": "Bonjour"
+                                  },
+                                  "TABLEAU2D12": {
+                                    "COLLECTED": null
+                                  },
+                                  "TABLEAU2D21": {
+                                    "COLLECTED": null
+                                  }
+                                }
+                              },
+                              "stateData": null
+                            }
+                          ]""".replaceAll("\\s+", "")
                 , jsonSurveyUnits.replaceAll("\\s+", ""));
     }
 }
