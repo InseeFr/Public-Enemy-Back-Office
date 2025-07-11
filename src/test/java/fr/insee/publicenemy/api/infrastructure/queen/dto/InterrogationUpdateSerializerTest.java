@@ -74,7 +74,8 @@ class InterrogationUpdateSerializerTest {
                                        "value5",
                                        "value6"
                                     ]
-                                 }
+                                 },
+                                 "COLLECTED":{}
                               },
                               "stateData": null
                            },
@@ -94,7 +95,8 @@ class InterrogationUpdateSerializerTest {
                                        "value5",
                                        "value6"
                                     ]
-                                 }
+                                 },
+                                 "COLLECTED":{}
                               },
                               "stateData": null
                            }
