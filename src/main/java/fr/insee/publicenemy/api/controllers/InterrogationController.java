@@ -165,29 +165,6 @@ public class InterrogationController {
     }
 
     /**
-     * Check Data from interrogation csv data
-     *
-     * @param poguesId       questionnaire pogues id
-     * @param interrogation interrogation data
-     * @return result of checking csv file
-     * @throws IOException                            IO Exception
-     * @throws InterrogationsGlobalValidationException   global exceptions occurred when validating interrogation data csv file
-     * @throws InterrogationsSpecificValidationException specific exceptions occurred when validating interrogation data csv file
-     */
-    @PostMapping(path = "/questionnaires/{poguesId}/check-json-data", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @PreAuthorize(HAS_ANY_ROLE)
-    public List<String> checkInterrogationsJsonData(
-            @PathVariable String poguesId,
-            @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
-        byte[] jsonContent = interrogation.getBytes();
-        List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(jsonContent, poguesId);
-
-        return validationMessages.stream()
-                .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))
-                .toList();
-    }
-
-    /**
      * Handle global survey units errors when checking csv data
      *
      * @param validationException global validation exception

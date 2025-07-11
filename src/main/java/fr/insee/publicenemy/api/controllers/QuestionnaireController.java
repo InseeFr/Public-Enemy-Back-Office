@@ -5,6 +5,7 @@ import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
@@ -98,17 +99,20 @@ public class QuestionnaireController {
      * @param id questionnaire id
      * @return questionnaire
      */
-    @GetMapping(value = "/{id}/data", produces = "text/csv")
+    @GetMapping(value = "/{id}/data")
     @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<byte[]> getInterrogationData(@PathVariable Long id) {
-        String filename = String.format("questionnaire-%s-data.csv", id);
 
         byte[] interrogationsData = questionnaireUseCase.getInterrogationData(id);
-
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
-                .body(interrogationsData);
+        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(interrogationsData);
+        if (dataFormat != null) {
+            String filename = String.format("questionnaire-%s-data.%s", id, dataFormat.name().toLowerCase());
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
+                    .body(interrogationsData);
+        }
+        return null;
     }
 
     /**
