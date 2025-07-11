@@ -12,7 +12,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("rawtypes")
 class InterrogationDataAttributeParserTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -55,7 +54,9 @@ class InterrogationDataAttributeParserTest {
         assertEquals(List.of(1, 2, 3), ((InterrogationDataAttributeValueList<?>) result.get("NUMBERS")).getValue());
         assertEquals(List.of(true, false, true), ((InterrogationDataAttributeValueList<?>) result.get("FLAGS")).getValue());
 
-        assertEquals(List.of(null, null), ((InterrogationDataAttributeValueList<?>) result.get("ALL_NULLS")).getValue());
+        assertEquals(2,((List<?>) result.get("ALL_NULLS").getValue()).size());
+        assertNull(((List<?>) result.get("ALL_NULLS").getValue()).get(0));
+        assertNull(((List<?>) result.get("ALL_NULLS").getValue()).get(1));
         assertTrue(((InterrogationDataAttributeValueList<?>) result.get("EMPTY_ARRAY")).getValue().isEmpty());
     }
 
@@ -82,7 +83,7 @@ class InterrogationDataAttributeParserTest {
         assertEquals(3, ((InterrogationDataAttributeValue<?>) result.get("VERSION")).getValue());
         assertEquals(false, ((InterrogationDataAttributeValue<?>) result.get("ENABLED")).getValue());
         assertNull(((InterrogationDataAttributeValue<?>) result.get("NULLABLE")).getValue());
-        assertEquals(List.of(false, true), ((InterrogationDataAttributeValueList) result.get("FLAGS")).getValue());
+        assertEquals(List.of(false, true), result.get("FLAGS").getValue());
     }
 
     @Test

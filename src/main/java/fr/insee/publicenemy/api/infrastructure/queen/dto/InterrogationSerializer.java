@@ -47,8 +47,8 @@ public class InterrogationSerializer extends StdSerializer<InterrogationDto> {
             if(data.getExternalAttributes() != null) {
                 jgen.writeObjectFieldStart(EXTERNAL);
                 // External data
-                for (Map.Entry<String, IInterrogationDataAttributeValue<?>> attribute : data.getExternalAttributes().entrySet()) {
-                    IInterrogationDataAttributeValue<?> objectData = attribute.getValue();
+                for (Map.Entry<String, IInterrogationDataAttributeValue> attribute : data.getExternalAttributes().entrySet()) {
+                    IInterrogationDataAttributeValue objectData = attribute.getValue();
                     jgen.writeObjectField(attribute.getKey(), objectData.getValue());
                 }
                 jgen.writeEndObject(); // close EXTERNAL
@@ -57,8 +57,8 @@ public class InterrogationSerializer extends StdSerializer<InterrogationDto> {
             if(data.getCollectedAttributes() != null){
                 jgen.writeObjectFieldStart(COLLECTED);
                 // Collected data
-                for (Map.Entry<String, IInterrogationDataAttributeValue<?>> attribute : data.getCollectedAttributes().entrySet()) {
-                    IInterrogationDataAttributeValue<?> objectData = attribute.getValue();
+                for (Map.Entry<String, IInterrogationDataAttributeValue> attribute : data.getCollectedAttributes().entrySet()) {
+                    IInterrogationDataAttributeValue objectData = attribute.getValue();
                     jgen.writeObjectFieldStart(attribute.getKey());
                     jgen.writeObjectField(COLLECTED, objectData.getValue());
                     jgen.writeEndObject(); // close name of variable

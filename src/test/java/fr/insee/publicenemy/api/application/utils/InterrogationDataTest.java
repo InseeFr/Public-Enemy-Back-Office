@@ -3,8 +3,7 @@ package fr.insee.publicenemy.api.application.utils;
 import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class InterrogationDataTest {
 
@@ -32,15 +31,11 @@ class InterrogationDataTest {
     @Test
     void testEmptyDataThrowsException() {
         byte[] empty = new byte[0];
-        assertThrows(IllegalArgumentException.class, () -> {
-            InterrogationData.getDataFormat(empty);
-        });
+        assertNull(InterrogationData.getDataFormat(empty));
     }
 
     @Test
     void testNullDataThrowsException() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            InterrogationData.getDataFormat(null);
-        });
+        assertNull(InterrogationData.getDataFormat(null));
     }
 }

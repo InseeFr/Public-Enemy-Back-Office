@@ -15,7 +15,7 @@ import lombok.ToString;
 @ToString
 @Data
 @NoArgsConstructor
-public class InterrogationDataAttributeValue<T> implements IInterrogationDataAttributeValue<T> {
+public class InterrogationDataAttributeValue<T> implements IInterrogationDataAttributeValue {
     private T value;
 
     public InterrogationDataAttributeValue(T value) {

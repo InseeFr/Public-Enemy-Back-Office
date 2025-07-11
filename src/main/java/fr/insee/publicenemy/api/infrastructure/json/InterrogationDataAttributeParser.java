@@ -7,12 +7,9 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.Interroga
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValueList;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValueListList;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@SuppressWarnings("rawtypes")
+
 public class InterrogationDataAttributeParser {
 
     private InterrogationDataAttributeParser() {
@@ -43,7 +40,7 @@ public class InterrogationDataAttributeParser {
 
             if (valueNode.isMissingNode()) continue;
 
-            IInterrogationDataAttributeValue<?> parsedValue = parseJsonValue(valueNode);
+            IInterrogationDataAttributeValue parsedValue = parseJsonValue(valueNode);
             if (parsedValue != null) {
                 attributes.put(key, parsedValue);
             }
@@ -87,8 +84,12 @@ public class InterrogationDataAttributeParser {
                 }
             }
         }
-        // Si tout est null
-        return new InterrogationDataAttributeValueList<>();
+        // Si tout est null, on crée une liste de nulls de même taille
+        InterrogationDataAttributeValueList<Object> nullList = new InterrogationDataAttributeValueList<>();
+        for (int i = 0; i < arrayNode.size(); i++) {
+            nullList.addValue(null);
+        }
+        return nullList;
     }
 
     private static IInterrogationDataAttributeValue parseArrayOfArray(ArrayNode outerArray) {
@@ -110,7 +111,18 @@ public class InterrogationDataAttributeParser {
             }
         }
 
-        return new InterrogationDataAttributeValueListList<>();
+        // Si tout est null : on crée une liste de listes de nulls avec même structure
+        InterrogationDataAttributeValueListList<Object> nullListList = new InterrogationDataAttributeValueListList<>();
+        outerArray.forEach(subArray -> {
+            if (subArray.isArray()) {
+                int innerSize = subArray.size();
+                List<Object> nulls = Collections.nCopies(innerSize, null);
+                nullListList.addValue(nulls);
+            } else {
+                nullListList.addValue(null); // élément non-array
+            }
+        });
+        return nullListList;
     }
 
     private static <T> T castNodeValue(JsonNode node, Class<T> clazz) {
@@ -126,7 +138,7 @@ public class InterrogationDataAttributeParser {
         return null;
     }
 
-    private static <T> IInterrogationDataAttributeValue<List<T>> createTypedList(ArrayNode arrayNode, Class<T> clazz) {
+    private static <T> IInterrogationDataAttributeValue createTypedList(ArrayNode arrayNode, Class<T> clazz) {
         InterrogationDataAttributeValueList<T> listValue = new InterrogationDataAttributeValueList<>();
         for (JsonNode node : arrayNode) {
             listValue.addValue(castNodeValue(node, clazz));
@@ -134,7 +146,7 @@ public class InterrogationDataAttributeParser {
         return listValue;
     }
 
-    private static <T> IInterrogationDataAttributeValue<List<List<T>>> createTypedListOfLists(ArrayNode outerArray, Class<T> clazz) {
+    private static <T> IInterrogationDataAttributeValue createTypedListOfLists(ArrayNode outerArray, Class<T> clazz) {
         InterrogationDataAttributeValueListList<T> listOfLists = new InterrogationDataAttributeValueListList<>();
 
         for (JsonNode subArray : outerArray) {

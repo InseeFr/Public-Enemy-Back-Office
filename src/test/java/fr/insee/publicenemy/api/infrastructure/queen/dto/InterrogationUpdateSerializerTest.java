@@ -26,7 +26,7 @@ class InterrogationUpdateSerializerTest {
     void checkJsonFormatOnSerialize() throws JsonProcessingException {
         List<InterrogationUpdateDto> surveyUnits = new ArrayList<>();
 
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = new TreeMap<>();
+        Map<String, IInterrogationDataAttributeValue> attributes = new TreeMap<>();
 
         InterrogationDataAttributeValue<String> booleanValue = new InterrogationDataAttributeValue<>("1");
         InterrogationDataAttributeValue<String> textValue = new InterrogationDataAttributeValue<>("CS 70058");

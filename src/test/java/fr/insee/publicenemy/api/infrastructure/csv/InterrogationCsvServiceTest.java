@@ -60,7 +60,7 @@ class InterrogationCsvServiceTest {
         List<Interrogation> interrogations = service.initInterrogations(surveyUnitData, questionnaireModelId);
 
         Interrogation interrogation = interrogations.get(0);
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
 
         assertEquals(String.format("%s-%s", questionnaireModelId, "1"), interrogation.id());
         InterrogationDataAttributeValue numfa = new InterrogationDataAttributeValue("1");

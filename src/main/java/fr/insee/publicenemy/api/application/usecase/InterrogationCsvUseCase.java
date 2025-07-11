@@ -25,7 +25,7 @@ import java.util.Set;
 @Service
 public class InterrogationCsvUseCase {
 
-    private int maxInterrogationsDataToAdd;
+    private final int maxInterrogationsDataToAdd;
 
     private final InterrogationCsvPort interrogationCsvPort;
 
@@ -114,7 +114,7 @@ public class InterrogationCsvUseCase {
      * @return messages about the missing variables on the survey unit
      */
     private List<ValidationErrorMessage> getMissingVariablesMessages(Interrogation interrogation, List<VariableType> variablesType) {
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
         Set<String> attributesKeys = attributes.keySet();
 
         // check if questionnaire variables are missing in a survey unit data
@@ -126,7 +126,7 @@ public class InterrogationCsvUseCase {
     }
 
     private List<ValidationWarningMessage> getAdditionalAttributesMessages(Interrogation interrogation, List<VariableType> variablesType) {
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
         Set<String> attributesKeys = attributes.keySet();
         List<String> variablesName = variablesType.stream().map(VariableType::name).toList();
 
@@ -146,12 +146,12 @@ public class InterrogationCsvUseCase {
      */
     private InterrogationDataValidationResult getInterrogationErrors(Interrogation interrogation, List<VariableType> variablesType) {
         List<InterrogationDataAttributeValidationResult> attributesErrors = new ArrayList<>();
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
 
         // validate variables in survey units data
-        for (Map.Entry<String, IInterrogationDataAttributeValue<?>> entry : attributes.entrySet()) {
+        for (Map.Entry<String, IInterrogationDataAttributeValue> entry : attributes.entrySet()) {
             String attributeKey = entry.getKey();
-            IInterrogationDataAttributeValue<?> attributeObjectData = entry.getValue();
+            IInterrogationDataAttributeValue attributeObjectData = entry.getValue();
 
             InterrogationDataAttributeValidationResult attributeValidationObject = validateAttribute(attributeKey, attributeObjectData, variablesType);
 
@@ -170,7 +170,7 @@ public class InterrogationCsvUseCase {
      * @param variablesType       list of variables from a questionnaire
      * @return a validation object containing errors message for the attribute specified
      */
-    private InterrogationDataAttributeValidationResult validateAttribute(String attributeKey, IInterrogationDataAttributeValue<?> attributeObjectData, List<VariableType> variablesType) {
+    private InterrogationDataAttributeValidationResult validateAttribute(String attributeKey, IInterrogationDataAttributeValue attributeObjectData, List<VariableType> variablesType) {
         return variablesType.stream()
                 .filter(variable -> variable.name().equalsIgnoreCase(attributeKey))
                 .findFirst()

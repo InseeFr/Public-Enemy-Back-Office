@@ -55,7 +55,7 @@ class InterrogationJsonServiceTest {
         List<Interrogation> interrogations = service.initInterrogations(surveyUnitData, questionnaireModelId);
 
         Interrogation interrogation = interrogations.getFirst();
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getCollectedAttributes();
 
         assertEquals(String.format("%s-%s", questionnaireModelId, "1"), interrogation.id());
         InterrogationDataAttributeValue<String> bonjourValue = new InterrogationDataAttributeValue<>("Bonjour");
@@ -83,7 +83,7 @@ class InterrogationJsonServiceTest {
         """.getBytes();
         Interrogation su = service.getJsonInterrogation(surveyUnitId, data, questionnaireModelId);
         assertEquals(su.id(), identifierHandler.getQueenIdentifier());
-        assertEquals(("value" + surveyUnitId), su.data().getExternalAttributes().get("name").getValue());
+        assertEquals(("value" + surveyUnitId), su.data().getCollectedAttributes().get("name").getValue());
     }
 
     @ParameterizedTest

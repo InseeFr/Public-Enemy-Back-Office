@@ -17,7 +17,7 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 @Getter
-public class InterrogationDataAttributeValueList<T> implements IInterrogationDataAttributeValue<List<T>> {
+public class InterrogationDataAttributeValueList<T> implements IInterrogationDataAttributeValue {
     private final List<T> values;
 
     public InterrogationDataAttributeValueList() {

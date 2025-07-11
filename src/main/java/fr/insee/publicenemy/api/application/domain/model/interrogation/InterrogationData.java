@@ -16,9 +16,7 @@ import java.util.*;
 @AllArgsConstructor
 public class InterrogationData {
 
-    @SuppressWarnings("rawtypes")
     private final Map<String, IInterrogationDataAttributeValue> externalAttributes;
-    @SuppressWarnings("rawtypes")
     private final Map<String, IInterrogationDataAttributeValue> collectedAttributes;
 
 
@@ -27,7 +25,6 @@ public class InterrogationData {
         this.collectedAttributes = null;
     }
 
-    @SuppressWarnings("rawtypes")
     public InterrogationData(Map<String, IInterrogationDataAttributeValue> externalAttributes) {
         this.externalAttributes = externalAttributes;
         this.collectedAttributes = null;
@@ -47,7 +44,6 @@ public class InterrogationData {
      *               and each value corresponds to a string value
      * @return attributes map corresponding
      */
-    @SuppressWarnings("rawtypes")
     private Map<String, IInterrogationDataAttributeValue> getAttributesFromFields(List<Map.Entry<String, String>> fields) {
         Map<String, IInterrogationDataAttributeValue> attrs = new LinkedHashMap<>();
         /*
