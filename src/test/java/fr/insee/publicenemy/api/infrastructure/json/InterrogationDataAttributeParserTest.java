@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("rawtypes")
 class InterrogationDataAttributeParserTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -42,7 +43,7 @@ class InterrogationDataAttributeParserTest {
         """;
 
         InterrogationJsonLine line = createInterrogationJsonLine(json);
-        Map<String, IInterrogationDataAttributeValue<?>> result = InterrogationDataAttributeParser.parseCollectedAttributes(line);
+        Map<String, IInterrogationDataAttributeValue> result = InterrogationDataAttributeParser.parseCollectedAttributes(line);
 
         assertEquals("Alice", ((InterrogationDataAttributeValue<?>) result.get("NAME")).getValue());
         assertEquals(30, ((InterrogationDataAttributeValue<?>) result.get("AGE")).getValue());
@@ -75,13 +76,13 @@ class InterrogationDataAttributeParserTest {
         """;
 
         InterrogationJsonLine line = createInterrogationJsonLine(json);
-        Map<String, IInterrogationDataAttributeValue<?>> result = InterrogationDataAttributeParser.parseExternalAttributes(line);
+        Map<String, IInterrogationDataAttributeValue> result = InterrogationDataAttributeParser.parseExternalAttributes(line);
 
         assertEquals("INSEE", ((InterrogationDataAttributeValue<?>) result.get("SOURCE")).getValue());
         assertEquals(3, ((InterrogationDataAttributeValue<?>) result.get("VERSION")).getValue());
         assertEquals(false, ((InterrogationDataAttributeValue<?>) result.get("ENABLED")).getValue());
         assertNull(((InterrogationDataAttributeValue<?>) result.get("NULLABLE")).getValue());
-        assertEquals(List.of(false, true), ((InterrogationDataAttributeValueList<?>) result.get("FLAGS")).getValue());
+        assertEquals(List.of(false, true), ((InterrogationDataAttributeValueList) result.get("FLAGS")).getValue());
     }
 
     @Test
@@ -95,7 +96,7 @@ class InterrogationDataAttributeParserTest {
         """;
 
         InterrogationJsonLine line = createInterrogationJsonLine(json);
-        Map<String, IInterrogationDataAttributeValue<?>> result = InterrogationDataAttributeParser.parseCollectedAttributes(line);
+        Map<String, IInterrogationDataAttributeValue> result = InterrogationDataAttributeParser.parseCollectedAttributes(line);
         assertTrue(result.isEmpty());
     }
 
@@ -108,7 +109,7 @@ class InterrogationDataAttributeParserTest {
         """;
 
         InterrogationJsonLine line = createInterrogationJsonLine(json);
-        Map<String, IInterrogationDataAttributeValue<?>> result = InterrogationDataAttributeParser.parseExternalAttributes(line);
+        Map<String, IInterrogationDataAttributeValue> result = InterrogationDataAttributeParser.parseExternalAttributes(line);
         assertTrue(result.isEmpty());
     }
 }

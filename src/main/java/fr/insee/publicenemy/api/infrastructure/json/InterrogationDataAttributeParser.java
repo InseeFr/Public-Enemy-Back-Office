@@ -12,18 +12,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("rawtypes")
 public class InterrogationDataAttributeParser {
 
-    public static Map<String, IInterrogationDataAttributeValue<?>> parseCollectedAttributes(InterrogationJsonLine line) {
+    private InterrogationDataAttributeParser() {
+        throw new IllegalStateException("Utility class");
+    }
+
+    public static Map<String, IInterrogationDataAttributeValue> parseCollectedAttributes(InterrogationJsonLine line) {
         return parseAttributesAtPath(line.getFields().path("data"), "COLLECTED", true);
     }
 
-    public static Map<String, IInterrogationDataAttributeValue<?>> parseExternalAttributes(InterrogationJsonLine line) {
+    public static Map<String, IInterrogationDataAttributeValue> parseExternalAttributes(InterrogationJsonLine line) {
         return parseAttributesAtPath(line.getFields().path("data"), "EXTERNAL", false);
     }
 
-    private static Map<String, IInterrogationDataAttributeValue<?>> parseAttributesAtPath(JsonNode root, String pathName, boolean expectCollectedSubNode) {
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = new HashMap<>();
+    private static Map<String, IInterrogationDataAttributeValue> parseAttributesAtPath(JsonNode root, String pathName, boolean expectCollectedSubNode) {
+        Map<String, IInterrogationDataAttributeValue> attributes = new HashMap<>();
 
         JsonNode targetNode = root.path(pathName);
         if (!targetNode.isObject()) {
@@ -47,7 +52,7 @@ public class InterrogationDataAttributeParser {
         return attributes;
     }
 
-    private static IInterrogationDataAttributeValue<?> parseJsonValue(JsonNode valueNode) {
+    private static IInterrogationDataAttributeValue parseJsonValue(JsonNode valueNode) {
         if (valueNode.isArray()) {
             return parseArrayValue((ArrayNode) valueNode);
         } else if (valueNode.isTextual()) {
@@ -63,7 +68,7 @@ public class InterrogationDataAttributeParser {
         return null; // unsupported type
     }
 
-    private static IInterrogationDataAttributeValue<?> parseArrayValue(ArrayNode arrayNode) {
+    private static IInterrogationDataAttributeValue parseArrayValue(ArrayNode arrayNode) {
         if (arrayNode.isEmpty()) {
             return new InterrogationDataAttributeValueList<>();
         }
@@ -86,7 +91,7 @@ public class InterrogationDataAttributeParser {
         return new InterrogationDataAttributeValueList<>();
     }
 
-    private static IInterrogationDataAttributeValue<?> parseArrayOfArray(ArrayNode outerArray) {
+    private static IInterrogationDataAttributeValue parseArrayOfArray(ArrayNode outerArray) {
         if (outerArray.isEmpty()) {
             return new InterrogationDataAttributeValueListList<>();
         }
