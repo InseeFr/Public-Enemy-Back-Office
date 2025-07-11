@@ -53,7 +53,7 @@ public class InterrogationController {
 
     private final InterrogationUseCase interrogationUseCase;
 
-    private final InterrogationUseCaseUtils interrogationUseCase;
+    private final InterrogationUseCaseUtils interrogationUtils;
 
     private final I18nMessagePort messageService;
 
@@ -63,13 +63,13 @@ public class InterrogationController {
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
-    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationCsvUseCase,
+    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationUseCase,
                                    I18nMessagePort messageService, InterrogationMessagesComponent messageComponent,
-                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUseCase) {
+                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUtils) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
-        this.interrogationUseCase = interrogationCsvUseCase;
         this.interrogationUseCase = interrogationUseCase;
+        this.interrogationUtils = interrogationUtils;
         this.messageService = messageService;
         this.messageComponent = messageComponent;
         this.errorComponent = errorComponent;
@@ -93,7 +93,7 @@ public class InterrogationController {
         return new InterrogationsRest(
                 interrogations.stream().map(interrogation -> {
                     try {
-                        return interrogationUseCase.buildInterrogationRest(
+                        return interrogationUtils.buildInterrogationRest(
                                 interrogation,
                                 questionnaireModelId,
                                 Mode.valueOf(modeName),
@@ -179,8 +179,8 @@ public class InterrogationController {
     public List<String> checkInterrogationsJsonData(
             @PathVariable String poguesId,
             @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
-        byte[] csvContent = interrogation.getBytes();
-        List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(csvContent, poguesId);
+        byte[] jsonContent = interrogation.getBytes();
+        List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(jsonContent, poguesId);
 
         return validationMessages.stream()
                 .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))

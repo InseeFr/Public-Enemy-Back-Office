@@ -9,6 +9,7 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificVal
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvService;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.json.InterrogationJsonService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,8 @@ class InterrogationUseCaseTest {
 
     @Mock
     private InterrogationCsvService interrogationCsvService;
+    @Mock
+    private InterrogationJsonService interrogationJsonService;
 
     @Mock
     private I18nMessagePort messageService;
@@ -47,7 +50,7 @@ class InterrogationUseCaseTest {
 
     @BeforeEach
     void init() {
-        usecase = new InterrogationUseCase(interrogationCsvService, poguesUseCase, questionnaireUseCase, messageService, 10);
+        usecase = new InterrogationUseCase(interrogationCsvService, interrogationJsonService, poguesUseCase, questionnaireUseCase, messageService, 10);
     }
 
     @Test

@@ -9,12 +9,16 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrog
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataValidationResult;
+import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
+import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
+import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,7 +31,8 @@ public class InterrogationUseCase {
 
     private final int maxInterrogationsDataToAdd;
 
-    private final InterrogationCsvPort interrogationCsvPort;
+    private final InterrogationCsvPort interrogationService;
+    private final InterrogationJsonPort interrogationJsonService;
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
@@ -37,10 +42,12 @@ public class InterrogationUseCase {
 
     private static final String VALIDATION_ERROR = "validation.errors";
 
-    public InterrogationUseCase(InterrogationCsvPort interrogationCsvPort, PoguesUseCase poguesUseCase,
+    public InterrogationUseCase(InterrogationCsvPort interrogationService, InterrogationJsonPort interrogationJsonService,
+                                PoguesUseCase poguesUseCase,
                                 QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort,
                                 @Value("${application.campaign.max-interrogations}") int maxInterrogationsDataToAdd) {
-        this.interrogationCsvPort = interrogationCsvPort;
+        this.interrogationService = interrogationService;
+        this.interrogationJsonService = interrogationJsonService;
         this.poguesUseCase = poguesUseCase;
         this.questionnaireUseCase = questionnaireUseCase;
         this.messageService = messagePort;
@@ -53,7 +60,7 @@ public class InterrogationUseCase {
      */
     public InterrogationCsvHeaderLine getHeadersLine(String poguesId) {
         List<VariableType> variables = poguesUseCase.getQuestionnaireVariables(poguesId);
-        return interrogationCsvPort.getInterrogationsCsvHeaders(variables);
+        return interrogationService.getInterrogationsCsvHeaders(variables);
     }
 
     /**
@@ -76,7 +83,16 @@ public class InterrogationUseCase {
      * @return validation errors for all survey units in survey units data
      */
     public List<ValidationWarningMessage> validateInterrogations(byte[] interrogationData, String poguesId) throws InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
-        List<Interrogation> interrogations = interrogationCsvPort.initInterrogations(interrogationData, null);
+
+        List<Interrogation> interrogations;
+        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(interrogationData);
+        if(InterrogationData.FormatType.CSV.equals(dataFormat)){
+            interrogations = interrogationService.initInterrogations(interrogationData, null);
+        } else if(InterrogationData.FormatType.JSON.equals(dataFormat)) {
+            interrogations = interrogationJsonService.initInterrogations(interrogationData, null);
+        } else {
+            throw new ServiceException(HttpStatus.NOT_ACCEPTABLE, "Invalid format of data");
+        }
         List<VariableType> variablesType = poguesUseCase.getQuestionnaireVariables(poguesId);
 
         if (interrogations.isEmpty()) {

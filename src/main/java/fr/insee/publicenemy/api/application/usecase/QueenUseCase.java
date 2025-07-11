@@ -12,6 +12,7 @@ import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -62,16 +63,19 @@ public class QueenUseCase {
     public void resetInterrogation(String interrogationId, byte[] interrogationData) {
         InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
         Interrogation interrogation;
-        if(InterrogationData.FormatType.CSV.equals(InterrogationData.getDataFormat(interrogationData))){
+        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(interrogationData);
+        if(InterrogationData.FormatType.CSV.equals(dataFormat)){
             interrogation = interrogationCsvService.getCsvInterrogation(
                     identifierHandler.getInterrogationIdentifier(),
                     interrogationData,
                     identifierHandler.getQuestionnaireModelId());
-        } else {
+        } else if(InterrogationData.FormatType.JSON.equals(dataFormat)) {
             interrogation = interrogationJsonService.getJsonInterrogation(
                     identifierHandler.getInterrogationIdentifier(),
                     interrogationData,
                     identifierHandler.getQuestionnaireModelId());
+        } else {
+            throw new ServiceException(HttpStatus.NOT_ACCEPTABLE, "Invalid format of data");
         }
         queenService.deteteInterrogation(interrogation);
         createInterrogation(interrogation.questionnaireId(), interrogation);
@@ -174,11 +178,14 @@ public class QueenUseCase {
      */
     private void createQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireMode.getMode());
-        List<Interrogation> interrogations;
-        if(InterrogationData.FormatType.CSV.equals(InterrogationData.getDataFormat(questionnaire.getInterrogationData()))){
+        List<Interrogation> interrogations = List.of();
+        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(questionnaire.getInterrogationData());
+        if(InterrogationData.FormatType.CSV.equals(dataFormat)){
             interrogations = interrogationCsvService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
-        } else {
+        } else if(InterrogationData.FormatType.JSON.equals(dataFormat)) {
             interrogations = interrogationJsonService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        } else {
+            log.warn("Invalid format of data");
         }
         createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode);
         createCampaign(questionnaireModelId, questionnaireModel, questionnaire, questionnaireMode);
@@ -197,11 +204,14 @@ public class QueenUseCase {
     private void updateQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
         Mode mode = questionnaireMode.getMode();
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
-        List<Interrogation> interrogations;
-        if(InterrogationData.FormatType.CSV.equals(InterrogationData.getDataFormat(questionnaire.getInterrogationData()))){
+        List<Interrogation> interrogations = List.of();
+        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(questionnaire.getInterrogationData());
+        if(InterrogationData.FormatType.CSV.equals(dataFormat)){
             interrogations = interrogationCsvService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
-        } else {
+        } else if(InterrogationData.FormatType.JSON.equals(dataFormat)) {
             interrogations = interrogationJsonService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        } else {
+            log.warn("Invalid format of data");
         }
         // try to delete campaign if exists
         try {
