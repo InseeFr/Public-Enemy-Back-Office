@@ -13,7 +13,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Service
-public class InterrogationUseCase {
+public class InterrogationUseCaseUtils {
 
     @Value("${application.orchestrator.cawi.url}")
     private String cawiOrchestratorUrl;

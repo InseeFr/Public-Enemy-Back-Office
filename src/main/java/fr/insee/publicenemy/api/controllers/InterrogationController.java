@@ -53,7 +53,7 @@ public class InterrogationController {
 
     private final InterrogationCsvUseCase interrogationCsvUseCase;
 
-    private final InterrogationUseCase interrogationUseCase;
+    private final InterrogationUseCaseUtils interrogationUseCase;
 
     private final I18nMessagePort messageService;
 
@@ -65,7 +65,7 @@ public class InterrogationController {
 
     public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationCsvUseCase interrogationCsvUseCase,
                                    I18nMessagePort messageService, InterrogationMessagesComponent messageComponent,
-                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCase interrogationUseCase) {
+                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUseCase) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
         this.interrogationCsvUseCase = interrogationCsvUseCase;
@@ -114,8 +114,8 @@ public class InterrogationController {
     @PreAuthorize(HAS_ANY_ROLE)
     public String resetInterrogation(@PathVariable String interrogationId) {
         InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
-        byte[] interrogationCsvData = questionnaireUseCase.getInterrogationData(identifierHandler.getQuestionnaireId());
-        queenUseCase.resetInterrogation(interrogationId, interrogationCsvData);
+        byte[] interrogationData = questionnaireUseCase.getInterrogationData(identifierHandler.getQuestionnaireId());
+        queenUseCase.resetInterrogation(interrogationId, interrogationData);
         return "{}";
     }
 
@@ -140,7 +140,6 @@ public class InterrogationController {
         writer.writeNext(attributes.headers().toArray(String[]::new));
         writer.close();
     }
-
 
     /**
      * Check Data from interrogation csv data
