@@ -51,7 +51,7 @@ public class InterrogationController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final InterrogationCsvUseCase interrogationCsvUseCase;
+    private final InterrogationUseCase interrogationUseCase;
 
     private final InterrogationUseCaseUtils interrogationUseCase;
 
@@ -63,12 +63,12 @@ public class InterrogationController {
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
-    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationCsvUseCase interrogationCsvUseCase,
+    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationCsvUseCase,
                                    I18nMessagePort messageService, InterrogationMessagesComponent messageComponent,
                                    ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUseCase) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
-        this.interrogationCsvUseCase = interrogationCsvUseCase;
+        this.interrogationUseCase = interrogationCsvUseCase;
         this.interrogationUseCase = interrogationUseCase;
         this.messageService = messageService;
         this.messageComponent = messageComponent;
@@ -136,7 +136,7 @@ public class InterrogationController {
                 String.format("attachment; filename=\"%s\"", filename));
 
         CSVWriter writer = new CSVWriter(response.getWriter());
-        InterrogationCsvHeaderLine attributes = interrogationCsvUseCase.getHeadersLine(poguesId);
+        InterrogationCsvHeaderLine attributes = interrogationUseCase.getHeadersLine(poguesId);
         writer.writeNext(attributes.headers().toArray(String[]::new));
         writer.close();
     }
@@ -157,7 +157,30 @@ public class InterrogationController {
             @PathVariable String poguesId,
             @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
         byte[] csvContent = interrogation.getBytes();
-        List<ValidationWarningMessage> validationMessages = interrogationCsvUseCase.validateInterrogations(csvContent, poguesId);
+        List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(csvContent, poguesId);
+
+        return validationMessages.stream()
+                .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))
+                .toList();
+    }
+
+    /**
+     * Check Data from interrogation csv data
+     *
+     * @param poguesId       questionnaire pogues id
+     * @param interrogation interrogation data
+     * @return result of checking csv file
+     * @throws IOException                            IO Exception
+     * @throws InterrogationsGlobalValidationException   global exceptions occurred when validating interrogation data csv file
+     * @throws InterrogationsSpecificValidationException specific exceptions occurred when validating interrogation data csv file
+     */
+    @PostMapping(path = "/questionnaires/{poguesId}/check-json-data", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PreAuthorize(HAS_ANY_ROLE)
+    public List<String> checkInterrogationsJsonData(
+            @PathVariable String poguesId,
+            @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
+        byte[] csvContent = interrogation.getBytes();
+        List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(csvContent, poguesId);
 
         return validationMessages.stream()
                 .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))

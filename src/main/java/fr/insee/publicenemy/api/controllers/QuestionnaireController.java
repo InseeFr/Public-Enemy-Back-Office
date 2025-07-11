@@ -10,7 +10,7 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificVal
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
+import fr.insee.publicenemy.api.application.usecase.InterrogationUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
@@ -38,7 +38,7 @@ public class QuestionnaireController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final InterrogationCsvUseCase csvUseCase;
+    private final InterrogationUseCase csvUseCase;
     private final PoguesUseCase poguesUseCase;
 
     private final ApiExceptionComponent errorComponent;
@@ -50,7 +50,7 @@ public class QuestionnaireController {
     private static final String VALIDATION_ERROR = "validation.errors";
 
     public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, PoguesUseCase poguesUseCase,
-                                   InterrogationCsvUseCase csvUseCase,
+                                   InterrogationUseCase csvUseCase,
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
                                    ApiExceptionComponent errorComponent) {
         this.questionnaireUseCase = questionnaireUseCase;

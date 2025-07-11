@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Service
-public class InterrogationCsvUseCase {
+public class InterrogationUseCase {
 
     private final int maxInterrogationsDataToAdd;
 
@@ -37,9 +37,9 @@ public class InterrogationCsvUseCase {
 
     private static final String VALIDATION_ERROR = "validation.errors";
 
-    public InterrogationCsvUseCase(InterrogationCsvPort interrogationCsvPort, PoguesUseCase poguesUseCase,
-                                   QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort,
-                                   @Value("${application.campaign.max-interrogations}") int maxInterrogationsDataToAdd) {
+    public InterrogationUseCase(InterrogationCsvPort interrogationCsvPort, PoguesUseCase poguesUseCase,
+                                QuestionnaireUseCase questionnaireUseCase, I18nMessagePort messagePort,
+                                @Value("${application.campaign.max-interrogations}") int maxInterrogationsDataToAdd) {
         this.interrogationCsvPort = interrogationCsvPort;
         this.poguesUseCase = poguesUseCase;
         this.questionnaireUseCase = questionnaireUseCase;

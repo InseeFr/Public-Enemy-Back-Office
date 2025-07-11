@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class InterrogationCsvUseCaseTest {
-    private InterrogationCsvUseCase usecase;
+class InterrogationUseCaseTest {
+    private InterrogationUseCase usecase;
 
     @Mock
     private PoguesUseCase poguesUseCase;
@@ -47,7 +47,7 @@ class InterrogationCsvUseCaseTest {
 
     @BeforeEach
     void init() {
-        usecase = new InterrogationCsvUseCase(interrogationCsvService, poguesUseCase, questionnaireUseCase, messageService, 10);
+        usecase = new InterrogationUseCase(interrogationCsvService, poguesUseCase, questionnaireUseCase, messageService, 10);
     }
 
     @Test
