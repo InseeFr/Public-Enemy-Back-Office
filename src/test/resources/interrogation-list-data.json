@@ -8,7 +8,8 @@
       },
       "EXTERNAL": {
         "TEST": "YOUHOU !!",
-        "TEST_ARRAY": ["YOUHOU 1", "YOUHOU 2"]
+        "TEST_ARRAY": ["YOUHOU 1", "YOUHOU 2"],
+        "NICO": "test !!"
       },
       "COLLECTED": {
         "PRENOM": {

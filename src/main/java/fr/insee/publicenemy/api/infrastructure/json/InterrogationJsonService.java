@@ -5,15 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
+import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.infrastructure.json.exceptions.InterrogationJsonNotFoundException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.rmi.ServerException;
 import java.util.*;
 
 @Service
@@ -87,10 +90,10 @@ public class InterrogationJsonService implements InterrogationJsonPort {
                     result.add(jsonLine);
                 }
             } else {
-                throw new IllegalArgumentException("Le JSON n'est pas un tableau !");
+                throw new ServiceException(HttpStatus.NOT_ACCEPTABLE, "Le json  doit être un array !");
             }
         } catch (IOException e) {
-            throw new RuntimeException("Erreur lors du parsing du JSON des interrogations", e);
+            throw new ServiceException(HttpStatus.NOT_ACCEPTABLE, "Le json est invalide !");
         }
         return result;
     }

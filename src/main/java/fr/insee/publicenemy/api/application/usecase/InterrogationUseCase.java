@@ -142,15 +142,25 @@ public class InterrogationUseCase {
     }
 
     private List<ValidationWarningMessage> getAdditionalAttributesMessages(Interrogation interrogation, List<VariableType> variablesType) {
-        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
-        Set<String> attributesKeys = attributes.keySet();
+        Set<String> externalAttributesKeys = interrogation.data().getExternalAttributes().keySet();
+        Set<String> collectedAttributesKeys = interrogation.data().getCollectedAttributes().keySet();
         List<String> variablesName = variablesType.stream().map(VariableType::name).toList();
 
+        List<ValidationWarningMessage> warningMessagesValidation = new ArrayList<>();
+
         // check if non existing attributes are added to CSV schema
-        return attributesKeys.stream()
+        List<ValidationWarningMessage> externalVariablesWarning = externalAttributesKeys.stream()
                 .filter(attributeName -> variablesName.stream().noneMatch(attributeName::equalsIgnoreCase))
                 .map(attributeName -> new ValidationWarningMessage("validation.attribute.not-exist", attributeName))
                 .toList();
+        List<ValidationWarningMessage> collectedVariablesWarning = collectedAttributesKeys.stream()
+                .filter(attributeName -> variablesName.stream().noneMatch(attributeName::equalsIgnoreCase))
+                .map(attributeName -> new ValidationWarningMessage("validation.attribute.not-exist", attributeName))
+                .toList();
+
+        warningMessagesValidation.addAll(externalVariablesWarning);
+        warningMessagesValidation.addAll(collectedVariablesWarning);
+        return warningMessagesValidation;
     }
 
     /**
@@ -162,10 +172,22 @@ public class InterrogationUseCase {
      */
     private InterrogationDataValidationResult getInterrogationErrors(Interrogation interrogation, List<VariableType> variablesType) {
         List<InterrogationDataAttributeValidationResult> attributesErrors = new ArrayList<>();
-        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> externalAttributes = interrogation.data().getExternalAttributes();
+        Map<String, IInterrogationDataAttributeValue> collectedAttributes = interrogation.data().getCollectedAttributes();
 
-        // validate variables in survey units data
-        for (Map.Entry<String, IInterrogationDataAttributeValue> entry : attributes.entrySet()) {
+        // validate external variables in survey units data
+        for (Map.Entry<String, IInterrogationDataAttributeValue> entry : externalAttributes.entrySet()) {
+            String attributeKey = entry.getKey();
+            IInterrogationDataAttributeValue attributeObjectData = entry.getValue();
+
+            InterrogationDataAttributeValidationResult attributeValidationObject = validateAttribute(attributeKey, attributeObjectData, variablesType);
+
+            if (!attributeValidationObject.dataTypeValidationResult().isValid()) {
+                attributesErrors.add(attributeValidationObject);
+            }
+        }
+        // validate collected variables in survey units data
+        for (Map.Entry<String, IInterrogationDataAttributeValue> entry : collectedAttributes.entrySet()) {
             String attributeKey = entry.getKey();
             IInterrogationDataAttributeValue attributeObjectData = entry.getValue();
 
