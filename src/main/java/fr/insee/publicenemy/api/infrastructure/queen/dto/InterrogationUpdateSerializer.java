@@ -16,6 +16,10 @@ public class InterrogationUpdateSerializer extends StdSerializer<InterrogationUp
     @Serial
     private static final long serialVersionUID = 5928430315100640987L;
 
+
+    private static final String COLLECTED = "COLLECTED";
+    private static final String EXTERNAL = "EXTERNAL";
+
     public InterrogationUpdateSerializer() {
         this(null);
     }
@@ -36,16 +40,31 @@ public class InterrogationUpdateSerializer extends StdSerializer<InterrogationUp
         jgen.writeObjectFieldStart("comment");
         jgen.writeEndObject();
         jgen.writeObjectFieldStart("data");
-        jgen.writeObjectFieldStart("EXTERNAL");
         InterrogationData data = interrogation.data();
         if (data != null) {
-            for (Map.Entry<String, IInterrogationDataAttributeValue<?>> attribute : data.getAttributes().entrySet()) {
-                IInterrogationDataAttributeValue<?> objectData = attribute.getValue();
-                jgen.writeObjectField(attribute.getKey(), objectData.getValue());
+            if(data.getExternalAttributes() != null) {
+                jgen.writeObjectFieldStart(EXTERNAL);
+                // External data
+                for (Map.Entry<String, IInterrogationDataAttributeValue<?>> attribute : data.getExternalAttributes().entrySet()) {
+                    IInterrogationDataAttributeValue<?> objectData = attribute.getValue();
+                    jgen.writeObjectField(attribute.getKey(), objectData.getValue());
+                }
+                jgen.writeEndObject(); // close EXTERNAL
+            }
+
+            if(data.getCollectedAttributes() != null){
+                jgen.writeObjectFieldStart(COLLECTED);
+                // External data
+                for (Map.Entry<String, IInterrogationDataAttributeValue<?>> attribute : data.getCollectedAttributes().entrySet()) {
+                    IInterrogationDataAttributeValue<?> objectData = attribute.getValue();
+                    jgen.writeObjectFieldStart(attribute.getKey());
+                    jgen.writeObjectField(COLLECTED, objectData.getValue());
+                    jgen.writeEndObject(); // close name of variable
+                }
+                jgen.writeEndObject(); // close COLLECTED
             }
         }
-        jgen.writeEndObject();
-        jgen.writeEndObject();
+        jgen.writeEndObject(); // close data
         jgen.writeObjectField("stateData", interrogation.stateData());
         jgen.writeEndObject();
     }

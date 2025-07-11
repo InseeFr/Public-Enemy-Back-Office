@@ -3,9 +3,10 @@ package fr.insee.publicenemy.api.application.usecase;
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
+import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +33,8 @@ class QueenUseCaseTest {
     @Mock
     private InterrogationCsvPort surveyUnitServicePort;
     @Mock
+    private InterrogationJsonPort surveyUnitJsonServicePort;
+    @Mock
     private PoguesUseCase poguesUseCase;
     @Mock
     private QuestionnaireModel questionnaireModel;
@@ -43,7 +46,7 @@ class QueenUseCaseTest {
 
     @BeforeEach
     public void init() {
-        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, false);
+        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, surveyUnitJsonServicePort,false);
     }
 
     @Test

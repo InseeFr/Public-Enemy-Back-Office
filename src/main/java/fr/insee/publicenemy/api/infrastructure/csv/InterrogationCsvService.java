@@ -8,6 +8,7 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.Interroga
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

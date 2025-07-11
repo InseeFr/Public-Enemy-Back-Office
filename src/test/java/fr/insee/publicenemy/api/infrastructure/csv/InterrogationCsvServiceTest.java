@@ -60,7 +60,7 @@ class InterrogationCsvServiceTest {
         List<Interrogation> interrogations = service.initInterrogations(surveyUnitData, questionnaireModelId);
 
         Interrogation interrogation = interrogations.get(0);
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = interrogation.data().getAttributes();
+        Map<String, IInterrogationDataAttributeValue<?>> attributes = interrogation.data().getExternalAttributes();
 
         assertEquals(String.format("%s-%s", questionnaireModelId, "1"), interrogation.id());
         InterrogationDataAttributeValue numfa = new InterrogationDataAttributeValue("1");
@@ -121,7 +121,7 @@ class InterrogationCsvServiceTest {
         byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
         Interrogation su = service.getCsvInterrogation(surveyUnitId, data, questionnaireModelId);
         assertEquals(su.id(), identifierHandler.getQueenIdentifier());
-        assertEquals(("value" + surveyUnitId), su.data().getAttributes().get("name").getValue());
+        assertEquals(("value" + surveyUnitId), su.data().getExternalAttributes().get("name").getValue());
     }
 
     @ParameterizedTest

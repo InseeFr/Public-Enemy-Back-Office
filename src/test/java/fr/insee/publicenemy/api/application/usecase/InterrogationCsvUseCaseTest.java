@@ -8,7 +8,7 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValid
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvService;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

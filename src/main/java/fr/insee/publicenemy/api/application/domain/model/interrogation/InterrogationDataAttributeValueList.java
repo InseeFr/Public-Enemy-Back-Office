@@ -17,8 +17,8 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 @Getter
-public class InterrogationDataAttributeValueList implements IInterrogationDataAttributeValue<List<String>> {
-    private final List<String> values;
+public class InterrogationDataAttributeValueList<T> implements IInterrogationDataAttributeValue<List<T>> {
+    private final List<T> values;
 
     public InterrogationDataAttributeValueList() {
         this.values = new ArrayList<>();
@@ -34,7 +34,7 @@ public class InterrogationDataAttributeValueList implements IInterrogationDataAt
         boolean isValid = true;
         List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
-        for (String value : values) {
+        for (T value : values) {
             DataTypeValidationResult validationObject = variableType.dataType().validate(value);
             if (!validationObject.isValid()) {
                 isValid = false;
@@ -50,11 +50,11 @@ public class InterrogationDataAttributeValueList implements IInterrogationDataAt
      *
      * @param value value to add
      */
-    public void addValue(String value) {
+    public void addValue(T value) {
         values.add(value);
     }
 
-    public List<String> getValue() {
+    public List<T> getValue() {
         return values;
     }
 }

@@ -1,0 +1,76 @@
+[
+  {
+    "id": "",
+    "questionnaireId": "",
+    "data": {
+      "CALCULATED": {
+        "SIZE_FIRST_TAB": 2
+      },
+      "EXTERNAL": {
+        "TEST": "YOUHOU !!",
+        "TEST_ARRAY": ["YOUHOU 1", "YOUHOU 2"]
+      },
+      "COLLECTED": {
+        "PRENOM": {
+          "COLLECTED": [
+            "Alice",
+            "Bob"
+          ]
+        },
+        "TABLEAUDYN_FIXED_SIZE1": {
+          "COLLECTED": [
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        "TABLEAUDYN_MIN_MAX_VTL1": {
+          "COLLECTED": []
+        },
+        "TABLEAU_CODE11": {
+          "COLLECTED": null
+        },
+        "TABLEAU_CODE21": {
+          "COLLECTED": null
+        },
+        "TABLEAU_CODE_COLONNES11": {
+          "COLLECTED": null
+        },
+        "TABLEAU_CODE_COLONNES21": {
+          "COLLECTED": null
+        },
+        "TABLEAU_CODE_COLONNES12": {
+          "COLLECTED": null
+        },
+        "TABLEAU_CODE_COLONNES22": {
+          "COLLECTED": null
+        },
+        "TABLEAU2D11": {
+          "COLLECTED": null
+        },
+        "TABLEAU2D21": {
+          "COLLECTED": null
+        },
+        "TABLEAU2D12": {
+          "COLLECTED": null
+        },
+        "TABLEAU2D22": {
+          "COLLECTED": null
+        },
+        "QUESTIONTEXT": {
+          "COLLECTED": "Bonjour"
+        },
+        "QUESTIONNOMBRE": {
+          "COLLECTED": 39
+        }
+      }
+    },
+    "stateData": {
+      "state": "INIT",
+      "date": 1752053082781,
+      "currentPage": "5"
+    }
+  }
+]

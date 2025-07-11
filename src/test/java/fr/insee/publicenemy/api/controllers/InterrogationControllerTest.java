@@ -21,7 +21,7 @@ import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
 import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

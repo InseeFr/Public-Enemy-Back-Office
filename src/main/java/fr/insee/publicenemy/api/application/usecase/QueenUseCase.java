@@ -4,7 +4,9 @@ import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
+import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
+import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
@@ -24,7 +26,8 @@ public class QueenUseCase {
 
     private final QueenServicePort queenService;
 
-    private final InterrogationCsvPort interrogationService;
+    private final InterrogationCsvPort interrogationCsvService;
+    private final InterrogationJsonPort interrogationJsonService;
 
     private final PoguesUseCase poguesUseCase;
 
@@ -32,11 +35,13 @@ public class QueenUseCase {
 
     public QueenUseCase(PoguesUseCase poguesUseCase,
                         QueenServicePort queenService,
-                        InterrogationCsvPort interrogationService,
+                        InterrogationCsvPort interrogationCsvService,
+                        InterrogationJsonPort interrogationJsonService,
                         @Value("${application.mode.handle-only-cawi}") boolean onlyCAWIMode) {
         this.poguesUseCase = poguesUseCase;
         this.queenService = queenService;
-        this.interrogationService = interrogationService;
+        this.interrogationCsvService = interrogationCsvService;
+        this.interrogationJsonService = interrogationJsonService;
         this.onlyCAWIMode = onlyCAWIMode;
     }
 
@@ -56,7 +61,18 @@ public class QueenUseCase {
      */
     public void resetInterrogation(String interrogationId, byte[] interrogationData) {
         InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
-        Interrogation interrogation = interrogationService.getCsvInterrogation(identifierHandler.getInterrogationIdentifier(), interrogationData, identifierHandler.getQuestionnaireModelId());
+        Interrogation interrogation;
+        if(InterrogationData.FormatType.CSV.equals(InterrogationData.getDataFormat(interrogationData))){
+            interrogation = interrogationCsvService.getCsvInterrogation(
+                    identifierHandler.getInterrogationIdentifier(),
+                    interrogationData,
+                    identifierHandler.getQuestionnaireModelId());
+        } else {
+            interrogation = interrogationJsonService.getJsonInterrogation(
+                    identifierHandler.getInterrogationIdentifier(),
+                    interrogationData,
+                    identifierHandler.getQuestionnaireModelId());
+        }
         queenService.deteteInterrogation(interrogation);
         createInterrogation(interrogation.questionnaireId(), interrogation);
     }
@@ -158,7 +174,12 @@ public class QueenUseCase {
      */
     private void createQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) throws CampaignNotFoundException {
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), questionnaireMode.getMode());
-        List<Interrogation> interrogations = interrogationService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        List<Interrogation> interrogations;
+        if(InterrogationData.FormatType.CSV.equals(InterrogationData.getDataFormat(questionnaire.getInterrogationData()))){
+            interrogations = interrogationCsvService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        } else {
+            interrogations = interrogationJsonService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        }
         createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode);
         createCampaign(questionnaireModelId, questionnaireModel, questionnaire, questionnaireMode);
         createInterrogations(questionnaireModelId, interrogations, questionnaireMode);
@@ -176,7 +197,12 @@ public class QueenUseCase {
     private void updateQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
         Mode mode = questionnaireMode.getMode();
         String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaire.getId(), mode);
-        List<Interrogation> interrogations = interrogationService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        List<Interrogation> interrogations;
+        if(InterrogationData.FormatType.CSV.equals(InterrogationData.getDataFormat(questionnaire.getInterrogationData()))){
+            interrogations = interrogationCsvService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        } else {
+            interrogations = interrogationJsonService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
+        }
         // try to delete campaign if exists
         try {
             log.info(String.format("%s: delete campaign %s", questionnaire.getPoguesId(), questionnaireModelId));

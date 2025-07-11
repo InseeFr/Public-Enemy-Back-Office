@@ -44,10 +44,11 @@ public class DateDatatypeType implements IDataType {
     }
 
     /**
-     * @param fieldValue field value to validate
+     * @param abstractFieldValue field value to validate
      * @return data validation object validation success ii successful, object validation failure otherwise
      */
-    public DataTypeValidationResult validate(String fieldValue) {
+    public DataTypeValidationResult validate(Object abstractFieldValue) {
+        String fieldValue = (String) abstractFieldValue;
         if (fieldValue == null || fieldValue.isEmpty()) {
             return DataTypeValidationResult.createOkDataTypeValidation();
         }
