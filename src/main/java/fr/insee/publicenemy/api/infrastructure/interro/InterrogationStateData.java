@@ -1,4 +1,4 @@
-package fr.insee.publicenemy.api.infrastructure.csv;
+package fr.insee.publicenemy.api.infrastructure.interro;
 
 public record InterrogationStateData(String currentPage, Long date, String state) {
 

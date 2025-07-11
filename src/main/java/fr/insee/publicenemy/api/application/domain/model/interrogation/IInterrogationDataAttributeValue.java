@@ -8,9 +8,8 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
  * The purpose is to have different kind of attribute values for a survey unit data and being able to validate them
  * in a generic way
  *
- * @param <T> type of object stored as attribute value
  */
-public interface IInterrogationDataAttributeValue<T> {
+public interface IInterrogationDataAttributeValue {
     /**
      * @param variableType variable type used for validation
      * @return a data validation object indicating if validation is successful (or not)
@@ -20,5 +19,5 @@ public interface IInterrogationDataAttributeValue<T> {
     /**
      * @return attribute value
      */
-    T getValue();
+    Object getValue();
 }
