@@ -96,12 +96,12 @@ public class InterrogationUseCase {
         List<VariableType> variablesType = poguesUseCase.getQuestionnaireVariables(poguesId);
 
         if (interrogations.isEmpty()) {
-            ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.no-exist");
+            ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.interrogations.no-exist");
             throw new InterrogationsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), errorMessage);
         }
 
         if (interrogations.size() > maxInterrogationsDataToAdd) {
-            ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.survey-units.max-size", maxInterrogationsDataToAdd + "");
+            ValidationErrorMessage errorMessage = new ValidationErrorMessage("validation.interrogations.max-size", maxInterrogationsDataToAdd + "");
             throw new InterrogationsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), errorMessage);
         }
 
