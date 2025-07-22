@@ -71,7 +71,7 @@ class InterrogationUseCaseTest {
 
         InterrogationsGlobalValidationException ex = assertThrows(InterrogationsGlobalValidationException.class, () -> usecase.validateInterrogations(surveyUnitDataByte, poguesId));
         ValidationErrorMessage message = ex.getGlobalErrorMessages().get(0);
-        assertEquals("validation.survey-units.no-exist", message.getCode());
+        assertEquals("validation.interrogations.no-exist", message.getCode());
     }
 
     @Test
@@ -88,7 +88,7 @@ class InterrogationUseCaseTest {
 
         InterrogationsGlobalValidationException ex = assertThrows(InterrogationsGlobalValidationException.class, () -> usecase.validateInterrogations(surveyUnitDataByte, poguesId));
         ValidationErrorMessage message = ex.getGlobalErrorMessages().get(0);
-        assertEquals("validation.survey-units.max-size", message.getCode());
+        assertEquals("validation.interrogations.max-size", message.getCode());
     }
 
     @Test
