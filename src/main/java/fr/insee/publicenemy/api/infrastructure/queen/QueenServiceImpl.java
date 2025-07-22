@@ -230,7 +230,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
-                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("interrogation.csv.not-found", interrogation.id())))
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("interrogation.not-found", interrogation.id())))
                 )
                 .onStatus(
                         HttpStatusCode::isError,

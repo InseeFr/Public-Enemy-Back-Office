@@ -48,7 +48,7 @@ public class InterrogationCsvService implements InterrogationCsvPort {
         List<InterrogationCsvLine> interrogationsCsvLines = getInterrogationsCsvLines(interrogationData);
 
         if (interrogationId <= 0 || interrogationId > interrogationsCsvLines.size()) {
-            throw new InterrogationCsvNotFoundException(messageService.getMessage("interrogation.csv.not-found"));
+            throw new InterrogationCsvNotFoundException(messageService.getMessage("interrogation.not-found"));
         }
 
         InterrogationCsvLine interrogationCsvLine = interrogationsCsvLines.get(interrogationId - 1);

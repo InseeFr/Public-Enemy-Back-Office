@@ -48,7 +48,7 @@ public class InterrogationJsonService implements InterrogationJsonPort {
         List<InterrogationJsonLine> interrogationsJsonLines = getInterrogationsJsonLines(interrogationData);
 
         if (interrogationId <= 0 || interrogationId > interrogationsJsonLines.size()) {
-            throw new InterrogationJsonNotFoundException(messageService.getMessage("interrogation.csv.not-found"));
+            throw new InterrogationJsonNotFoundException(messageService.getMessage("interrogation.not-found"));
         }
 
         InterrogationJsonLine interrogationJsonLine = interrogationsJsonLines.get(interrogationId - 1);
@@ -90,10 +90,14 @@ public class InterrogationJsonService implements InterrogationJsonPort {
                     result.add(jsonLine);
                 }
             } else {
-                throw new ServiceException(HttpStatus.NOT_ACCEPTABLE, "Le json  doit être un array !");
+                throw new ServiceException(
+                        HttpStatus.NOT_ACCEPTABLE,
+                        messageService.getMessage("validation.json.not.array.error"));
             }
         } catch (IOException e) {
-            throw new ServiceException(HttpStatus.NOT_ACCEPTABLE, "Le json est invalide !");
+            throw new ServiceException(
+                    HttpStatus.NOT_ACCEPTABLE,
+                    messageService.getMessage("validation.json.malform.error"));
         }
         return result;
     }
