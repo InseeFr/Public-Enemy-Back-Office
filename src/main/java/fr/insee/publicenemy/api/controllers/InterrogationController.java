@@ -109,7 +109,7 @@ public class InterrogationController {
      *
      * @param interrogationId interrogation id
      */
-    @PutMapping("/interrogations/{questionnaireId}/{interrogationId}/reset")
+    @PutMapping("/questionnaires/{questionnaireId}/interrogations/{interrogationId}/reset")
     @PreAuthorize(HAS_ANY_ROLE)
     public String resetInterrogation(@PathVariable Long questionnaireId, @PathVariable String interrogationId) {
         byte[] interrogationData = questionnaireUseCase.getInterrogationData(questionnaireId);

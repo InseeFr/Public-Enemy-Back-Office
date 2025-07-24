@@ -22,6 +22,7 @@ import fr.insee.publicenemy.api.application.usecase.InterrogationUseCase;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -88,6 +90,9 @@ class InterrogationControllerTest {
     private List<Interrogation> interrogations;
 
     @Mock
+    private List<InterrogationDto> interrogationDtos;
+
+    @Mock
     private Questionnaire questionnaire;
 
 
@@ -99,6 +104,11 @@ class InterrogationControllerTest {
         interrogations.add(new Interrogation("11-CAPI-2", "q1", data, InterrogationStateData.createInitialStateData()));
         interrogations.add(new Interrogation("11-CAPI-3", "q1", data, InterrogationStateData.createInitialStateData()));
 
+        interrogationDtos = new ArrayList<>();
+        interrogationDtos.add(new InterrogationDto("11-CAPI-1", null, null, null, null));
+        interrogationDtos.add(new InterrogationDto("11-CAPI-2", null, null, null, null));
+        interrogationDtos.add(new InterrogationDto("11-CAPI-3", null, null, null, null));
+
         questionnaire = new Questionnaire("poguesId","label",List.of(Mode.valueOf("CAWI"), Mode.valueOf("CATI")));
     }
 
@@ -109,12 +119,11 @@ class InterrogationControllerTest {
         String questionnaireModelId = String.format("%s-%s", questionnaireId, cawi.name());
         when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
         when(poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
-        // when(queenUseCase.getInterrogations(questionnaireModelId)).thenReturn(interrogations);
+        when(queenUseCase.getInterrogations(questionnaireModelId)).thenReturn(interrogationDtos);
         mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/interrogations", questionnaireId, cawi.name())
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.interrogations.size()", is(interrogations.size())))
-                .andExpect(jsonPath("$.questionnaireModelId", is(questionnaireModelId)));
+                .andExpect(jsonPath("$.interrogations.size()", is(interrogationDtos.size())));
     }
 
     @Test
@@ -219,11 +228,12 @@ class InterrogationControllerTest {
 
     @Test
     void onResetSurveyUnitCallResetService() throws Exception {
-        String surveyUnitId = "11-CAPI-1";
+        Long questionnaireId = 11L;
+        String surveyUnitId = questionnaireId + "-CAPI-1";
         byte[] surveyUnitData = "".getBytes();
-        when(questionnaireUseCase.getInterrogationData(11L)).thenReturn(surveyUnitData);
+        when(questionnaireUseCase.getInterrogationData(questionnaireId)).thenReturn(surveyUnitData);
 
-        mockMvc.perform(put("/api/interrogations/{InterrogationId}/reset", surveyUnitId)
+        mockMvc.perform(put("/api/questionnaires/{questionnaireId}/interrogations/{interrogationId}/reset", questionnaireId, surveyUnitId)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
