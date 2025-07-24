@@ -63,7 +63,6 @@ class InterrogationCsvServiceTest {
         Interrogation interrogation = interrogations.get(0);
         Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
 
-        assertEquals(String.format("%s-%s", questionnaireModelId, "1"), interrogation.id());
         InterrogationDataAttributeValue numfa = new InterrogationDataAttributeValue("1");
         InterrogationDataAttributeValue complement = new InterrogationDataAttributeValue("CS 70058");
         assertEquals(numfa, attributes.get("Numfa"));

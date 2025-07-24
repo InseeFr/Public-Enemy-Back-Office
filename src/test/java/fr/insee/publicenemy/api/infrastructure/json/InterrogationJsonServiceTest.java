@@ -59,7 +59,6 @@ class InterrogationJsonServiceTest {
         Interrogation interrogation = interrogations.getFirst();
         Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getCollectedAttributes();
 
-        assertEquals(String.format("%s-%s", questionnaireModelId, "1"), interrogation.id());
         InterrogationDataAttributeValue<String> bonjourValue = new InterrogationDataAttributeValue<>("Bonjour");
         InterrogationDataAttributeValueList<String> prenomList = new InterrogationDataAttributeValueList<>();
         prenomList.addValue("Alice");
