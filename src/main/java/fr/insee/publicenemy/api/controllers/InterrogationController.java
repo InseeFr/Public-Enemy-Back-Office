@@ -51,9 +51,9 @@ public class InterrogationController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final InterrogationCsvUseCase interrogationCsvUseCase;
-
     private final InterrogationUseCase interrogationUseCase;
+
+    private final InterrogationUseCaseUtils interrogationUtils;
 
     private final I18nMessagePort messageService;
 
@@ -63,13 +63,13 @@ public class InterrogationController {
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
-    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationCsvUseCase interrogationCsvUseCase,
+    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationUseCase,
                                    I18nMessagePort messageService, InterrogationMessagesComponent messageComponent,
-                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCase interrogationUseCase) {
+                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUtils) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
-        this.interrogationCsvUseCase = interrogationCsvUseCase;
         this.interrogationUseCase = interrogationUseCase;
+        this.interrogationUtils = interrogationUtils;
         this.messageService = messageService;
         this.messageComponent = messageComponent;
         this.errorComponent = errorComponent;
@@ -93,7 +93,7 @@ public class InterrogationController {
         return new InterrogationsRest(
                 interrogations.stream().map(interrogation -> {
                     try {
-                        return interrogationUseCase.buildInterrogationRest(
+                        return interrogationUtils.buildInterrogationRest(
                                 interrogation,
                                 questionnaireModelId,
                                 Mode.valueOf(modeName),
@@ -114,8 +114,8 @@ public class InterrogationController {
     @PreAuthorize(HAS_ANY_ROLE)
     public String resetInterrogation(@PathVariable String interrogationId) {
         InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
-        byte[] interrogationCsvData = questionnaireUseCase.getInterrogationData(identifierHandler.getQuestionnaireId());
-        queenUseCase.resetInterrogation(interrogationId, interrogationCsvData);
+        byte[] interrogationData = questionnaireUseCase.getInterrogationData(identifierHandler.getQuestionnaireId());
+        queenUseCase.resetInterrogation(interrogationId, interrogationData);
         return "{}";
     }
 
@@ -136,11 +136,10 @@ public class InterrogationController {
                 String.format("attachment; filename=\"%s\"", filename));
 
         CSVWriter writer = new CSVWriter(response.getWriter());
-        InterrogationCsvHeaderLine attributes = interrogationCsvUseCase.getHeadersLine(poguesId);
+        InterrogationCsvHeaderLine attributes = interrogationUseCase.getHeadersLine(poguesId);
         writer.writeNext(attributes.headers().toArray(String[]::new));
         writer.close();
     }
-
 
     /**
      * Check Data from interrogation csv data
@@ -158,7 +157,7 @@ public class InterrogationController {
             @PathVariable String poguesId,
             @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
         byte[] csvContent = interrogation.getBytes();
-        List<ValidationWarningMessage> validationMessages = interrogationCsvUseCase.validateInterrogations(csvContent, poguesId);
+        List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(csvContent, poguesId);
 
         return validationMessages.stream()
                 .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))

@@ -8,6 +8,7 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.Interroga
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,7 +48,7 @@ public class InterrogationCsvService implements InterrogationCsvPort {
         List<InterrogationCsvLine> interrogationsCsvLines = getInterrogationsCsvLines(interrogationData);
 
         if (interrogationId <= 0 || interrogationId > interrogationsCsvLines.size()) {
-            throw new InterrogationCsvNotFoundException(messageService.getMessage("interrogation.csv.not-found"));
+            throw new InterrogationCsvNotFoundException(messageService.getMessage("interrogation.not-found"));
         }
 
         InterrogationCsvLine interrogationCsvLine = interrogationsCsvLines.get(interrogationId - 1);
