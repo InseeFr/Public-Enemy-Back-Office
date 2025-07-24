@@ -107,9 +107,11 @@ public class QuestionnaireController {
         InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(interrogationsData);
         if (dataFormat != null) {
             String filename = String.format("questionnaire-%s-data.%s", id, dataFormat.name().toLowerCase());
+            String contentType =  InterrogationData.FormatType.JSON.equals(dataFormat) ? MediaType.APPLICATION_JSON_VALUE : "text/csv";
             return ResponseEntity
                     .ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
                     .body(interrogationsData);
         }
         return null;
