@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -116,19 +117,46 @@ class InterrogationCsvServiceTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2})
     void onGetCsvSurveyUnitReturnCorrectInterrogation(int surveyUnitId) {
-        String questionnaireModelId = "11-CAPI";
-        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(questionnaireModelId, surveyUnitId);
-        byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
-        Interrogation su = service.getCsvInterrogation(surveyUnitId, data, questionnaireModelId);
-        assertEquals(su.id(), identifierHandler.getQueenIdentifier());
+        byte[] data = "\"name\",\"ID_INTERROGATION\"\n\"value1\",\"UUID1\"\n\"value2\",\"UUID2\"".getBytes();
+        Interrogation su = service.getCsvInterrogation("UUID"+surveyUnitId, data);
+        assertEquals("UUID"+surveyUnitId, su.id());
         assertEquals(("value" + surveyUnitId), su.data().getExternalAttributes().get("name").getValue());
     }
 
     @ParameterizedTest
     @ValueSource(ints = {0, 10})
     void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(int surveyUnitId) {
-        String questionnaireModelId = "11-CAPI";
         byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
-        assertThrows(InterrogationCsvNotFoundException.class, () -> service.getCsvInterrogation(surveyUnitId, data, questionnaireModelId));
+        assertThrows(InterrogationCsvNotFoundException.class, () -> service.getCsvInterrogation(""+surveyUnitId, data));
     }
+
+    @Test
+    void givenCsvAndIdList_whenAddIdColumn_thenCsvContainsNewColumn() throws IOException {
+        // Given
+        String csvContent = """
+            "name","age"
+            "Alice","30"
+            "Bob","25"
+            """;
+        byte[] csvBytes = csvContent.getBytes(StandardCharsets.UTF_8);
+        List<Interrogation> interrogations = List.of(
+                new Interrogation("UUID1",null, null, null),
+                new Interrogation("UUID2",null, null, null)
+        );
+
+        // When
+        byte[] modifiedCsvBytes = service.addInterrogationIdToData(csvBytes, interrogations);
+        String result = new String(modifiedCsvBytes, StandardCharsets.UTF_8);
+
+        // Then
+        String expected = """
+            "name","age","ID_INTERROGATION"
+            "Alice","30","UUID1"
+            "Bob","25","UUID2"
+            """;
+
+        assertEquals(expected, result);
+    }
+
+
 }

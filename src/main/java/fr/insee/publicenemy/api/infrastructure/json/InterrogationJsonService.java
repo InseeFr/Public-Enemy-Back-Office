@@ -2,12 +2,16 @@ package fr.insee.publicenemy.api.infrastructure.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
+import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvLine;
+import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.infrastructure.json.exceptions.InterrogationJsonNotFoundException;
 import lombok.NonNull;
@@ -15,7 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.rmi.ServerException;
 import java.util.*;
 
@@ -38,38 +43,51 @@ public class InterrogationJsonService implements InterrogationJsonPort {
         List<Interrogation> interrogations = new ArrayList<>();
         for (int id = 1; id <= interrogationsJsonLines.size(); id++) {
             InterrogationJsonLine interrogationJsonLine = interrogationsJsonLines.get(id - 1);
-            interrogations.add(initInterrogation(id, interrogationJsonLine, questionnaireModelId));
+            interrogations.add(initInterrogation(interrogationJsonLine, questionnaireModelId));
         }
         return interrogations;
     }
 
     @Override
-    public Interrogation getJsonInterrogation(int interrogationId, byte[] interrogationData, String questionnaireModelId) {
+    public void updateInterrogationData(Questionnaire questionnaire, List<Interrogation> interrogations) {
+        byte[] interrogationDataUpdated = addInterrogationIdToData(questionnaire.getInterrogationData(), interrogations);
+        questionnaire.setInterrogationData(interrogationDataUpdated);
+    }
+
+    @Override
+    public Interrogation getJsonInterrogation(String interrogationId, byte[] interrogationData) {
         List<InterrogationJsonLine> interrogationsJsonLines = getInterrogationsJsonLines(interrogationData);
 
-        if (interrogationId <= 0 || interrogationId > interrogationsJsonLines.size()) {
-            throw new InterrogationJsonNotFoundException(messageService.getMessage("interrogation.not-found"));
-        }
-
-        InterrogationJsonLine interrogationJsonLine = interrogationsJsonLines.get(interrogationId - 1);
-        return initInterrogation(interrogationId, interrogationJsonLine, questionnaireModelId);
+        Optional<InterrogationJsonLine> interrogationsJsonLine = interrogationsJsonLines.stream()
+                .filter(line -> {
+                    if(line.getFields() != null && line.getFields().get("id") != null)
+                        return interrogationId.equals(line.getFields().get("id").asText());
+                    return false;
+                })
+                .findFirst();
+        if(interrogationsJsonLine.isEmpty()) throw new InterrogationJsonNotFoundException(messageService.getMessage("interrogation.not-found", interrogationId));
+        return initInterrogation(interrogationsJsonLine.get(), null);
     }
 
     /**
-     * @param interrogationId         survey unit id
      * @param interrogationJsonLine    csv line containing a survey unit
      * @param questionnaireModelId questionnaire model id
      * @return a survey unit from a line in the csv file
      */
-    private Interrogation initInterrogation(int interrogationId, @NonNull InterrogationJsonLine interrogationJsonLine, String questionnaireModelId) {
-        String queenIdentifier = interrogationId + "";
-        if (questionnaireModelId != null && !questionnaireModelId.isEmpty()) {
-            InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(questionnaireModelId, interrogationId);
-            queenIdentifier = identifierHandler.getQueenIdentifier();
+    private Interrogation initInterrogation(@NonNull InterrogationJsonLine interrogationJsonLine, String questionnaireModelId) {
+        InterrogationData interrogationData = new InterrogationData(interrogationJsonLine);
+
+        String interrogationId = "";
+
+        if(interrogationJsonLine.getFields() != null && interrogationJsonLine.getFields().get("id") != null){
+            interrogationId = interrogationJsonLine.getFields().get("id").asText();
         }
 
-        InterrogationData interrogationData = new InterrogationData(interrogationJsonLine);
-        return new Interrogation(queenIdentifier, questionnaireModelId, interrogationData, InterrogationStateData.createInitialStateData());
+        if(interrogationId.isEmpty()){
+            interrogationId = UUID.randomUUID().toString();
+        }
+
+        return new Interrogation(interrogationId, questionnaireModelId, interrogationData, InterrogationStateData.createInitialStateData());
     }
 
 
@@ -100,5 +118,25 @@ public class InterrogationJsonService implements InterrogationJsonPort {
                     messageService.getMessage("validation.json.malform.error"));
         }
         return result;
+    }
+
+    public byte[] addInterrogationIdToData(byte[] jsonInput, List<Interrogation> interrogations){
+        try {
+            JsonNode root = objectMapper.readTree(jsonInput);
+            if (root.isArray()) {
+                for (int index = 0; index < root.size(); index++) {
+                    JsonNode node = root.get(index);
+                    JsonNode existingId = node.get("id");
+                    if(existingId == null || existingId.isNull() || existingId.asText().isEmpty()) {
+                        ((ObjectNode) node).put("id", interrogations.get(index).id());
+                    }
+                }
+                return objectMapper.writeValueAsBytes(root);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException();
+        }
     }
 }

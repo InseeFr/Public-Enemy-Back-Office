@@ -82,7 +82,8 @@ public class QuestionnaireEntity implements Serializable {
      */
     public Questionnaire toModel(byte[] interrogationData) {
         return new Questionnaire(getId(), getPoguesId(), getLabel(),
-                getContext(), QuestionnaireModeEntity.toModel(modeEntities), interrogationData,
+                getContext(), QuestionnaireModeEntity.toModel(modeEntities),
+                interrogationData,
                 isSynchronized());
     }
 

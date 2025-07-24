@@ -5,6 +5,7 @@ import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +31,9 @@ public class InterrogationUseCaseUtils {
     @Value("${application.queen.public-url}")
     private String apiQuestionnaire;
 
-    public String getUrlOfInterrogation(Interrogation interrogation, String questionnaireModelId, Mode mode, JsonNode nomenclatures) {
+    public String getUrlOfInterrogation(InterrogationDto interrogation, Mode mode, JsonNode nomenclatures) {
         String interrogationId = interrogation.id();
+        String questionnaireModelId = interrogation.questionnaireId();
         switch (mode){
             case CAWI -> {
                 return String.format(cawiVisuSchema,
@@ -57,13 +59,13 @@ public class InterrogationUseCaseUtils {
         }
     }
 
-    public InterrogationRest buildInterrogationRest(Interrogation interrogation, String questionnaireModelId, Mode mode, JsonNode nomenclatures) throws UnsupportedEncodingException {
+    public InterrogationRest buildInterrogationRest(InterrogationDto interrogation, Mode mode, JsonNode nomenclatures) throws UnsupportedEncodingException {
         String queenIdentifier = interrogation.id();
         // split the id to get rid of the questionnaire id part for frontend
         InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(queenIdentifier);
         return new InterrogationRest(
                 queenIdentifier,
                 identifierHandler.getInterrogationIdentifier(),
-                getUrlOfInterrogation(interrogation, questionnaireModelId, mode, nomenclatures));
+                getUrlOfInterrogation(interrogation, mode, nomenclatures));
     }
 }

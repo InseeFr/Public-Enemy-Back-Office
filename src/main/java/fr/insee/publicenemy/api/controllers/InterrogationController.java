@@ -23,6 +23,7 @@ import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithInterrogations;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -87,22 +88,20 @@ public class InterrogationController {
 
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
         JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
-        String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
-        List<Interrogation> interrogations = queenUseCase.getInterrogations(questionnaireModelId);
+        String campaignId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
+        List<InterrogationDto> interrogations = queenUseCase.getInterrogations(campaignId);
 
         return new InterrogationsRest(
                 interrogations.stream().map(interrogation -> {
                     try {
                         return interrogationUtils.buildInterrogationRest(
                                 interrogation,
-                                questionnaireModelId,
                                 Mode.valueOf(modeName),
                                 nomenclatures);
                     } catch (UnsupportedEncodingException e) {
                         throw new RuntimeException(e);
                     }
-                }).toList(),
-                questionnaireModelId);
+                }).toList());
     }
 
     /**
@@ -110,11 +109,10 @@ public class InterrogationController {
      *
      * @param interrogationId interrogation id
      */
-    @PutMapping("/interrogations/{interrogationId}/reset")
+    @PutMapping("/interrogations/{questionnaireId}/{interrogationId}/reset")
     @PreAuthorize(HAS_ANY_ROLE)
-    public String resetInterrogation(@PathVariable String interrogationId) {
-        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
-        byte[] interrogationData = questionnaireUseCase.getInterrogationData(identifierHandler.getQuestionnaireId());
+    public String resetInterrogation(@PathVariable Long questionnaireId, @PathVariable String interrogationId) {
+        byte[] interrogationData = questionnaireUseCase.getInterrogationData(questionnaireId);
         queenUseCase.resetInterrogation(interrogationId, interrogationData);
         return "{}";
     }

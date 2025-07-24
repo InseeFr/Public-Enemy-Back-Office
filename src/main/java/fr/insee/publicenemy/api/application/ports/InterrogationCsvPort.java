@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.application.ports;
 
+import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
@@ -16,15 +17,19 @@ public interface InterrogationCsvPort {
      */
     List<Interrogation> initInterrogations(byte[] interrogationData, String questionnaireModelId);
 
+
+    void updateInterrogationData(Questionnaire questionnaire, List<Interrogation> interrogations);
+
+
+
     /**
      * get interrogation from a csv data file
      *
      * @param interrogationId         interrogation id
      * @param interrogationData       interrogation csv data
-     * @param questionnaireModelId questionnaire model id used to generate queen identifier
      * @return interrogations model from questionnaire csv interrogations
      */
-    Interrogation getCsvInterrogation(int interrogationId, byte[] interrogationData, String questionnaireModelId);
+    Interrogation getCsvInterrogation(String interrogationId, byte[] interrogationData);
 
     /**
      * retrieve csv headers based on variable types from a questionnaire model

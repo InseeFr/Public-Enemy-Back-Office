@@ -175,7 +175,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .block();
     }
 
-    public List<Interrogation> getInterrogations(@NotNull String campaignId) {
+    public List<InterrogationDto> getInterrogations(@NotNull String campaignId) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
                 .path("/api/campaign/{id}/interrogations")
@@ -192,12 +192,35 @@ public class QueenServiceImpl implements QueenServicePort {
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                 messageService.getMessage("queen.error.campaign.su", campaignId)))
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<Interrogation>>() {
+                .bodyToMono(new ParameterizedTypeReference<List<InterrogationDto>>() {
                 })
                 .blockOptional()
                 .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)));
     }
 
+
+    public InterrogationDto getInterrogation(@NotNull String interrogationId) {
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(queenUrl)
+                .path("/api/interrogations/{id}")
+                .build(interrogationId);
+
+        return webClient.get().uri(uri)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", interrogationId)))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                messageService.getMessage("queen.error.interrogation", interrogationId)))
+                )
+                .bodyToMono(new ParameterizedTypeReference<InterrogationDto>() {
+                })
+                .blockOptional()
+                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", interrogationId)));
+    }
 
     public void updateInterrogation(@NotNull Interrogation interrogation) {
         InterrogationUpdateDto interrogationUpdateDto = InterrogationUpdateDto.fromModel(interrogation);

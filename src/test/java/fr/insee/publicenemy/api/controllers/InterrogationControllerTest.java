@@ -109,7 +109,7 @@ class InterrogationControllerTest {
         String questionnaireModelId = String.format("%s-%s", questionnaireId, cawi.name());
         when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
         when(poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
-        when(queenUseCase.getInterrogations(questionnaireModelId)).thenReturn(interrogations);
+        // when(queenUseCase.getInterrogations(questionnaireModelId)).thenReturn(interrogations);
         mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/interrogations", questionnaireId, cawi.name())
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())

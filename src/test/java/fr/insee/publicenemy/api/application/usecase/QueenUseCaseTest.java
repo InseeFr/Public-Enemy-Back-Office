@@ -7,6 +7,7 @@ import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -227,12 +228,12 @@ class QueenUseCaseTest {
 
     @Test
     void onResetSurveyUnitCallResetService() {
-        String surveyUnitId = "11-CAPI-1";
+        String interrogationId = "11-CAPI-1";
         byte[] data = "data".getBytes();
-        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(surveyUnitId);
-        Interrogation su = new Interrogation(surveyUnitId, "11", null, InterrogationStateData.createInitialStateData());
-        when(surveyUnitServicePort.getCsvInterrogation(identifierHandler.getInterrogationIdentifier(), data, identifierHandler.getQuestionnaireModelId())).thenReturn(su);
-        queenUseCase.resetInterrogation(surveyUnitId, data);
+        Interrogation su = new Interrogation(interrogationId, "11-CAPI", null, InterrogationStateData.createInitialStateData());
+        when(surveyUnitServicePort.getCsvInterrogation(interrogationId, data)).thenReturn(su);
+        when(queenServicePort.getInterrogation(interrogationId)).thenReturn(new InterrogationDto(interrogationId, null, "11-CAPI", null, null));
+        queenUseCase.resetInterrogation(interrogationId, data);
         verify(queenServicePort).deteteInterrogation(su);
         verify(queenServicePort).createInterrogation(su.questionnaireId(),su);
     }
