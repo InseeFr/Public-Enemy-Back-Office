@@ -8,7 +8,8 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValid
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvService;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.json.InterrogationJsonService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class InterrogationCsvUseCaseTest {
-    private InterrogationCsvUseCase usecase;
+class InterrogationUseCaseTest {
+    private InterrogationUseCase usecase;
 
     @Mock
     private PoguesUseCase poguesUseCase;
@@ -35,6 +36,8 @@ class InterrogationCsvUseCaseTest {
 
     @Mock
     private InterrogationCsvService interrogationCsvService;
+    @Mock
+    private InterrogationJsonService interrogationJsonService;
 
     @Mock
     private I18nMessagePort messageService;
@@ -47,7 +50,7 @@ class InterrogationCsvUseCaseTest {
 
     @BeforeEach
     void init() {
-        usecase = new InterrogationCsvUseCase(interrogationCsvService, poguesUseCase, questionnaireUseCase, messageService, 10);
+        usecase = new InterrogationUseCase(interrogationCsvService, interrogationJsonService, poguesUseCase, questionnaireUseCase, messageService, 10);
     }
 
     @Test
@@ -68,7 +71,7 @@ class InterrogationCsvUseCaseTest {
 
         InterrogationsGlobalValidationException ex = assertThrows(InterrogationsGlobalValidationException.class, () -> usecase.validateInterrogations(surveyUnitDataByte, poguesId));
         ValidationErrorMessage message = ex.getGlobalErrorMessages().get(0);
-        assertEquals("validation.survey-units.no-exist", message.getCode());
+        assertEquals("validation.interrogations.no-exist", message.getCode());
     }
 
     @Test
@@ -85,7 +88,7 @@ class InterrogationCsvUseCaseTest {
 
         InterrogationsGlobalValidationException ex = assertThrows(InterrogationsGlobalValidationException.class, () -> usecase.validateInterrogations(surveyUnitDataByte, poguesId));
         ValidationErrorMessage message = ex.getGlobalErrorMessages().get(0);
-        assertEquals("validation.survey-units.max-size", message.getCode());
+        assertEquals("validation.interrogations.max-size", message.getCode());
     }
 
     @Test

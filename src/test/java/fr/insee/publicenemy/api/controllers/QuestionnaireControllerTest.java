@@ -10,7 +10,7 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificVal
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
+import fr.insee.publicenemy.api.application.usecase.InterrogationUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.ModeRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
@@ -58,7 +58,7 @@ class QuestionnaireControllerTest {
     private QuestionnaireUseCase questionnaireUseCase;
 
     @MockitoBean
-    private InterrogationCsvUseCase interrogationCsvUseCase;
+    private InterrogationUseCase interrogationUseCase;
 
     @MockitoBean
     private I18nMessagePort messageService;
@@ -255,7 +255,7 @@ class QuestionnaireControllerTest {
         String code = "error.code";
         when(messageService.getMessage("validation.errors")).thenReturn(code);
         InterrogationsGlobalValidationException surveyUnitsValidationException = new InterrogationsGlobalValidationException("main error message", new ArrayList<>());
-        when(interrogationCsvUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
+        when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
         mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -279,7 +279,7 @@ class QuestionnaireControllerTest {
         String code = "error.code";
         when(messageService.getMessage("validation.errors")).thenReturn(code);
         InterrogationsSpecificValidationException interrogationsSpecificValidationException = new InterrogationsSpecificValidationException("main error message", new ArrayList<>());
-        when(interrogationCsvUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(interrogationsSpecificValidationException);
+        when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(interrogationsSpecificValidationException);
 
         mockMvc.perform(multipart("/api/questionnaires/add")
                         .file(surveyUnitMockPart)
