@@ -15,10 +15,10 @@ import lombok.ToString;
 @ToString
 @Data
 @NoArgsConstructor
-public class InterrogationDataAttributeValue implements IInterrogationDataAttributeValue<String> {
-    private String value;
+public class InterrogationDataAttributeValue<T> implements IInterrogationDataAttributeValue {
+    private T value;
 
-    public InterrogationDataAttributeValue(String value) {
+    public InterrogationDataAttributeValue(T value) {
         this.value = value;
     }
 

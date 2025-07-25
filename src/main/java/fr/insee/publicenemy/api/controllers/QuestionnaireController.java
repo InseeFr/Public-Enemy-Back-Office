@@ -5,12 +5,13 @@ import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import fr.insee.publicenemy.api.application.usecase.InterrogationUseCase;
 import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
@@ -38,7 +39,7 @@ public class QuestionnaireController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final InterrogationCsvUseCase csvUseCase;
+    private final InterrogationUseCase csvUseCase;
     private final PoguesUseCase poguesUseCase;
 
     private final ApiExceptionComponent errorComponent;
@@ -50,7 +51,7 @@ public class QuestionnaireController {
     private static final String VALIDATION_ERROR = "validation.errors";
 
     public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, PoguesUseCase poguesUseCase,
-                                   InterrogationCsvUseCase csvUseCase,
+                                   InterrogationUseCase csvUseCase,
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
                                    ApiExceptionComponent errorComponent) {
         this.questionnaireUseCase = questionnaireUseCase;
@@ -98,17 +99,22 @@ public class QuestionnaireController {
      * @param id questionnaire id
      * @return questionnaire
      */
-    @GetMapping(value = "/{id}/data", produces = "text/csv")
+    @GetMapping(value = "/{id}/data")
     @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<byte[]> getInterrogationData(@PathVariable Long id) {
-        String filename = String.format("questionnaire-%s-data.csv", id);
 
         byte[] interrogationsData = questionnaireUseCase.getInterrogationData(id);
-
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
-                .body(interrogationsData);
+        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(interrogationsData);
+        if (dataFormat != null) {
+            String filename = String.format("questionnaire-%s-data.%s", id, dataFormat.name().toLowerCase());
+            String contentType =  InterrogationData.FormatType.JSON.equals(dataFormat) ? MediaType.APPLICATION_JSON_VALUE : "text/csv";
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .body(interrogationsData);
+        }
+        return null;
     }
 
     /**

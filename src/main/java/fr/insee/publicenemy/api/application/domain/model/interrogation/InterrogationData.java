@@ -1,24 +1,36 @@
 package fr.insee.publicenemy.api.application.domain.model.interrogation;
 
+import fr.insee.publicenemy.api.infrastructure.json.InterrogationDataAttributeParser;
+import fr.insee.publicenemy.api.infrastructure.json.InterrogationJsonLine;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Transform fields (key/value) from a csv file containing survey units data to data attributes for a survey unit
  */
 @Data
+@Getter
 @AllArgsConstructor
 public class InterrogationData {
 
-    private final Map<String, IInterrogationDataAttributeValue<?>> attributes;
+    private Map<String, IInterrogationDataAttributeValue> externalAttributes =  new HashMap<>();
+    private Map<String, IInterrogationDataAttributeValue> collectedAttributes =  new HashMap<>();
 
-    public InterrogationData(List<Map.Entry<String, String>> fields) {
-        this.attributes = getAttributesFromFields(fields);
+
+    public InterrogationData(List<Map.Entry<String, String>> externalFields) {
+        this.externalAttributes = getAttributesFromFields(externalFields);
+    }
+
+    public InterrogationData(Map<String, IInterrogationDataAttributeValue> externalAttributes) {
+        this.externalAttributes = externalAttributes;
+    }
+
+    public InterrogationData (InterrogationJsonLine interrogationJsonLine){
+        this.externalAttributes = InterrogationDataAttributeParser.parseExternalAttributes(interrogationJsonLine);
+        this.collectedAttributes = InterrogationDataAttributeParser.parseCollectedAttributes(interrogationJsonLine);
     }
 
     /**
@@ -30,13 +42,13 @@ public class InterrogationData {
      *               and each value corresponds to a string value
      * @return attributes map corresponding
      */
-    private Map<String, IInterrogationDataAttributeValue<?>> getAttributesFromFields(List<Map.Entry<String, String>> fields) {
-        Map<String, IInterrogationDataAttributeValue<?>> attrs = new HashMap<>();
+    private Map<String, IInterrogationDataAttributeValue> getAttributesFromFields(List<Map.Entry<String, String>> fields) {
+        Map<String, IInterrogationDataAttributeValue> attrs = new LinkedHashMap<>();
         /*
          map that will contain attribute name as key and attribute value. The attribute value
          can either be an object or a list of object
         */
-        Map<String, InterrogationDataAttributeValueList> fieldsList = new TreeMap<>();
+        Map<String, InterrogationDataAttributeValueList<String>> fieldsList = new TreeMap<>();
         var sortedFields = fields
                 .stream()
                 .sorted(Map.Entry.comparingByKey())
@@ -49,13 +61,13 @@ public class InterrogationData {
             // if key doesn't end with _1, _2, ... this is a simple attribute
             String regexpList = "_\\d+$";
             if (!key.matches(".*" + regexpList)) {
-                attrs.put(key, new InterrogationDataAttributeValue(value));
+                attrs.put(key, new InterrogationDataAttributeValue<>(value));
                 continue;
             }
 
             // Otherwise this is a list, get rid of index in the key name and create/update the list
             key = key.replaceFirst(regexpList, "");
-            InterrogationDataAttributeValueList values = new InterrogationDataAttributeValueList();
+            InterrogationDataAttributeValueList<String> values = new InterrogationDataAttributeValueList<>();
             if (fieldsList.containsKey(key)) {
                 values = fieldsList.get(key);
             } else {
