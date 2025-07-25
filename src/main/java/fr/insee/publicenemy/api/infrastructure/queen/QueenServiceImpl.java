@@ -198,6 +198,28 @@ public class QueenServiceImpl implements QueenServicePort {
                 .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)));
     }
 
+    public List<InterrogationSurveyUnitDto> getInterrogationsBySurveyUnit(@NotNull String surveyUnitId) {
+        URI uri = UriComponentsBuilder
+                .fromHttpUrl(queenUrl)
+                .path("/api/survey-units/{id}/interrogations")
+                .build(surveyUnitId);
+
+        return webClient.get().uri(uri)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", surveyUnitId)))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                messageService.getMessage("queen.error.campaign.su", surveyUnitId)))
+                )
+                .bodyToMono(new ParameterizedTypeReference<List<InterrogationSurveyUnitDto>>() {
+                })
+                .blockOptional()
+                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", surveyUnitId)));
+    }
 
     public InterrogationDto getInterrogation(@NotNull String interrogationId) {
         URI uri = UriComponentsBuilder
@@ -235,7 +257,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .onStatus(
                         HttpStatusCode::isError,
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
-                                messageService.getMessage("queen.error.campaign.su.update", interrogation.id(), interrogation.questionnaireId())))
+                                messageService.getMessage("queen.error.campaign.su.update", interrogation.id(), interrogation.questionnaireModelId())))
                 )
                 .toBodilessEntity()
                 .block();
