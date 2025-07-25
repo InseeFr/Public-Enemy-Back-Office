@@ -15,7 +15,6 @@ public class InterrogationStateDataAttributeParser {
     public static InterrogationStateData parseStateData(InterrogationJsonLine line) {
         JsonNode stateData = line.getFields().path("stateData");
         if(stateData == null || stateData.isNull() || !stateData.isObject()) return InterrogationStateData.createInitialStateData();
-        System.out.println("Hello tj");
         String currentPage = safeGetText(stateData, "currentPage", DEFAULT_PAGE);
         long date = safeGetLong(stateData, "date", getDefaultDate());
         String state = safeGetText(stateData, "state", DEFAULT_STATE);
