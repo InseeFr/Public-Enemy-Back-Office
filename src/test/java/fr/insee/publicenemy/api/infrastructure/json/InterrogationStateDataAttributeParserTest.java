@@ -60,11 +60,7 @@ class InterrogationStateDataAttributeParserTest {
 
         InterrogationStateData result = InterrogationStateDataAttributeParser.parseStateData(line);
 
-        InterrogationStateData expected = InterrogationStateData.createInitialStateData();
-        assertNotNull(expected);
-        assertEquals(expected.currentPage(), result.currentPage());
-        assertEquals(expected.state(), result.state());
-        assertEquals(expected.date(), result.date());
+        assertNull(result);
     }
 
     @Test

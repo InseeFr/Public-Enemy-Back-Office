@@ -3,7 +3,7 @@ package fr.insee.publicenemy.api.infrastructure.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 
-import java.time.Instant;
+import static fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData.*;
 
 
 public class InterrogationStateDataAttributeParser {
@@ -15,14 +15,10 @@ public class InterrogationStateDataAttributeParser {
     public static InterrogationStateData parseStateData(InterrogationJsonLine line) {
         JsonNode stateData = line.getFields().path("stateData");
         if(stateData == null || stateData.isNull() || !stateData.isObject()) return InterrogationStateData.createInitialStateData();
-
-        String defaultPage = "1";
-        long defaultDate = Instant.now().toEpochMilli(); // current Timestamp
-        String defaultState = "INIT";
-
-        String currentPage = safeGetText(stateData, "currentPage", defaultPage);
-        long date = safeGetLong(stateData, "date", defaultDate);
-        String state = safeGetText(stateData, "state", defaultState);
+        System.out.println("Hello tj");
+        String currentPage = safeGetText(stateData, "currentPage", DEFAULT_PAGE);
+        long date = safeGetLong(stateData, "date", getDefaultDate());
+        String state = safeGetText(stateData, "state", DEFAULT_STATE);
 
         return new InterrogationStateData(currentPage, date, state);
     }
