@@ -56,7 +56,7 @@ public class InterrogationUseCaseUtils {
         }
     }
 
-    public InterrogationRest buildInterrogationRest(PersonalizationMapping personalizationMapping, int orderId, Mode mode, JsonNode nomenclatures) {
+    public InterrogationRest buildInterrogationRest(PersonalizationMapping personalizationMapping,  Mode mode, JsonNode nomenclatures) {
         return new InterrogationRest(
                 personalizationMapping.interrogationId(),
                 personalizationMapping.dataIndex() + 1 ,

@@ -38,6 +38,9 @@ public class QueenServiceImpl implements QueenServicePort {
 
     private final I18nMessagePort messageService;
 
+    private static final String INTERROGATION_PATH = "/api/interrogations/{id}";
+    private static final String INTERROGATION_NOT_FOUND_MSG = "queen.error.interrogation.not-found";
+
     public QueenServiceImpl(I18nMessagePort messagePort, WebClient webClient, @Value("${application.queen.url}") String queenUrl,
                             MetadataProps metadataProps) {
         this.webClient = webClient;
@@ -208,7 +211,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
-                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", surveyUnitId)))
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage(INTERROGATION_NOT_FOUND_MSG, surveyUnitId)))
                 )
                 .onStatus(
                         HttpStatusCode::isError,
@@ -218,20 +221,20 @@ public class QueenServiceImpl implements QueenServicePort {
                 .bodyToMono(new ParameterizedTypeReference<List<InterrogationSurveyUnitDto>>() {
                 })
                 .blockOptional()
-                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", surveyUnitId)));
+                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage(INTERROGATION_NOT_FOUND_MSG, surveyUnitId)));
     }
 
     public InterrogationDto getInterrogation(@NotNull String interrogationId) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/interrogations/{id}")
+                .path(INTERROGATION_PATH)
                 .build(interrogationId);
 
         return webClient.get().uri(uri)
                 .retrieve()
                 .onStatus(
                         HttpStatus.NOT_FOUND::equals,
-                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", interrogationId)))
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage(INTERROGATION_NOT_FOUND_MSG, interrogationId)))
                 )
                 .onStatus(
                         HttpStatusCode::isError,
@@ -241,14 +244,14 @@ public class QueenServiceImpl implements QueenServicePort {
                 .bodyToMono(new ParameterizedTypeReference<InterrogationDto>() {
                 })
                 .blockOptional()
-                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.interrogation.not-found", interrogationId)));
+                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage(INTERROGATION_NOT_FOUND_MSG, interrogationId)));
     }
 
     public void updateInterrogation(@NotNull Interrogation interrogation) {
         InterrogationUpdateDto interrogationUpdateDto = InterrogationUpdateDto.fromModel(interrogation);
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/interrogations/{id}")
+                .path(INTERROGATION_PATH)
                 .build(interrogation.id());
 
         webClient.put().uri(uri)
@@ -267,7 +270,7 @@ public class QueenServiceImpl implements QueenServicePort {
     public void deteteInterrogation(Interrogation interrogation) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
-                .path("/api/interrogations/{id}")
+                .path(INTERROGATION_PATH)
                 .build(interrogation.id());
 
         webClient.delete()

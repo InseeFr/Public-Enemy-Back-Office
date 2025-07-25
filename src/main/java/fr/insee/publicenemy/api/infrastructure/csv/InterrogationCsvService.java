@@ -26,8 +26,6 @@ public class InterrogationCsvService implements InterrogationCsvPort {
 
     private final I18nMessagePort messageService;
 
-    private final static String INTERROGATION_HEADER = "ID_INTERROGATION";
-
     public InterrogationCsvService(@Value("${application.csv.iteration-header-count}") Integer iterationHeaderCount, I18nMessagePort messagePort) {
         this.messageService = messagePort;
         this.iterationHeaderCount = iterationHeaderCount;

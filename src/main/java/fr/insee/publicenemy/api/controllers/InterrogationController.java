@@ -34,7 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
@@ -96,10 +95,9 @@ public class InterrogationController {
         }
 
         return new InterrogationsRest(
-                IntStream.range(0, personalizationMappings.size())
-                        .mapToObj(index -> interrogationUtils.buildInterrogationRest(
-                                personalizationMappings.get(index),
-                                index,
+                personalizationMappings.stream()
+                        .map(personalizationMapping -> interrogationUtils.buildInterrogationRest(
+                                personalizationMapping,
                                 Mode.valueOf(modeName),
                                 nomenclatures
                         ))
