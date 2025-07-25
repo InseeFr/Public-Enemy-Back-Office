@@ -3,10 +3,10 @@ package fr.insee.publicenemy.api.application.usecase;
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
+import fr.insee.publicenemy.api.application.ports.PersonalizationPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +35,8 @@ class QueenUseCaseTest {
     @Mock
     private InterrogationJsonPort surveyUnitJsonServicePort;
     @Mock
+    private PersonalizationPort personalizationPort;
+    @Mock
     private PoguesUseCase poguesUseCase;
     @Mock
     private QuestionnaireModel questionnaireModel;
@@ -46,7 +48,7 @@ class QueenUseCaseTest {
 
     @BeforeEach
     public void init() {
-        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, surveyUnitJsonServicePort,false);
+        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, surveyUnitJsonServicePort,personalizationPort, false);
     }
 
     @Test
@@ -227,13 +229,12 @@ class QueenUseCaseTest {
 
     @Test
     void onResetSurveyUnitCallResetService() {
-        String interrogationId = "11-CAPI-1";
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, 0);
         byte[] data = "data".getBytes();
-        Interrogation su = new Interrogation(interrogationId, "11-CAPI", null, InterrogationStateData.createInitialStateData());
-        when(surveyUnitServicePort.getCsvInterrogation(interrogationId, data)).thenReturn(su);
-        when(queenServicePort.getInterrogation(interrogationId)).thenReturn(new InterrogationDto(interrogationId, null, "11-CAPI", null, null));
-        queenUseCase.resetInterrogation(interrogationId, data);
+        Interrogation su = new Interrogation(mapping.interrogationId(), mapping.getQuestionnaireModelId(), null, InterrogationStateData.createInitialStateData());
+        when(surveyUnitServicePort.getCsvInterrogation(mapping, data)).thenReturn(su);
+        queenUseCase.resetInterrogation(mapping, data);
         verify(queenServicePort).deteteInterrogation(su);
-        verify(queenServicePort).createInterrogation(su.questionnaireId(),su);
+        verify(queenServicePort).createInterrogation(su.questionnaireModelId(),su);
     }
 }

@@ -2,6 +2,8 @@ package fr.insee.publicenemy.api.infrastructure.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.*;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.json.exceptions.InterrogationJsonNotFoundException;
@@ -68,70 +70,29 @@ class InterrogationJsonServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"random-uuid-1", "random-uuid-2"})
-    void onGetCsvSurveyUnitReturnCorrectInterrogation(String surveyUnitId) {
+    @ValueSource(ints = {0, 1})
+    void onGetCsvSurveyUnitReturnCorrectInterrogation(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
         byte[] data = """
         [
             {
-                "id": "random-uuid-1",
-                "data": { "COLLECTED": { "name": { "COLLECTED" : "value random-uuid-1" } } }
+                "data": { "COLLECTED": { "name": { "COLLECTED" : "value 0" } } }
             },
             {
-                "id": "random-uuid-2",
-                "data": { "COLLECTED": { "name": { "COLLECTED" : "value random-uuid-2" } } }
+                "data": { "COLLECTED": { "name": { "COLLECTED" : "value 1" } } }
             }
         ]
         """.getBytes();
-        Interrogation su = service.getJsonInterrogation(surveyUnitId, data);
-        assertEquals(surveyUnitId, su.id());
-        assertEquals(("value " + surveyUnitId), su.data().getCollectedAttributes().get("name").getValue());
+        Interrogation su = service.getJsonInterrogation(mapping, data);
+        assertEquals(("value " + dataIndex), su.data().getCollectedAttributes().get("name").getValue());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"random-0", "random-10"})
-    void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(String surveyUnitId) {
+    @ValueSource(ints = {-1, 10})
+    void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
         byte[] data = "[]".getBytes();
-        assertThrows(InterrogationJsonNotFoundException.class, () -> service.getJsonInterrogation(surveyUnitId, data));
-    }
-
-    @Test
-    void whenValidJsonAndInterrogations_thenAddIdToOnlyEmptyId() throws Exception {
-        // Given
-
-        byte[] data = """
-        [
-            {
-                "data": { "COLLECTED": { "name": { "COLLECTED" : "value random-uuid-1" } } }
-            },
-            {
-                "id": "",
-                "data": { "COLLECTED": { "name": { "COLLECTED" : "value random-uuid-1" } } }
-            },
-            {
-                "id": "existing-random-uuid-3",
-                "data": { "COLLECTED": { "name": { "COLLECTED" : "value random-uuid-2" } } }
-            }
-        ]
-        """.getBytes();
-
-        List<Interrogation> interrogations = List.of(
-                new Interrogation("random-uuid-1", null, null, null),
-                new Interrogation("random-uuid-2", null, null, null),
-                new Interrogation("random-uuid-3", null, null, null)
-        );
-
-        // When
-        byte[] resultBytes = service.addInterrogationIdToData(data, interrogations);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode result = objectMapper.readTree(resultBytes);
-
-        // Then
-        assertTrue(result.isArray());
-        assertEquals(3, result.size());
-        assertEquals("random-uuid-1", result.get(0).get("id").asText());
-        assertEquals("random-uuid-2", result.get(1).get("id").asText());
-        assertEquals("existing-random-uuid-3", result.get(2).get("id").asText());
+        assertThrows(InterrogationJsonNotFoundException.class, () -> service.getJsonInterrogation(mapping, data));
     }
 
 }

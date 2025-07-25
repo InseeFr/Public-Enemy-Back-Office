@@ -1,5 +1,7 @@
 package fr.insee.publicenemy.api.infrastructure.csv;
 
+import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
@@ -113,47 +115,20 @@ class InterrogationCsvServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2})
-    void onGetCsvSurveyUnitReturnCorrectInterrogation(int surveyUnitId) {
-        byte[] data = "\"name\",\"ID_INTERROGATION\"\n\"value1\",\"UUID1\"\n\"value2\",\"UUID2\"".getBytes();
-        Interrogation su = service.getCsvInterrogation("UUID"+surveyUnitId, data);
-        assertEquals("UUID"+surveyUnitId, su.id());
-        assertEquals(("value" + surveyUnitId), su.data().getExternalAttributes().get("name").getValue());
+    @ValueSource(ints = {0, 1})
+    void onGetCsvSurveyUnitReturnCorrectInterrogation(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
+        byte[] data = "\"name\"\n\"value0\"\n\"value1\"".getBytes();
+        Interrogation su = service.getCsvInterrogation(mapping, data);
+        assertEquals(("value" + dataIndex), su.data().getExternalAttributes().get("name").getValue());
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {0, 10})
-    void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(int surveyUnitId) {
-        byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
-        assertThrows(InterrogationCsvNotFoundException.class, () -> service.getCsvInterrogation(""+surveyUnitId, data));
-    }
-
-    @Test
-    void givenCsvAndIdList_whenAddIdColumn_thenCsvContainsNewColumn() throws IOException {
-        // Given
-        String csvContent = """
-            "name","age"
-            "Alice","30"
-            "Bob","25"
-            """;
-        byte[] csvBytes = csvContent.getBytes(StandardCharsets.UTF_8);
-        List<Interrogation> interrogations = List.of(
-                new Interrogation("UUID1",null, null, null),
-                new Interrogation("UUID2",null, null, null)
-        );
-
-        // When
-        byte[] modifiedCsvBytes = service.addInterrogationIdToData(csvBytes, interrogations);
-        String result = new String(modifiedCsvBytes, StandardCharsets.UTF_8);
-
-        // Then
-        String expected = """
-            "name","age","ID_INTERROGATION"
-            "Alice","30","UUID1"
-            "Bob","25","UUID2"
-            """;
-
-        assertEquals(expected, result);
+    @ValueSource(ints = {-1, 10})
+    void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
+        byte[] data = "\"name\"\n\"value0\"\n\"value1\"".getBytes();
+        assertThrows(InterrogationCsvNotFoundException.class, () -> service.getCsvInterrogation(mapping, data));
     }
 
 
