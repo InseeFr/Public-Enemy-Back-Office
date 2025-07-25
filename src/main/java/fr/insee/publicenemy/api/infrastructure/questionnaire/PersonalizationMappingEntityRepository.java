@@ -11,5 +11,6 @@ import java.util.UUID;
 public interface PersonalizationMappingEntityRepository extends JpaRepository<PersonalizationMappingEntity, UUID> {
 
     Optional<List<PersonalizationMappingEntity>> findByQuestionnaireIdAndMode(Long questionnaireId, Mode mode);
+    Optional<List<PersonalizationMappingEntity>> findByQuestionnaireId(Long questionnaireId);
     Long deleteByQuestionnaireIdAndMode(Long questionnaireId, Mode mode);
 }

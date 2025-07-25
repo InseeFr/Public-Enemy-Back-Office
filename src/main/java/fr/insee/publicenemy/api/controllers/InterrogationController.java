@@ -15,6 +15,7 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificVal
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.*;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
+import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationsRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
@@ -33,7 +34,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
@@ -82,7 +85,7 @@ public class InterrogationController {
      */
     @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/interrogations")
     @PreAuthorize(HAS_ANY_ROLE)
-    public InterrogationsRest getInterrogations(@PathVariable Long questionnaireId, @PathVariable String modeName) {
+    public InterrogationsRest getInterrogationsByQuestionnairesAndMode(@PathVariable Long questionnaireId, @PathVariable String modeName) {
 
         List<PersonalizationMapping> personalizationMappings = personalizationUseCase.getPersonalizationByQuestionnaireIdAndMode(questionnaireId, Mode.valueOf(modeName));
 
@@ -102,6 +105,35 @@ public class InterrogationController {
                                 nomenclatures
                         ))
                         .toList());
+    }
+
+    /**
+     * @param questionnaireId questionnaire id
+     * @return all interrogations fro the questionnaire
+     */
+    @GetMapping("/questionnaires/{questionnaireId}/interrogations")
+    @PreAuthorize(HAS_ANY_ROLE)
+    public Map<Mode, List<InterrogationRest>> getInterrogationsByQuestionnaireId(@PathVariable Long questionnaireId) {
+
+        List<PersonalizationMapping> personalizationMappings = personalizationUseCase.getPersonalizationByQuestionnaireId(questionnaireId);
+        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
+        JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
+
+        Map<Mode, List<InterrogationRest>> interrogationsByModes = new EnumMap<>(Mode.class);
+        questionnaire.getQuestionnaireModes().forEach(questionnaireMode -> {
+            interrogationsByModes.put(
+                    questionnaireMode.getMode(),
+                    personalizationMappings.stream()
+                            .filter(mapping -> questionnaireMode.getMode().equals(mapping.mode()))
+                            .map(mapping -> interrogationUtils.buildInterrogationRest(
+                                    mapping,
+                                    questionnaireMode.getMode(),
+                                    nomenclatures
+                            ))
+                            .toList());
+        });
+
+        return interrogationsByModes;
     }
 
     /**

@@ -12,7 +12,7 @@ import java.util.List;
 @Slf4j
 public class PersonalizationUseCase {
 
-    private PersonalizationPort personalizationPort;
+    private final PersonalizationPort personalizationPort;
 
     public PersonalizationUseCase(PersonalizationPort personalizationPort){
         this.personalizationPort = personalizationPort;
@@ -20,6 +20,10 @@ public class PersonalizationUseCase {
 
     public List<PersonalizationMapping> getPersonalizationByQuestionnaireIdAndMode(Long questionnaireId, Mode mode){
         return personalizationPort.getPersonalizationMappingsByQuestionnaireIdAndMode(questionnaireId, mode);
+    }
+
+    public List<PersonalizationMapping> getPersonalizationByQuestionnaireId(Long questionnaireId){
+        return personalizationPort.getPersonalizationMappingsByQuestionnaire(questionnaireId);
     }
 
     public PersonalizationMapping getPersoMappingByInterrogationId(String interrogationId){
