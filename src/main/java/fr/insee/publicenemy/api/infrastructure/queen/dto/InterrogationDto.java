@@ -18,6 +18,6 @@ public record InterrogationDto(
      * @return a new survey unit dto from the survey unit model
      */
     public static InterrogationDto fromModel(Interrogation interrogation) {
-        return new InterrogationDto(interrogation.id(), String.format("su-%s",interrogation.id()), interrogation.questionnaireId(), interrogation.data(), interrogation.stateData());
+        return new InterrogationDto(interrogation.id(), String.format("su-%s",interrogation.id()), interrogation.questionnaireModelId(), interrogation.data(), interrogation.stateData());
     }
 }

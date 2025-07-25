@@ -50,7 +50,7 @@ public class QuestionnaireUseCase {
 
         queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
         questionnaire.setSynchronized(true);
-        // update questionnaire to save the synchronisation state (unsuccessful in case of throwed ServiceException)
+        // update questionnaire to save the synchronisation state adn update interrogationDat (unsuccessful in case of throwed ServiceException)
         questionnairePort.updateQuestionnaireState(questionnaire);
         return questionnaire;
     }

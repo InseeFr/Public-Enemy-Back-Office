@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.application.ports;
 
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 
 import java.util.List;
@@ -17,12 +18,11 @@ public interface InterrogationJsonPort {
     /**
      * get interrogation from a csv data file
      *
-     * @param interrogationId         interrogation id
+     * @param personalizationMapping
      * @param interrogationData       interrogation json data
-     * @param questionnaireModelId questionnaire model id used to generate queen identifier
      * @return interrogations model from questionnaire csv interrogations
      */
-    Interrogation getJsonInterrogation(int interrogationId, byte[] interrogationData, String questionnaireModelId);
+    Interrogation getJsonInterrogation(PersonalizationMapping personalizationMapping, byte[] interrogationData);
 
 
 }

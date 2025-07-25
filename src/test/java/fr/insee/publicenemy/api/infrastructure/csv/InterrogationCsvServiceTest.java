@@ -1,11 +1,12 @@
 package fr.insee.publicenemy.api.infrastructure.csv;
 
+import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValue;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
 
@@ -62,7 +64,6 @@ class InterrogationCsvServiceTest {
         Interrogation interrogation = interrogations.get(0);
         Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
 
-        assertEquals(String.format("%s-%s", questionnaireModelId, "1"), interrogation.id());
         InterrogationDataAttributeValue numfa = new InterrogationDataAttributeValue("1");
         InterrogationDataAttributeValue complement = new InterrogationDataAttributeValue("CS 70058");
         assertEquals(numfa, attributes.get("Numfa"));
@@ -114,21 +115,21 @@ class InterrogationCsvServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {1, 2})
-    void onGetCsvSurveyUnitReturnCorrectInterrogation(int surveyUnitId) {
-        String questionnaireModelId = "11-CAPI";
-        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(questionnaireModelId, surveyUnitId);
-        byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
-        Interrogation su = service.getCsvInterrogation(surveyUnitId, data, questionnaireModelId);
-        assertEquals(su.id(), identifierHandler.getQueenIdentifier());
-        assertEquals(("value" + surveyUnitId), su.data().getExternalAttributes().get("name").getValue());
+    @ValueSource(ints = {0, 1})
+    void onGetCsvSurveyUnitReturnCorrectInterrogation(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
+        byte[] data = "\"name\"\n\"value0\"\n\"value1\"".getBytes();
+        Interrogation su = service.getCsvInterrogation(mapping, data);
+        assertEquals(("value" + dataIndex), su.data().getExternalAttributes().get("name").getValue());
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {0, 10})
-    void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(int surveyUnitId) {
-        String questionnaireModelId = "11-CAPI";
-        byte[] data = "\"name\"\n\"value1\"\n\"value2\"".getBytes();
-        assertThrows(InterrogationCsvNotFoundException.class, () -> service.getCsvInterrogation(surveyUnitId, data, questionnaireModelId));
+    @ValueSource(ints = {-1, 10})
+    void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
+        byte[] data = "\"name\"\n\"value0\"\n\"value1\"".getBytes();
+        assertThrows(InterrogationCsvNotFoundException.class, () -> service.getCsvInterrogation(mapping, data));
     }
+
+
 }
