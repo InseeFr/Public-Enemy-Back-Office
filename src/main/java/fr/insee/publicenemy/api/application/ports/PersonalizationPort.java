@@ -7,9 +7,8 @@ import java.util.List;
 
 public interface PersonalizationPort {
 
-    List<PersonalizationMapping> getPersonalizationMappings();
     PersonalizationMapping getPersonalizationMapping(String interrogationId);
     PersonalizationMapping addPersonalizationMapping(PersonalizationMapping personalizationMapping);
-    List<PersonalizationMapping> getPersonalizationMappingsByQuestionnaireId(Long questionnaireId);
     List<PersonalizationMapping> getPersonalizationMappingsByQuestionnaireIdAndMode(Long questionnaireId, Mode mode);
+    void deletePersonalizationMappingsByQuestionnaireIdAndMode(Long questionnaireId, Mode mode);
 }

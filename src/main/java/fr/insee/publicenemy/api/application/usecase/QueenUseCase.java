@@ -210,7 +210,7 @@ public class QueenUseCase {
         createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode);
         createCampaign(questionnaireModelId, questionnaireModel, questionnaire, questionnaireMode);
         createInterrogations(questionnaireModelId, interrogations, questionnaireMode);
-        createPersonalizationMappings(interrogations, questionnaire.getId(), questionnaireMode.getMode());
+        createPersonalizationMappings(interrogations, questionnaire.getId(), questionnaireMode.getMode(), questionnaireMode);
         questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
     }
 
@@ -225,20 +225,11 @@ public class QueenUseCase {
     private void updateQueenCampaign(QuestionnaireModel questionnaireModel, Questionnaire questionnaire, QuestionnaireMode questionnaireMode) {
         Mode mode = questionnaireMode.getMode();
         String questionnaireModelId = IdentifierGenerationUtils.generateCampaignAndQuestionnaireModelIdentifier(questionnaire.getId(), mode);
-        List<Interrogation> interrogations = List.of();
-        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(questionnaire.getInterrogationData());
-        if(InterrogationData.FormatType.CSV.equals(dataFormat)){
-            interrogations = interrogationCsvService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
-        } else if(InterrogationData.FormatType.JSON.equals(dataFormat)) {
-            interrogations = interrogationJsonService.initInterrogations(questionnaire.getInterrogationData(), questionnaireModelId);
-        } else {
-            log.warn("Invalid format of data");
-        }
-        // try to delete campaign if exists
+       // try to delete campaign if exists
         try {
             log.info(String.format("%s: delete campaign %s", questionnaire.getPoguesId(), questionnaireModelId));
-            interrogations.forEach(queenService::deteteInterrogation);
             queenService.deleteCampaign(questionnaireModelId);
+            personalizationService.deletePersonalizationMappingsByQuestionnaireIdAndMode(questionnaire.getId(), questionnaireMode.getMode());
             questionnaireMode.setSynchronisationState(null);
         } catch (CampaignNotFoundException ex) {
             // campaign does not exist, we will create it afterwards, no need to throw this exception
@@ -246,7 +237,6 @@ public class QueenUseCase {
         }
 
         createQueenCampaign(questionnaireModel, questionnaire, questionnaireMode);
-        createPersonalizationMappings(interrogations, questionnaire.getId(), questionnaireMode.getMode());
         questionnaireMode.setSynchronisationState(SynchronisationState.OK.name());
     }
 
@@ -320,7 +310,8 @@ public class QueenUseCase {
         return mode.equals(Mode.CAWI);
     }
 
-    private void createPersonalizationMappings(List<Interrogation> interrogations, Long questionnaireId, Mode mode){
+    private void createPersonalizationMappings(List<Interrogation> interrogations, Long questionnaireId, Mode mode, QuestionnaireMode questionnaireMode){
+        questionnaireMode.setSynchronisationState(SynchronisationState.INIT_PERSO_MAPPING.name());
         IntStream.range(0, interrogations.size())
                 .mapToObj(index -> new PersonalizationMapping(
                         interrogations.get(index).id(),

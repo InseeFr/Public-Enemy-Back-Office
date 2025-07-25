@@ -34,11 +34,6 @@ public class PersonalizationMappingRepository implements PersonalizationPort {
     }
 
     @Override
-    public List<PersonalizationMapping> getPersonalizationMappings() {
-        return mappingEntityRepository.findAll().stream().map(PersonalizationMappingEntity::toModel).toList();
-    }
-
-    @Override
     public PersonalizationMapping getPersonalizationMapping(String interrogationId) {
         PersonalizationMappingEntity mappingEntity = mappingEntityRepository.findById(UUID.fromString(interrogationId))
                 .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, interrogationId)));
@@ -53,16 +48,15 @@ public class PersonalizationMappingRepository implements PersonalizationPort {
     }
 
     @Override
-    public List<PersonalizationMapping> getPersonalizationMappingsByQuestionnaireId(Long questionnaireId) {
-        List<PersonalizationMappingEntity> mappingEntities =  mappingEntityRepository.findByQuestionnaireId(questionnaireId)
+    public List<PersonalizationMapping> getPersonalizationMappingsByQuestionnaireIdAndMode(Long questionnaireId, Mode mode) {
+        List<PersonalizationMappingEntity> mappingEntities =  mappingEntityRepository.findByQuestionnaireIdAndMode(questionnaireId, mode)
                 .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, questionnaireId.toString())));
         return mappingEntities.stream().map(PersonalizationMappingEntity::toModel).toList();
     }
 
     @Override
-    public List<PersonalizationMapping> getPersonalizationMappingsByQuestionnaireIdAndMode(Long questionnaireId, Mode mode) {
-        List<PersonalizationMappingEntity> mappingEntities =  mappingEntityRepository.findByQuestionnaireIdAndMode(questionnaireId, mode)
-                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, questionnaireId.toString())));
-        return mappingEntities.stream().map(PersonalizationMappingEntity::toModel).toList();
+    public void deletePersonalizationMappingsByQuestionnaireIdAndMode(Long questionnaireId, Mode mode) {
+        Long nbDeleted = mappingEntityRepository.deleteByQuestionnaireIdAndMode(questionnaireId, mode);
+        log.info("Perso deleted for questionnaireId {}, and mode {} : {}", questionnaireId, mode, nbDeleted);
     }
 } 
