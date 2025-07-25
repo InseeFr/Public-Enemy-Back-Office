@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,9 +29,9 @@ public class InterrogationUseCaseUtils {
     @Value("${application.queen.public-url}")
     private String apiQuestionnaire;
 
-    public String getUrlOfInterrogation(InterrogationDto interrogation, Mode mode, JsonNode nomenclatures) {
-        String interrogationId = interrogation.id();
-        String questionnaireModelId = interrogation.questionnaireId();
+    public String getUrlOfInterrogation(PersonalizationMapping personalizationMapping, Mode mode, JsonNode nomenclatures) {
+        String interrogationId = personalizationMapping.interrogationId();
+        String questionnaireModelId = personalizationMapping.getQuestionnaireModelId();
         switch (mode){
             case CAWI -> {
                 return String.format(cawiVisuSchema,
@@ -56,10 +57,10 @@ public class InterrogationUseCaseUtils {
         }
     }
 
-    public InterrogationRest buildInterrogationRest(InterrogationDto interrogation, int orderId, Mode mode, JsonNode nomenclatures) {
+    public InterrogationRest buildInterrogationRest(PersonalizationMapping personalizationMapping, int orderId, Mode mode, JsonNode nomenclatures) {
         return new InterrogationRest(
-                interrogation.id(),
-                orderId,
-                getUrlOfInterrogation(interrogation, mode, nomenclatures));
+                personalizationMapping.interrogationId(),
+                personalizationMapping.dataIndex() + 1 ,
+                getUrlOfInterrogation(personalizationMapping, mode, nomenclatures));
     }
 }

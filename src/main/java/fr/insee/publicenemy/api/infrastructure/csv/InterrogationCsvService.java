@@ -1,23 +1,21 @@
 package fr.insee.publicenemy.api.infrastructure.csv;
 
 import com.opencsv.bean.CsvToBeanBuilder;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
-import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.json.exceptions.InterrogationJsonNotFoundException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -38,46 +36,24 @@ public class InterrogationCsvService implements InterrogationCsvPort {
     public List<Interrogation> initInterrogations(byte[] interrogationData, String questionnaireModelId) {
         List<InterrogationCsvLine> interrogationsCsvLines = getInterrogationsCsvLines(interrogationData);
 
-        List<Interrogation> interrogations = new ArrayList<>();
-        for (int id = 1; id <= interrogationsCsvLines.size(); id++) {
-            InterrogationCsvLine interrogationCsvLine = interrogationsCsvLines.get(id - 1);
-            interrogations.add(initInterrogation(interrogationCsvLine, questionnaireModelId));
-        }
-        return interrogations;
+        return interrogationsCsvLines.stream()
+                .map(line -> initInterrogation(line, null, questionnaireModelId))
+                .toList();
     }
 
     @Override
-    public void updateInterrogationData(Questionnaire questionnaire, List<Interrogation> interrogations) {
-        try {
-            byte[] interrogationDataUpdated = addInterrogationIdToData(questionnaire.getInterrogationData(), interrogations);
-            questionnaire.setInterrogationData(interrogationDataUpdated);
-        } catch (IOException e) {
-            throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR, "Data is invalid");
-        }
-
-    }
-
-    @Override
-    public Interrogation getCsvInterrogation(String interrogationId, byte[] interrogationData) {
+    public Interrogation getCsvInterrogation(PersonalizationMapping persoMapping, byte[] interrogationData) {
         List<InterrogationCsvLine> interrogationsCsvLines = getInterrogationsCsvLines(interrogationData);
 
-        Optional<InterrogationCsvLine> interrogationCsvLine = interrogationsCsvLines.stream()
-                .filter(Objects::nonNull)
-                .filter(line -> line.getFields() != null)
-                .filter(line -> line.getFields().containsMapping(INTERROGATION_HEADER, interrogationId))
-                .findFirst();
-
-        if(interrogationCsvLine.isEmpty()) throw new InterrogationCsvNotFoundException(messageService.getMessage("interrogation.not-found", interrogationId));
-        return initInterrogation(interrogationCsvLine.get(), null);
+        if(interrogationsCsvLines.isEmpty() || persoMapping.dataIndex() >= interrogationsCsvLines.size() || persoMapping.dataIndex() < 0) throw new InterrogationCsvNotFoundException(messageService.getMessage("interrogation.not-found", persoMapping.interrogationId()));
+        return initInterrogation(interrogationsCsvLines.get(persoMapping.dataIndex()), persoMapping.interrogationId(), persoMapping.getQuestionnaireModelId());
     }
 
     /**
      * @param interrogationCsvLine    csv line containing a survey unit
      * @return a survey unit from a line in the csv file
      */
-    private Interrogation initInterrogation(@NonNull InterrogationCsvLine interrogationCsvLine, String questionnaireModelId) {
-
-        String interrogationId = "";
+    private Interrogation initInterrogation(@NonNull InterrogationCsvLine interrogationCsvLine, String interrogationId, String questionnaireModelId) {
 
         List<Map.Entry<String, String>> csvFields = new ArrayList<>();
         if (interrogationCsvLine.getFields() != null) {
@@ -87,15 +63,9 @@ public class InterrogationCsvService implements InterrogationCsvPort {
                     .toList();
         }
 
-        if(interrogationCsvLine.getFields() != null){
-            interrogationId = String.join("", interrogationCsvLine.getFields().get(INTERROGATION_HEADER));
-        }
-
-        if(interrogationId.isEmpty()){
-            interrogationId = UUID.randomUUID().toString();
-        }
+        String interroId = interrogationId != null ? interrogationId : UUID.randomUUID().toString();
         InterrogationData interrogationData = new InterrogationData(csvFields);
-        return new Interrogation(interrogationId, questionnaireModelId, interrogationData, InterrogationStateData.createInitialStateData());
+        return new Interrogation(interroId, questionnaireModelId, interrogationData, InterrogationStateData.createInitialStateData());
     }
 
     @Override
@@ -142,47 +112,5 @@ public class InterrogationCsvService implements InterrogationCsvPort {
                 .withIgnoreQuotations(false)
                 .withType(InterrogationCsvLine.class)
                 .build().parse();
-    }
-
-    public byte[] addInterrogationIdToData(byte[] csvInput, List<Interrogation> interrogations) throws IOException {
-        // Read CSV line by line
-        List<String> lines = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(csvInput), StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                lines.add(line);
-            }
-        }
-
-        if (lines.isEmpty()) {
-            throw new IllegalArgumentException("CSV is empty");
-        }
-
-        // if INTERROGATION_HEADER already exists, do nothing
-        if(lines.getFirst().contains(INTERROGATION_HEADER)) return csvInput;
-
-        // Append header column
-        String header = lines.getFirst() + ",\"" +INTERROGATION_HEADER + "\"";
-
-        // Validate matching size
-        if (lines.size() - 1 != interrogations.size()) {
-            throw new IllegalArgumentException("Number of data rows (" + (lines.size() - 1) +
-                    ") does not match the number of ID values (" +
-                    interrogations.size() + ")");
-        }
-
-        // Build new CSV content
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8))) {
-            writer.write(header);
-            writer.write("\n");
-            for (int i = 1; i < lines.size(); i++) {
-                String newLine = lines.get(i) + ",\"" + interrogations.get(i - 1).id() + "\"";
-                writer.write(newLine);
-                writer.write("\n");
-            }
-        }
-
-        return output.toByteArray();
     }
 }

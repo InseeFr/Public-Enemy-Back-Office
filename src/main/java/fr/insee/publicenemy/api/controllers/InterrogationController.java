@@ -7,6 +7,7 @@ import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
@@ -51,6 +52,7 @@ public class InterrogationController {
     private final QuestionnaireUseCase questionnaireUseCase;
 
     private final InterrogationUseCase interrogationUseCase;
+    private final PersonalizationUseCase personalizationUseCase;
 
     private final InterrogationUseCaseUtils interrogationUtils;
 
@@ -62,12 +64,13 @@ public class InterrogationController {
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
-    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationUseCase,
+    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationUseCase, PersonalizationUseCase personalizationUseCase,
                                    I18nMessagePort messageService, InterrogationMessagesComponent messageComponent,
                                    ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUtils) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
         this.interrogationUseCase = interrogationUseCase;
+        this.personalizationUseCase = personalizationUseCase;
         this.interrogationUtils = interrogationUtils;
         this.messageService = messageService;
         this.messageComponent = messageComponent;
@@ -84,15 +87,20 @@ public class InterrogationController {
     @PreAuthorize(HAS_ANY_ROLE)
     public InterrogationsRest getInterrogations(@PathVariable Long questionnaireId, @PathVariable String modeName) {
 
-        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
-        JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
-        String campaignId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
-        List<InterrogationDto> interrogations = queenUseCase.getInterrogations(campaignId);
+        List<PersonalizationMapping> personalizationMappings = personalizationUseCase.getPersonalizationByQuestionnaireIdAndMode(questionnaireId, Mode.valueOf(modeName));
+
+        JsonNode nomenclatures;
+        if(!Mode.CAWI.equals(Mode.valueOf(modeName))){
+            Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
+            nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
+        } else {
+            nomenclatures = null;
+        }
 
         return new InterrogationsRest(
-                IntStream.range(0, interrogations.size())
+                IntStream.range(0, personalizationMappings.size())
                         .mapToObj(index -> interrogationUtils.buildInterrogationRest(
-                                interrogations.get(index),
+                                personalizationMappings.get(index),
                                 index,
                                 Mode.valueOf(modeName),
                                 nomenclatures
@@ -105,11 +113,12 @@ public class InterrogationController {
      *
      * @param interrogationId interrogation id
      */
-    @PutMapping("/questionnaires/{questionnaireId}/interrogations/{interrogationId}/reset")
+    @PutMapping("/interrogations/{interrogationId}/reset")
     @PreAuthorize(HAS_ANY_ROLE)
-    public String resetInterrogation(@PathVariable Long questionnaireId, @PathVariable String interrogationId) {
-        byte[] interrogationData = questionnaireUseCase.getInterrogationData(questionnaireId);
-        queenUseCase.resetInterrogation(interrogationId, interrogationData);
+    public String resetInterrogation(@PathVariable String interrogationId) {
+        PersonalizationMapping personalizationMapping = personalizationUseCase.getPersoMappingByInterrogationId(interrogationId);
+        byte[] interrogationData = questionnaireUseCase.getInterrogationData(personalizationMapping.questionnaireId());
+        queenUseCase.resetInterrogation(personalizationMapping, interrogationData);
         return "{}";
     }
 

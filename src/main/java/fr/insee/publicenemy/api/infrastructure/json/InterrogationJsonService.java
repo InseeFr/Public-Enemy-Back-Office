@@ -3,6 +3,7 @@ package fr.insee.publicenemy.api.infrastructure.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
@@ -34,34 +35,17 @@ public class InterrogationJsonService implements InterrogationJsonPort {
     @Override
     public List<Interrogation> initInterrogations(byte[] interrogationData, String questionnaireModelId) {
         List<InterrogationJsonLine> interrogationsJsonLines = getInterrogationsJsonLines(interrogationData);
-
-        List<Interrogation> interrogations = new ArrayList<>();
-        for (int id = 1; id <= interrogationsJsonLines.size(); id++) {
-            InterrogationJsonLine interrogationJsonLine = interrogationsJsonLines.get(id - 1);
-            interrogations.add(initInterrogation(interrogationJsonLine, questionnaireModelId));
-        }
-        return interrogations;
+        return interrogationsJsonLines.stream()
+                .map(line -> initInterrogation(line, null, questionnaireModelId))
+                .toList();
     }
 
     @Override
-    public void updateInterrogationData(Questionnaire questionnaire, List<Interrogation> interrogations) {
-        byte[] interrogationDataUpdated = addInterrogationIdToData(questionnaire.getInterrogationData(), interrogations);
-        questionnaire.setInterrogationData(interrogationDataUpdated);
-    }
-
-    @Override
-    public Interrogation getJsonInterrogation(String interrogationId, byte[] interrogationData) {
+    public Interrogation getJsonInterrogation(PersonalizationMapping persoMapping, byte[] interrogationData) {
         List<InterrogationJsonLine> interrogationsJsonLines = getInterrogationsJsonLines(interrogationData);
 
-        Optional<InterrogationJsonLine> interrogationsJsonLine = interrogationsJsonLines.stream()
-                .filter(line -> {
-                    if(line.getFields() != null && line.getFields().get("id") != null)
-                        return interrogationId.equals(line.getFields().get("id").asText());
-                    return false;
-                })
-                .findFirst();
-        if(interrogationsJsonLine.isEmpty()) throw new InterrogationJsonNotFoundException(messageService.getMessage("interrogation.not-found", interrogationId));
-        return initInterrogation(interrogationsJsonLine.get(), null);
+        if(interrogationsJsonLines.isEmpty() || persoMapping.dataIndex() >= interrogationsJsonLines.size() || persoMapping.dataIndex() < 0) throw new InterrogationJsonNotFoundException(messageService.getMessage("interrogation.not-found", persoMapping.interrogationId()));
+        return initInterrogation(interrogationsJsonLines.get(persoMapping.dataIndex()), persoMapping.interrogationId(), persoMapping.getQuestionnaireModelId());
     }
 
     /**
@@ -69,20 +53,10 @@ public class InterrogationJsonService implements InterrogationJsonPort {
      * @param questionnaireModelId questionnaire model id
      * @return a survey unit from a line in the csv file
      */
-    private Interrogation initInterrogation(@NonNull InterrogationJsonLine interrogationJsonLine, String questionnaireModelId) {
+    private Interrogation initInterrogation(@NonNull InterrogationJsonLine interrogationJsonLine, String interrogationId, String questionnaireModelId) {
         InterrogationData interrogationData = new InterrogationData(interrogationJsonLine);
-
-        String interrogationId = "";
-
-        if(interrogationJsonLine.getFields() != null && interrogationJsonLine.getFields().get("id") != null){
-            interrogationId = interrogationJsonLine.getFields().get("id").asText();
-        }
-
-        if(interrogationId.isEmpty()){
-            interrogationId = UUID.randomUUID().toString();
-        }
-
-        return new Interrogation(interrogationId, questionnaireModelId, interrogationData, InterrogationStateData.createInitialStateData());
+        String interroId = interrogationId != null ? interrogationId : UUID.randomUUID().toString();
+        return new Interrogation(interroId, questionnaireModelId, interrogationData, InterrogationStateData.createInitialStateData());
     }
 
 
@@ -113,26 +87,5 @@ public class InterrogationJsonService implements InterrogationJsonPort {
                     messageService.getMessage("validation.json.malform.error"));
         }
         return result;
-    }
-
-    public byte[] addInterrogationIdToData(byte[] jsonInput, List<Interrogation> interrogations){
-        try {
-            JsonNode root = objectMapper.readTree(jsonInput);
-            if (root.isArray()) {
-                for (int index = 0; index < root.size(); index++) {
-                    JsonNode node = root.get(index);
-                    JsonNode existingId = node.get("id");
-                    String existingIdText = (existingId != null && !existingId.isNull() ) ? existingId.asText() : "";
-                    if(existingId == null || existingId.isNull() || existingId.asText().isEmpty()) {
-                        ((ObjectNode) node).put("id", existingIdText + "|" + interrogations.get(index).id());
-                    }
-                }
-                return objectMapper.writeValueAsBytes(root);
-            } else {
-                throw new IllegalArgumentException();
-            }
-        } catch (IOException e) {
-            throw new IllegalArgumentException();
-        }
     }
 }

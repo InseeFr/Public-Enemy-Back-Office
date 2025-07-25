@@ -16,7 +16,7 @@ public class AuthenticationUserHelper implements AuthenticationHelper {
         if(getAuthenticationPrincipal() instanceof JwtAuthenticationToken auth) {
             return auth.getToken().getTokenValue();
         } else {
-            log.warn("Cannot retrieve token for the user.");
+            log.debug("WARN: Cannot retrieve token for the user.");
             return null;
         }
     }

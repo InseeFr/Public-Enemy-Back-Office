@@ -5,7 +5,9 @@ import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationSurveyUnitDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -73,4 +75,6 @@ public interface QueenServicePort {
     void deteteInterrogation(Interrogation interrogation);
 
     void createInterrogation(String questionnaireId, Interrogation interrogation);
+
+    List<InterrogationSurveyUnitDto> getInterrogationsBySurveyUnit(String surveyUnitId);
 }
