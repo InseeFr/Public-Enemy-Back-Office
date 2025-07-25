@@ -11,9 +11,16 @@
         </createTable>
     </changeSet>
     <changeSet author="XBELTV (generated)" id="2">
-        <addForeignKeyConstraint baseColumnNames="questionnaire_id" baseTableName="personalisation_mapping"
+        <addForeignKeyConstraint baseColumnNames="questionnaire_id" baseTableName="personalization_mapping"
                                  constraintName="questionnaire_id_perso_fk" deferrable="false" initiallyDeferred="false"
                                  onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id"
                                  referencedTableName="questionnaire" validate="true"/>
     </changeSet>
+    <changeSet author="XBELTV (generated)" id="3" failOnError="false">
+        <createIndex tableName="personalization_mapping" indexName="idx_questionnaire_mode">
+            <column name="questionnaire_id"/>
+            <column name="mode"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
