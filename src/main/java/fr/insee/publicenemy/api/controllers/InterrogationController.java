@@ -34,7 +34,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -119,7 +119,7 @@ public class InterrogationController {
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
         JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
 
-        Map<Mode, List<InterrogationRest>> interrogationsByModes = new HashMap<>();
+        Map<Mode, List<InterrogationRest>> interrogationsByModes = new EnumMap<>(Mode.class);
         questionnaire.getQuestionnaireModes().forEach(questionnaireMode -> {
             interrogationsByModes.put(
                     questionnaireMode.getMode(),
