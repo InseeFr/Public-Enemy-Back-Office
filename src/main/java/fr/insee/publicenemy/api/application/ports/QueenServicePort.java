@@ -7,7 +7,6 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.Interroga
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationSurveyUnitDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 

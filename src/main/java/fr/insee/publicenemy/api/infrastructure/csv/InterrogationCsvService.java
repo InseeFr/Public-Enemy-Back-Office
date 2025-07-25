@@ -2,20 +2,21 @@ package fr.insee.publicenemy.api.infrastructure.csv;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
-import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
-import fr.insee.publicenemy.api.infrastructure.json.exceptions.InterrogationJsonNotFoundException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.*;
 
 @Service

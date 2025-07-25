@@ -1,9 +1,8 @@
 package fr.insee.publicenemy.api.application.ports;
 
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
 
 import java.util.List;

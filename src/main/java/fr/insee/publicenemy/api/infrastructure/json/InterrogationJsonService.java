@@ -2,9 +2,7 @@ package fr.insee.publicenemy.api.infrastructure.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
@@ -17,8 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j

@@ -1,7 +1,6 @@
 package fr.insee.publicenemy.api.application.ports;
 
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 
 import java.util.List;

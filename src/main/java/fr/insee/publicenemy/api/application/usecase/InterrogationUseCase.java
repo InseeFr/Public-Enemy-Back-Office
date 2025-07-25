@@ -1,14 +1,14 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
-import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationErrorMessage;
-import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
-import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataValidationResult;
+import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
+import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationErrorMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;

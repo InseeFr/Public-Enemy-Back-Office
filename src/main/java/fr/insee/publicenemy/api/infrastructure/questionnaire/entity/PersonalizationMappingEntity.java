@@ -3,7 +3,6 @@ package fr.insee.publicenemy.api.infrastructure.questionnaire.entity;
 
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import jakarta.persistence.*;
 import lombok.*;
 

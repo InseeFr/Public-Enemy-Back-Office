@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
