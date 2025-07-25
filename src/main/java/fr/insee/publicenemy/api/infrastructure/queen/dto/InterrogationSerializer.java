@@ -37,7 +37,7 @@ public class InterrogationSerializer extends StdSerializer<InterrogationDto> {
         jgen.writeStartObject();
         jgen.writeStringField("id", interrogationDto.id());
         jgen.writeStringField("surveyUnitId", interrogationDto.surveyUnitId());
-        jgen.writeStringField("questionnaireModelId", interrogationDto.questionnaireId());
+        jgen.writeStringField("questionnaireId", interrogationDto.questionnaireId());
         jgen.writeObjectField("personalization", personalizationData);
         jgen.writeObjectFieldStart("comment");
         jgen.writeEndObject();
