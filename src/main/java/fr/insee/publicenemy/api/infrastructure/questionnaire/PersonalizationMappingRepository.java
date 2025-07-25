@@ -55,6 +55,13 @@ public class PersonalizationMappingRepository implements PersonalizationPort {
     }
 
     @Override
+    public List<PersonalizationMapping> getPersonalizationMappingsByQuestionnaire(Long questionnaireId) {
+        List<PersonalizationMappingEntity> mappingEntities =  mappingEntityRepository.findByQuestionnaireId(questionnaireId)
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, questionnaireId.toString())));
+        return mappingEntities.stream().map(PersonalizationMappingEntity::toModel).toList();
+    }
+
+    @Override
     public void deletePersonalizationMappingsByQuestionnaireIdAndMode(Long questionnaireId, Mode mode) {
         Long nbDeleted = mappingEntityRepository.deleteByQuestionnaireIdAndMode(questionnaireId, mode);
         log.info("Perso deleted for questionnaireId {}, and mode {} : {}", questionnaireId, mode, nbDeleted);
