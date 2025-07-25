@@ -55,8 +55,9 @@ public class InterrogationJsonService implements InterrogationJsonPort {
      */
     private Interrogation initInterrogation(@NonNull InterrogationJsonLine interrogationJsonLine, String interrogationId, String questionnaireModelId) {
         InterrogationData interrogationData = new InterrogationData(interrogationJsonLine);
+        InterrogationStateData interrogationStateData = InterrogationStateDataAttributeParser.parseStateData(interrogationJsonLine);
         String interroId = interrogationId != null ? interrogationId : UUID.randomUUID().toString();
-        return new Interrogation(interroId, questionnaireModelId, interrogationData, InterrogationStateData.createInitialStateData());
+        return new Interrogation(interroId, questionnaireModelId, interrogationData, interrogationStateData);
     }
 
 

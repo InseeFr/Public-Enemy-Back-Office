@@ -67,6 +67,10 @@ class InterrogationJsonServiceTest {
         prenomList.addValue("Bob");
         assertEquals(bonjourValue, attributes.get("QUESTIONTEXT"));
         assertEquals(prenomList, attributes.get("PRENOM"));
+
+        assertEquals("INIT", interrogation.stateData().state());
+        assertEquals("5", interrogation.stateData().currentPage());
+        assertEquals(1752053082781L, interrogation.stateData().date());
     }
 
     @ParameterizedTest
