@@ -9,8 +9,6 @@ import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
@@ -36,8 +34,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
@@ -92,16 +90,14 @@ public class InterrogationController {
         List<InterrogationDto> interrogations = queenUseCase.getInterrogations(campaignId);
 
         return new InterrogationsRest(
-                interrogations.stream().map(interrogation -> {
-                    try {
-                        return interrogationUtils.buildInterrogationRest(
-                                interrogation,
+                IntStream.range(0, interrogations.size())
+                        .mapToObj(index -> interrogationUtils.buildInterrogationRest(
+                                interrogations.get(index),
+                                index,
                                 Mode.valueOf(modeName),
-                                nomenclatures);
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList());
+                                nomenclatures
+                        ))
+                        .toList());
     }
 
     /**

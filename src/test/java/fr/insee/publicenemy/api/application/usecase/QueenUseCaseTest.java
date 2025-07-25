@@ -2,7 +2,6 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;

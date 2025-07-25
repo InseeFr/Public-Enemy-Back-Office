@@ -62,6 +62,8 @@ public class InterrogationCsvService implements InterrogationCsvPort {
         List<InterrogationCsvLine> interrogationsCsvLines = getInterrogationsCsvLines(interrogationData);
 
         Optional<InterrogationCsvLine> interrogationCsvLine = interrogationsCsvLines.stream()
+                .filter(Objects::nonNull)
+                .filter(line -> line.getFields() != null)
                 .filter(line -> line.getFields().containsMapping(INTERROGATION_HEADER, interrogationId))
                 .findFirst();
 

@@ -2,14 +2,11 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -59,13 +56,10 @@ public class InterrogationUseCaseUtils {
         }
     }
 
-    public InterrogationRest buildInterrogationRest(InterrogationDto interrogation, Mode mode, JsonNode nomenclatures) throws UnsupportedEncodingException {
-        String queenIdentifier = interrogation.id();
-        // split the id to get rid of the questionnaire id part for frontend
-        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(queenIdentifier);
+    public InterrogationRest buildInterrogationRest(InterrogationDto interrogation, int orderId, Mode mode, JsonNode nomenclatures) {
         return new InterrogationRest(
-                queenIdentifier,
-                identifierHandler.getInterrogationIdentifier(),
+                interrogation.id(),
+                orderId,
                 getUrlOfInterrogation(interrogation, mode, nomenclatures));
     }
 }

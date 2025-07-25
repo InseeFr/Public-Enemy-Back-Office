@@ -6,12 +6,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvLine;
-import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.infrastructure.json.exceptions.InterrogationJsonNotFoundException;
 import lombok.NonNull;
@@ -20,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.rmi.ServerException;
 import java.util.*;
 
 @Service
@@ -127,8 +122,9 @@ public class InterrogationJsonService implements InterrogationJsonPort {
                 for (int index = 0; index < root.size(); index++) {
                     JsonNode node = root.get(index);
                     JsonNode existingId = node.get("id");
+                    String existingIdText = (existingId != null && !existingId.isNull() ) ? existingId.asText() : "";
                     if(existingId == null || existingId.isNull() || existingId.asText().isEmpty()) {
-                        ((ObjectNode) node).put("id", interrogations.get(index).id());
+                        ((ObjectNode) node).put("id", existingIdText + "|" + interrogations.get(index).id());
                     }
                 }
                 return objectMapper.writeValueAsBytes(root);
