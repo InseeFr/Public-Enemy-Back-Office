@@ -20,7 +20,6 @@ import fr.insee.publicenemy.api.application.usecase.*;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -193,7 +192,7 @@ class InterrogationControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        verify(errorComponent).buildApiErrorWithMessages(any(), eq(InterrogationExceptionCode.SURVEY_UNIT_GLOBAL_VALIDATION_FAILED.value()),
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(InterrogationExceptionCode.INTERROGATION_GLOBAL_VALIDATION_FAILED.value()),
                 eq(surveyUnitsValidationException.getMessage()), any());
 
     }
