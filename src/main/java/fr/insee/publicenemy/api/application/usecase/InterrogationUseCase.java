@@ -114,7 +114,6 @@ public class InterrogationUseCase {
         // retrieve validation objects with attributes errors
         List<InterrogationDataValidationResult> validationResults = interrogations.stream()
                 .map(interrogation -> getInterrogationErrors(interrogation, variablesType))
-                .filter(interrogationDataValidationResult -> !interrogationDataValidationResult.attributesValidation().isEmpty())
                 .toList();
 
         if (!validationResults.isEmpty()) {
