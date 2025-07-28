@@ -5,12 +5,12 @@ import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsGlobalValidationException;
-import fr.insee.publicenemy.api.application.exceptions.SurveyUnitsSpecificValidationException;
+import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
+import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.SurveyUnitCsvUseCase;
+import fr.insee.publicenemy.api.application.usecase.InterrogationUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.ModeRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
@@ -26,13 +26,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -54,22 +54,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ContextConfiguration
 @AutoConfigureMockMvc
 class QuestionnaireControllerTest {
-    @MockBean
+    @MockitoBean
     private QuestionnaireUseCase questionnaireUseCase;
 
-    @MockBean
-    private SurveyUnitCsvUseCase surveyUnitCsvUseCase;
+    @MockitoBean
+    private InterrogationUseCase interrogationUseCase;
 
-    @MockBean
+    @MockitoBean
     private I18nMessagePort messageService;
 
-    @MockBean
+    @MockitoBean
     private ApiExceptionComponent errorComponent;
 
-    @MockBean
+    @MockitoBean
     private QuestionnaireComponent questionnaireComponent;
 
-    @MockBean
+    @MockitoBean
     private PoguesUseCase poguesUseCase;
 
     @Autowired
@@ -138,7 +138,7 @@ class QuestionnaireControllerTest {
     void onGetSurveyUnitsDataReturnCSV() throws Exception {
         Long id = 1L;
         byte[] data = "\"att1\",\"att2\"".getBytes();
-        when(questionnaireUseCase.getSurveyUnitData(id)).thenReturn(data);
+        when(questionnaireUseCase.getInterrogationData(id)).thenReturn(data);
 
         MvcResult result = mockMvc.perform(get("/api/questionnaires/{id}/data", id)
                         .with(authentication(authenticatedUserTestHelper.getUser())))
@@ -155,7 +155,7 @@ class QuestionnaireControllerTest {
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
 
         when(questionnaireUseCase.addQuestionnaire(questionnaireAddRest.poguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(questionnaire);
 
@@ -190,17 +190,17 @@ class QuestionnaireControllerTest {
     @EmptySource
     @NullSource
     @ValueSource(strings = {"filecontent"})
-    void onSaveQuestionnaireShouldFetchQuestionnaireAttributes(String surveyUnitData) throws Exception {
+    void onSaveQuestionnaireShouldFetchQuestionnaireAttributes(String interrogationData) throws Exception {
 
         ObjectMapper Obj = new ObjectMapper();
         String jsonContext = Obj.writeValueAsString(questionnaireRest.context());
         MockPart contextMockPart = new MockPart("context", jsonContext.getBytes());
         contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", surveyUnitData, MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire.getSurveyUnitData());
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", interrogationData, MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire.getInterrogationData());
 
         Long id = questionnaire.getId();
         when(questionnaireUseCase.updateQuestionnaire(questionnaire.getId(),
-                questionnaire.getContext(), questionnaire.getSurveyUnitData())).thenReturn(questionnaire);
+                questionnaire.getContext(), questionnaire.getInterrogationData())).thenReturn(questionnaire);
 
         mockMvc.perform(multipart("/api/questionnaires/{id}", id).part(contextMockPart).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
@@ -229,7 +229,7 @@ class QuestionnaireControllerTest {
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk());
-        verify(questionnaireUseCase, times(1)).getSurveyUnitData(id);
+        verify(questionnaireUseCase, times(1)).getInterrogationData(id);
     }
 
     @Test
@@ -245,17 +245,17 @@ class QuestionnaireControllerTest {
     @Test
     void onAddQuestionnaireWhenGlobalErrorsOnCsvSchemaReturnGenericErrorMessages() throws Exception {
         QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
-        byte[] surveyUnitData = "test".getBytes();
+        byte[] interrogationData = "test".getBytes();
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file",
-                MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file",
+                MediaType.MULTIPART_FORM_DATA_VALUE, interrogationData);
         questionnaireMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
         String code = "error.code";
         when(messageService.getMessage("validation.errors")).thenReturn(code);
-        SurveyUnitsGlobalValidationException surveyUnitsValidationException = new SurveyUnitsGlobalValidationException("main error message", new ArrayList<>());
-        when(surveyUnitCsvUseCase.validateSurveyUnits(surveyUnitData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
+        InterrogationsGlobalValidationException surveyUnitsValidationException = new InterrogationsGlobalValidationException("main error message", new ArrayList<>());
+        when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
         mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
@@ -268,18 +268,18 @@ class QuestionnaireControllerTest {
     @Test
     void onAddQuestionnaireWhenSpecificErrorsOnCsvSchemaReturnGenericErrorMessages() throws Exception {
         QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
-        byte[] surveyUnitData = "test".getBytes();
+        byte[] interrogationData = "test".getBytes();
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("surveyUnitData", "file",
-                MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
+        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file",
+                MediaType.MULTIPART_FORM_DATA_VALUE, interrogationData);
         questionnaireMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         String code = "error.code";
         when(messageService.getMessage("validation.errors")).thenReturn(code);
-        SurveyUnitsSpecificValidationException surveyUnitsSpecificValidationException = new SurveyUnitsSpecificValidationException("main error message", new ArrayList<>());
-        when(surveyUnitCsvUseCase.validateSurveyUnits(surveyUnitData, "l8wwljbo")).thenThrow(surveyUnitsSpecificValidationException);
+        InterrogationsSpecificValidationException interrogationsSpecificValidationException = new InterrogationsSpecificValidationException("main error message", new ArrayList<>());
+        when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(interrogationsSpecificValidationException);
 
         mockMvc.perform(multipart("/api/questionnaires/add")
                         .file(surveyUnitMockPart)

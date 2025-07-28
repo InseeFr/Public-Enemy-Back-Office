@@ -24,6 +24,6 @@ public interface IDataType {
      * @return validation object. validation object status is "true" if field value is valid, "false" otherwise. validation
      * object contains validation error messages if the field value is not valid
      */
-    DataTypeValidationResult validate(String fieldValue);
+    DataTypeValidationResult validate(Object fieldValue);
 
 }

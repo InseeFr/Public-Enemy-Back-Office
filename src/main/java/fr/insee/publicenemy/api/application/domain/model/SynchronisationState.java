@@ -7,5 +7,6 @@ public enum SynchronisationState {
     INIT_QUESTIONNAIRE,
     INIT_CAMPAIGN,
     INIT_SURVEY_UNIT,
+    INIT_PERSO_MAPPING,
     OK;
 }
