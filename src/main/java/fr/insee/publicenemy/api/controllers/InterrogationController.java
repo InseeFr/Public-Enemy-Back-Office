@@ -85,6 +85,7 @@ public class InterrogationController {
      */
     @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/interrogations")
     @PreAuthorize(HAS_ANY_ROLE)
+    @Deprecated(since = "3.0.0")
     public InterrogationsRest getInterrogationsByQuestionnairesAndMode(@PathVariable Long questionnaireId, @PathVariable String modeName) {
 
         List<PersonalizationMapping> personalizationMappings = personalizationUseCase.getPersonalizationByQuestionnaireIdAndMode(questionnaireId, Mode.valueOf(modeName));
