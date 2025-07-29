@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
+import fr.insee.publicenemy.api.application.domain.model.PreparedQuestionnaire;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,13 +46,10 @@ class QuestionnaireUseCaseTest {
 
     @Test
     void onAddQuestionnaireShouldInvokeCampaignCreationInQueen() {
-        String poguesId = "l8wwljbo";
-        Context context = Context.BUSINESS;
-        when(poguesUseCase.getQuestionnaireModel(any())).thenReturn(questionnaireModel);
-        when(questionnairePort.hasQuestionnaire(poguesId)).thenReturn(false);
-        when(questionnairePort.addQuestionnaire(any())).thenReturn(questionnaire);
-        questionnaireUseCase.addQuestionnaire(poguesId, context, new byte[0]);
-        verify(queenUseCase, times(1)).synchronizeCreate(questionnaireModel, questionnaire);
+        PreparedQuestionnaire preparedQuestionnaire = new PreparedQuestionnaire(questionnaire, questionnaireModel);
+        when(queenUseCase.synchronizeCreateAsync(questionnaireModel, questionnaire)).thenReturn(CompletableFuture.runAsync(()-> {}));
+        questionnaireUseCase.addQuestionnaire(preparedQuestionnaire);
+        verify(queenUseCase, times(1)).synchronizeCreateAsync(questionnaireModel, questionnaire);
     }
 
     @Test
@@ -57,7 +57,7 @@ class QuestionnaireUseCaseTest {
         String poguesId = "l8wwljbo";
         Context context = Context.BUSINESS;
         when(questionnairePort.hasQuestionnaire(poguesId)).thenReturn(true);
-        assertThrows(ServiceException.class, () -> questionnaireUseCase.addQuestionnaire(poguesId, context, new byte[0]));
+        assertThrows(ServiceException.class, () -> questionnaireUseCase.prepareQuestionnaire(poguesId, context, null));
     }
 
     @Test
@@ -70,12 +70,9 @@ class QuestionnaireUseCaseTest {
 
     @Test
     void onUpdateQuestionnaireShouldInvokeCampaignUpdateInQueen() {
-        Long questionnaireId = 1L;
-        when(questionnairePort.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
-        when(poguesUseCase.getQuestionnaireModel(any())).thenReturn(questionnaireModel);
-        questionnaireUseCase.updateQuestionnaire(questionnaireId, Context.BUSINESS, "data".getBytes());
-        verify(queenUseCase, times(1)).synchronizeUpdate(questionnaireModel, questionnaire);
-        verify(questionnairePort, times(1)).updateQuestionnaire(questionnaire);
-        verify(questionnaire).setSynchronized(true);
+        when(queenUseCase.synchronizeUpdateAsync(questionnaireModel, questionnaire)).thenReturn(CompletableFuture.runAsync(()-> {}));
+        questionnaireUseCase.updateQuestionnaire(new PreparedQuestionnaire(questionnaire, questionnaireModel));
+        verify(queenUseCase, times(1)).synchronizeUpdateAsync(questionnaireModel, questionnaire);
+        verify(questionnairePort, times(2)).updateQuestionnaireState(questionnaire);
     }
 }

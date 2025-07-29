@@ -48,7 +48,7 @@ class QueenUseCaseTest {
 
     @BeforeEach
     public void init() {
-        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, surveyUnitJsonServicePort,personalizationPort, false);
+        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, surveyUnitJsonServicePort,personalizationPort);
     }
 
     @Test
@@ -163,7 +163,7 @@ class QueenUseCaseTest {
         Context context = Context.HOUSEHOLD;
 
         QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
+        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false, null);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
         verify(queenServicePort, times(0)).deleteCampaign("1-PAPI");
         verify(queenServicePort, times(1)).deleteCampaign("1-CAWI");
@@ -180,7 +180,7 @@ class QueenUseCaseTest {
 
         Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
         QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
+        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false, null);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
         verify(queenServicePort, times(0)).createCampaign("1-PAPI", questionnaireTest, questionnaireModelTest);
@@ -198,7 +198,7 @@ class QueenUseCaseTest {
         Context context = Context.HOUSEHOLD;
 
         QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
+        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false, null);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
         questionnaireTest.getQuestionnaireModes().stream()
@@ -217,7 +217,7 @@ class QueenUseCaseTest {
 
         Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
         QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
+        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false, null);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
         for (QuestionnaireMode questionnaireMode : questionnaireTest.getQuestionnaireModes()) {

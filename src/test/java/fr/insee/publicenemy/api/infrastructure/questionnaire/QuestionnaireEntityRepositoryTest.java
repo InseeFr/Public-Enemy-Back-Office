@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.infrastructure.questionnaire;
 
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationState;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.QuestionnaireEntity;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.entity.QuestionnaireModeEntity;
@@ -26,7 +27,7 @@ class QuestionnaireEntityRepositoryTest {
     @Test
     void shouldSaveQuestionnaire() {
         List<QuestionnaireMode> questionnaireModes = QuestionnaireMode.toModel(List.of(Mode.CAWI, Mode.CAPI));
-        QuestionnaireEntity questionnaire = new QuestionnaireEntity("ae3z1rz", "questionnaire label", Context.BUSINESS, questionnaireModes, "content".getBytes(), false);
+        QuestionnaireEntity questionnaire = new QuestionnaireEntity("ae3z1rz", "questionnaire label", Context.BUSINESS, questionnaireModes, "content".getBytes(), false, PersonalizationState.COMPLETED.name());
         QuestionnaireEntity savedQuestionnaire = repository.saveAndFlush(questionnaire);
         assertThat(savedQuestionnaire).usingRecursiveComparison().ignoringFields("id").isEqualTo(questionnaire);
     }
@@ -40,7 +41,7 @@ class QuestionnaireEntityRepositoryTest {
     @Test
     void onFindByIdReturnsCorrectQuestionnaire() {
         List<QuestionnaireMode> questionnaireModes = QuestionnaireMode.toModel(List.of(Mode.CAWI, Mode.CAPI));
-        QuestionnaireEntity questionnaire = new QuestionnaireEntity("l8wwljbo", "questionnaire_label 1", Context.HOUSEHOLD, questionnaireModes, "content1".getBytes(), true);
+        QuestionnaireEntity questionnaire = new QuestionnaireEntity("l8wwljbo", "questionnaire_label 1", Context.HOUSEHOLD, questionnaireModes, "content1".getBytes(), true, PersonalizationState.COMPLETED.name());
         QuestionnaireEntity savedQuestionnaire = repository.findById(1L).get();
         assertEquals(1L, savedQuestionnaire.getId());
         List<QuestionnaireModeEntity> modes = savedQuestionnaire.getModeEntities();
@@ -52,6 +53,7 @@ class QuestionnaireEntityRepositoryTest {
         assertEquals(savedQuestionnaire.getContext(), questionnaire.getContext());
         assertEquals(savedQuestionnaire.getPoguesId(), questionnaire.getPoguesId());
         assertEquals(savedQuestionnaire.isSynchronized(), questionnaire.isSynchronized());
+        assertEquals(savedQuestionnaire.getPersonalizationState(), questionnaire.getPersonalizationState());
         assertEquals(savedQuestionnaire.getLabel(), questionnaire.getLabel());
     }
 }
