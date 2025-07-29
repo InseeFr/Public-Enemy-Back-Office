@@ -22,5 +22,10 @@
             <column name="mode"/>
         </createIndex>
     </changeSet>
+    <changeSet author="XBELTV (generated)" id="4" failOnError="false">
+        <addColumn tableName="questionnaire">
+            <column name="state" type="VARCHAR" defaultValue="COMPLETED"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>

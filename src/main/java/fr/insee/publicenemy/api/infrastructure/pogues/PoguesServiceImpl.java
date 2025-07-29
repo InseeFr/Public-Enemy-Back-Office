@@ -113,7 +113,7 @@ public class PoguesServiceImpl implements PoguesServicePort {
                                 .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
                 )
                 .bodyToMono(JsonNode.class)
-                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR, questionnaireId)));
     }
 
     private JsonNode getNomeclatureOfQuestionnaire(@NonNull String questionnaireId) {

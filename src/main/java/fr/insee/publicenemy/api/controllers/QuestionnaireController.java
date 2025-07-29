@@ -4,6 +4,7 @@ import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
+import fr.insee.publicenemy.api.application.domain.model.PreparedQuestionnaire;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
@@ -121,7 +122,7 @@ public class QuestionnaireController {
      */
     @PostMapping(path = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest addQuestionnaire(
+    public ResponseEntity<QuestionnaireRest> addQuestionnaire(
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
             @RequestPart(name = "interrogationData") MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
@@ -129,8 +130,14 @@ public class QuestionnaireController {
 
         interroUseCase.validateInterrogations(dataContent, questionnaireRest.poguesId());
 
-        Questionnaire questionnaire = questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), ContextRest.toModel(questionnaireRest.context()), dataContent);
-        return questionnaireComponent.createFromModel(questionnaire);
+        PreparedQuestionnaire prepareQuestionnaire = questionnaireUseCase.prepareQuestionnaire(
+                questionnaireRest.poguesId(),
+                ContextRest.toModel(questionnaireRest.context()),
+                dataContent);
+
+        // Async method
+        questionnaireUseCase.addQuestionnaire(prepareQuestionnaire);
+        return ResponseEntity.accepted().body(questionnaireComponent.createFromModel(prepareQuestionnaire.getQuestionnaire()));
     }
 
 
@@ -141,7 +148,7 @@ public class QuestionnaireController {
      */
     @PutMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest updateQuestionnaire(
+    public ResponseEntity<QuestionnaireRest> updateQuestionnaire(
             @PathVariable Long questionnaireId,
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
             @RequestPart(name = "interrogationData", required = false) MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
@@ -149,76 +156,19 @@ public class QuestionnaireController {
         byte[] dataContent;
         if (interrogationData != null) {
             dataContent = interrogationData.getBytes();
-            interroUseCase.validateInterrogations(dataContent, questionnaireId);
         } else {
             dataContent = questionnaireUseCase.getInterrogationData(questionnaireId);
-            interroUseCase.validateInterrogations(dataContent, questionnaireId);
         }
-        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(questionnaireId, ContextRest.toModel(questionnaireRest.context()), dataContent);
-        return questionnaireComponent.createFromModel(questionnaire);
-    }
+        interroUseCase.validateInterrogations(dataContent, questionnaireId);
 
-    /**
-     * @param poguesId questionnaire pogues id
-     * @return questionnaire
-     */
-    @GetMapping("/{poguesId}/db")
-    @PreAuthorize(HAS_ANY_ROLE)
-    @Deprecated(since = "3.0.0")
-    public QuestionnaireRest getQuestionnaire(@PathVariable String poguesId) {
-        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
-        return questionnaireComponent.createFromModel(questionnaire);
-    }
+        PreparedQuestionnaire prepareQuestionnaire = questionnaireUseCase.prepareUpdateQuestionnaire(
+                questionnaireId,
+                ContextRest.toModel(questionnaireRest.context()),
+                dataContent);
 
-    /**
-     * @param poguesId pogues questionnaire id
-     * @return questionnaire informations from ddi
-     */
-    @GetMapping("/pogues/{poguesId}")
-    @PreAuthorize(HAS_ANY_ROLE)
-    @Deprecated(since = "3.0.0")
-    public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {
-        Questionnaire questionnaire = poguesUseCase.getQuestionnaire(poguesId);
-        return questionnaireComponent.createFromModel(questionnaire);
-    }
-
-    /**
-     * @param questionnaireId questionnaire id
-     * @param context         insee context
-     * @param interrogationData  csv content of survey units
-     * @return the updated questionnaire
-     */
-    @PostMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @PreAuthorize(HAS_ANY_ROLE)
-    @Deprecated(since = "3.0.0")
-    public QuestionnaireRest saveQuestionnaire(
-            @PathVariable Long questionnaireId,
-            @RequestPart(name = "context") ContextRest context,
-            @RequestPart(name = "interrogationData", required = false) MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
-
-        byte[] dataContent;
-        if (interrogationData != null) {
-            dataContent = interrogationData.getBytes();
-            interroUseCase.validateInterrogations(dataContent, questionnaireId);
-        } else {
-            dataContent = questionnaireUseCase.getInterrogationData(questionnaireId);
-            interroUseCase.validateInterrogations(dataContent, questionnaireId);
-        }
-        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(questionnaireId, ContextRest.toModel(context), dataContent);
-        return questionnaireComponent.createFromModel(questionnaire);
-    }
-
-    /**
-     * Delete questionnaire
-     *
-     * @param id questionnaire id to delete
-     */
-    @DeleteMapping(path = "/{id}/delete")
-    @Deprecated(since = "3.0.0")
-    @PreAuthorize(HAS_ANY_ROLE)
-    public String deprecatedDeleteQuestionnaire(@PathVariable Long id) {
-        questionnaireUseCase.deleteQuestionnaire(id);
-        return "{}";
+        // Async method
+        questionnaireUseCase.updateQuestionnaire(prepareQuestionnaire);
+        return ResponseEntity.accepted().body(questionnaireComponent.createFromModel(prepareQuestionnaire.getQuestionnaire()));
     }
 
     /**
@@ -227,7 +177,6 @@ public class QuestionnaireController {
      * @param id questionnaire id to delete
      */
     @DeleteMapping(path = "/{id}")
-    @Deprecated(since = "3.0.0")
     @PreAuthorize(HAS_ANY_ROLE)
     public String deleteQuestionnaire(@PathVariable Long id) {
         questionnaireUseCase.deleteQuestionnaire(id);

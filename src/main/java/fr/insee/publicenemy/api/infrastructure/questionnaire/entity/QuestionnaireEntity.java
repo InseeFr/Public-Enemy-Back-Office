@@ -1,9 +1,6 @@
 package fr.insee.publicenemy.api.infrastructure.questionnaire.entity;
 
-import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Mode;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
+import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -54,6 +51,9 @@ public class QuestionnaireEntity implements Serializable {
     @Column(name = "synchronized", nullable = false)
     private boolean isSynchronized;
 
+    @Column(name = "state", nullable = false)
+    private String personalizationState;
+
     /**
      * Constructor
      *
@@ -65,7 +65,7 @@ public class QuestionnaireEntity implements Serializable {
      * @param isSynchronized     is this questionnaire full synchronized with orchestrator
      */
     public QuestionnaireEntity(String poguesId, String label, Context context, List<QuestionnaireMode> questionnaireModes,
-                               @NotNull byte[] interrogationData, boolean isSynchronized) {
+                               @NotNull byte[] interrogationData, boolean isSynchronized, String personalizationState) {
         Date date = Calendar.getInstance().getTime();
         this.poguesId = poguesId;
         this.label = label;
@@ -75,6 +75,7 @@ public class QuestionnaireEntity implements Serializable {
         this.updatedDate = date;
         this.interrogationData = interrogationData;
         this.isSynchronized = isSynchronized;
+        this.personalizationState = personalizationState;
     }
 
     /**
@@ -84,7 +85,8 @@ public class QuestionnaireEntity implements Serializable {
         return new Questionnaire(getId(), getPoguesId(), getLabel(),
                 getContext(), QuestionnaireModeEntity.toModel(modeEntities),
                 interrogationData,
-                isSynchronized());
+                isSynchronized(),
+                PersonalizationState.valueOf(personalizationState));
     }
 
     /**
@@ -93,7 +95,8 @@ public class QuestionnaireEntity implements Serializable {
     public Questionnaire toModel() {
         return new Questionnaire(getId(), getPoguesId(), getLabel(),
                 getContext(), QuestionnaireModeEntity.toModel(modeEntities), null,
-                isSynchronized());
+                isSynchronized(),
+                PersonalizationState.valueOf(personalizationState));
     }
 
     /**
@@ -104,7 +107,7 @@ public class QuestionnaireEntity implements Serializable {
      */
     public static QuestionnaireEntity createEntity(@NonNull Questionnaire questionnaire) {
         return new QuestionnaireEntity(questionnaire.getPoguesId(), questionnaire.getLabel(),
-                questionnaire.getContext(), questionnaire.getQuestionnaireModes(), questionnaire.getInterrogationData(), false);
+                questionnaire.getContext(), questionnaire.getQuestionnaireModes(), questionnaire.getInterrogationData(), questionnaire.isSynchronized(), questionnaire.getPersonalizationState().name());
     }
 
     /**
@@ -125,6 +128,7 @@ public class QuestionnaireEntity implements Serializable {
         // need to create a mutable list from the immutable one or jpa fails on merge lists
         setModeEntities(new ArrayList<>(qModeEntities));
         setSynchronized(questionnaire.isSynchronized());
+        setPersonalizationState(questionnaire.getPersonalizationState().name());
     }
 
     /**
@@ -134,6 +138,7 @@ public class QuestionnaireEntity implements Serializable {
      */
     public void updateState(@NotNull Questionnaire questionnaire) {
         this.isSynchronized = questionnaire.isSynchronized();
+        this.personalizationState = questionnaire.getPersonalizationState().name();
         questionnaire.getQuestionnaireModes()
                 .forEach(questionnaireMode -> {
                     QuestionnaireModeEntity questionnaireModeEntity = getQuestionnaireModeEntity(questionnaireMode.getMode());
@@ -170,12 +175,13 @@ public class QuestionnaireEntity implements Serializable {
                 && Objects.equals(creationDate, that.creationDate)
                 && Objects.equals(updatedDate, that.updatedDate)
                 && Arrays.equals(interrogationData, that.interrogationData)
-                && Objects.equals(isSynchronized, that.isSynchronized);
+                && Objects.equals(isSynchronized, that.isSynchronized)
+                && Objects.equals(personalizationState, that.personalizationState);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, poguesId, label, context, modeEntities, creationDate, updatedDate, isSynchronized);
+        int result = Objects.hash(id, poguesId, label, context, modeEntities, creationDate, updatedDate, isSynchronized, personalizationState);
         result = 31 * result + Arrays.hashCode(interrogationData);
         return result;
     }
@@ -192,6 +198,7 @@ public class QuestionnaireEntity implements Serializable {
                 ", updatedDate=" + updatedDate +
                 ", interrogationData=" + Arrays.toString(interrogationData) +
                 ", isSynchronized='" + isSynchronized + '\'' +
+                ", personalizationState='" + personalizationState + '\'' +
                 '}';
     }
 }

@@ -13,12 +13,12 @@ import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationSurveyUnitDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 /**
@@ -36,20 +36,16 @@ public class QueenUseCase {
 
     private final PoguesUseCase poguesUseCase;
 
-    private final boolean onlyCAWIMode;
-
     public QueenUseCase(PoguesUseCase poguesUseCase,
                         QueenServicePort queenService,
                         InterrogationCsvPort interrogationCsvService,
                         InterrogationJsonPort interrogationJsonService,
-                        PersonalizationPort personalizationService,
-                        @Value("${application.mode.handle-only-cawi}") boolean onlyCAWIMode) {
+                        PersonalizationPort personalizationService) {
         this.poguesUseCase = poguesUseCase;
         this.queenService = queenService;
         this.interrogationCsvService = interrogationCsvService;
         this.interrogationJsonService = interrogationJsonService;
         this.personalizationService = personalizationService;
-        this.onlyCAWIMode = onlyCAWIMode;
     }
 
     public List<InterrogationSurveyUnitDto> getInterrogationsBySurveyUnit(String surveyUnitId){
@@ -107,12 +103,15 @@ public class QueenUseCase {
      * @param questionnaireModel           DDI for the questionnaire
      * @param questionnaire questionnaire
      */
+
     public void synchronizeCreate(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
         questionnaire.getQuestionnaireModes().stream()
-                .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
-                .forEach(questionnaireMode -> createQueenCampaign(questionnaireModel, questionnaire, questionnaireMode));
+                .filter(qm -> qm.getMode().isWebMode())
+                .forEach(qm -> createQueenCampaign(questionnaireModel, questionnaire, qm));
+    }
+
+    public CompletableFuture<Void> synchronizeCreateAsync(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
+        return CompletableFuture.runAsync(() -> synchronizeCreate(questionnaireModel, questionnaire));
     }
 
     /**
@@ -125,7 +124,6 @@ public class QueenUseCase {
      * @param questionnaire questionnaire
      */
     public void synchronizeUpdate(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
-
         List<Mode> modes = questionnaireModel.modes();
         List<QuestionnaireMode> questionnaireModes = new ArrayList<>(questionnaire.getQuestionnaireModes());
 
@@ -150,8 +148,6 @@ public class QueenUseCase {
         // get modes that exist in DDI but not in questionnaire (these modes need to be added)
         modes.stream()
                 .filter(mode -> !modesFromQuestionnaire.contains(mode))
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(mode -> isModeAllowed(Mode.CAWI))
                 .forEach(mode -> {
                     log.info(String.format("%s: mode to add: %s", questionnaire.getPoguesId(), mode.name()));
                     questionnaireModes.add(
@@ -163,13 +159,26 @@ public class QueenUseCase {
         // Often it will cause unnecessary checks for created modes, but synchronisation is safer this way
         questionnaireModes.stream()
                 .filter(questionnaireMode -> questionnaireMode.getMode().isWebMode())
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(questionnaireMode -> isModeAllowed(questionnaireMode.getMode()))
                 .forEach(questionnaireMode -> {
                     log.info(String.format("%s: mode to update: %s", questionnaire.getPoguesId(), questionnaireMode.getMode().name()));
                     updateQueenCampaign(questionnaireModel, questionnaire, questionnaireMode);
                 });
         questionnaire.setQuestionnaireModes(questionnaireModes);
+        questionnaire.setPersonalizationState(PersonalizationState.COMPLETED);
+        questionnaire.setSynchronized(true);
+    }
+
+    /**
+     * Update questionnaire in queen
+     * This update is used for
+     * - simply updating a questionnaire (context/survey unit data)
+     * - for updating a not well synchronized questionnaire (problems during previous sync, questionnaire changed in pogues, ...)
+     *
+     * @param questionnaireModel           DDI for the questionnaire
+     * @param questionnaire questionnaire
+     */
+    public CompletableFuture<Void> synchronizeUpdateAsync(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
+        return CompletableFuture.runAsync(()-> synchronizeUpdate(questionnaireModel, questionnaire));
     }
 
     /**
@@ -182,8 +191,6 @@ public class QueenUseCase {
         questionnaire.getQuestionnaireModes().stream()
                 .map(QuestionnaireMode::getMode)
                 .filter(Mode::isWebMode)
-                // /!\ filter to process only CAWI in stromae api at this moment, as CAPI/CATI are not integrated
-                .filter(this::isModeAllowed)
                 .forEach(mode ->
                         deleteQueenCampaign(IdentifierGenerationUtils.generateCampaignAndQuestionnaireModelIdentifier(questionnaire.getId(), mode)));
     }
@@ -301,13 +308,6 @@ public class QueenUseCase {
     private void createInterrogation(String campaignId, Interrogation interrogation) {
         log.info(String.format("create interrogation %s for campaign %s", interrogation.id(), campaignId));
         queenService.createInterrogation(campaignId, interrogation);
-    }
-
-    private boolean isModeAllowed(Mode mode) {
-        if(!onlyCAWIMode) {
-            return true;
-        }
-        return mode.equals(Mode.CAWI);
     }
 
     private void createPersonalizationMappings(List<Interrogation> interrogations, Long questionnaireId, Mode mode, QuestionnaireMode questionnaireMode){

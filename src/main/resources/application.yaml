@@ -114,8 +114,6 @@ application:
     iteration-header-count: 1
   campaign:
     max-interrogations: 10
-  mode:
-    handle-only-cawi: false
   questionnaire:
     metadata:
       -

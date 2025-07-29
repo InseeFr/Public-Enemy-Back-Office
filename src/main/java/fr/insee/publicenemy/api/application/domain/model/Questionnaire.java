@@ -25,6 +25,7 @@ public class Questionnaire {
     @NotNull
     private byte[] interrogationData;
     private boolean isSynchronized;
+    private PersonalizationState personalizationState;
 
     public Questionnaire(String poguesId, String label, Context context, List<Mode> modes, byte[] interrogationData) {
         this.poguesId = poguesId;
@@ -42,6 +43,7 @@ public class Questionnaire {
         this.isSynchronized = false;
     }
 
+    // usage pogues
     public Questionnaire(String poguesId, String label, List<Mode> modes) {
         this.poguesId = poguesId;
         this.label = label;
@@ -49,6 +51,7 @@ public class Questionnaire {
         this.isSynchronized = false;
     }
 
+    // usage: addQuestionnaire -> personalizationState STARTED
     public Questionnaire(QuestionnaireModel questionnaireModel, Context context, byte[] interrogationData) {
         this.poguesId = questionnaireModel.poguesId();
         this.label = questionnaireModel.label();
@@ -56,6 +59,7 @@ public class Questionnaire {
         this.questionnaireModes = QuestionnaireMode.toModel(questionnaireModel.modes());
         this.interrogationData = interrogationData;
         this.isSynchronized = false;
+        this.personalizationState = PersonalizationState.STARTED;
     }
 
     @Override
@@ -87,6 +91,7 @@ public class Questionnaire {
                 ", context=" + context +
                 ", questionnaireModes=" + questionnaireModes +
                 ", isSynchronized=" + isSynchronized +
+                ", personalizationState=" + personalizationState +
                 '}';
     }
 }
