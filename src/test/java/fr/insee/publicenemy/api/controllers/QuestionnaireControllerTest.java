@@ -107,17 +107,6 @@ class QuestionnaireControllerTest {
     }
 
     @Test
-    void onGetQuestionnairesShouldFetchAllQuestionnaires() throws Exception {
-
-        when(questionnaireUseCase.getQuestionnaires()).thenReturn(questionnaires);
-
-        mockMvc.perform(get("/api/questionnaires")
-                        .with(authentication(authenticatedUserTestHelper.getUser())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(questionnaires.size())));
-    }
-
-    @Test
     void onGetQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
         Long id = questionnaire.getId();
         when(questionnaireUseCase.getQuestionnaire(id)).thenReturn(questionnaire);
@@ -160,7 +149,7 @@ class QuestionnaireControllerTest {
         when(questionnaireUseCase.addQuestionnaire(questionnaireAddRest.poguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(questionnaire);
 
         questionnaireMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
+        mockMvc.perform(multipart("/api/questionnaires").file(surveyUnitMockPart).part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
@@ -256,7 +245,7 @@ class QuestionnaireControllerTest {
         when(messageService.getMessage("validation.errors")).thenReturn(code);
         InterrogationsGlobalValidationException surveyUnitsValidationException = new InterrogationsGlobalValidationException("main error message", new ArrayList<>());
         when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
-        mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
+        mockMvc.perform(multipart("/api/questionnaires").file(surveyUnitMockPart).part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
@@ -281,7 +270,7 @@ class QuestionnaireControllerTest {
         InterrogationsSpecificValidationException interrogationsSpecificValidationException = new InterrogationsSpecificValidationException("main error message", new ArrayList<>());
         when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(interrogationsSpecificValidationException);
 
-        mockMvc.perform(multipart("/api/questionnaires/add")
+        mockMvc.perform(multipart("/api/questionnaires")
                         .file(surveyUnitMockPart)
                         .part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))

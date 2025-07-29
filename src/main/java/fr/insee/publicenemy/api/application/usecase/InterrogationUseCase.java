@@ -114,10 +114,9 @@ public class InterrogationUseCase {
         // retrieve validation objects with attributes errors
         List<InterrogationDataValidationResult> validationResults = interrogations.stream()
                 .map(interrogation -> getInterrogationErrors(interrogation, variablesType))
-                .filter(interrogationDataValidationResult -> !interrogationDataValidationResult.attributesValidation().isEmpty())
                 .toList();
 
-        if (!validationResults.isEmpty()) {
+        if (!validationResults.stream().filter(validationResult -> !validationResult.attributesValidation().isEmpty()).toList().isEmpty()) {
             throw new InterrogationsSpecificValidationException(messageService.getMessage(VALIDATION_ERROR), validationResults);
         }
 
@@ -198,7 +197,6 @@ public class InterrogationUseCase {
                 attributesErrors.add(attributeValidationObject);
             }
         }
-
 
         return new InterrogationDataValidationResult(interrogation.id(), attributesErrors);
     }
