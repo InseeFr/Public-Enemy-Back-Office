@@ -7,7 +7,7 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrog
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValueList;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,11 +26,11 @@ class InterrogationUpdateSerializerTest {
     void checkJsonFormatOnSerialize() throws JsonProcessingException {
         List<InterrogationUpdateDto> surveyUnits = new ArrayList<>();
 
-        Map<String, IInterrogationDataAttributeValue<?>> attributes = new TreeMap<>();
+        Map<String, IInterrogationDataAttributeValue> attributes = new TreeMap<>();
 
-        InterrogationDataAttributeValue booleanValue = new InterrogationDataAttributeValue("1");
-        InterrogationDataAttributeValue textValue = new InterrogationDataAttributeValue("CS 70058");
-        InterrogationDataAttributeValueList listValue = new InterrogationDataAttributeValueList();
+        InterrogationDataAttributeValue<String> booleanValue = new InterrogationDataAttributeValue<>("1");
+        InterrogationDataAttributeValue<String> textValue = new InterrogationDataAttributeValue<>("CS 70058");
+        InterrogationDataAttributeValueList<String> listValue = new InterrogationDataAttributeValueList<>();
         listValue.addValue("value1");
         listValue.addValue("value2");
         listValue.addValue("value3");
@@ -74,7 +74,8 @@ class InterrogationUpdateSerializerTest {
                                        "value5",
                                        "value6"
                                     ]
-                                 }
+                                 },
+                                 "COLLECTED":{}
                               },
                               "stateData": null
                            },
@@ -94,7 +95,8 @@ class InterrogationUpdateSerializerTest {
                                        "value5",
                                        "value6"
                                     ]
-                                 }
+                                 },
+                                 "COLLECTED":{}
                               },
                               "stateData": null
                            }
