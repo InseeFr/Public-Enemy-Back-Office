@@ -27,8 +27,8 @@ class QuestionnaireComponentTest {
     
     @Test
     void onCreateFromModelReturnsAllAttributesFromQuestionnaire() {
-        Questionnaire questionnaire = new Questionnaire(1L, "l8wwljbo", "label", Context.HOUSEHOLD, 
-                List.of(new QuestionnaireMode(Mode.CAWI), new QuestionnaireMode(Mode.CAPI)), "content".getBytes(), true, PersonalizationState.STARTED);
+        Questionnaire questionnaire = new Questionnaire(1L, "l8wwljbo","uuid", "label", Context.HOUSEHOLD,
+                List.of(new QuestionnaireMode(Mode.CAWI), new QuestionnaireMode(Mode.CAPI)), "content".getBytes(), true, PersonalizationState.STARTED, false);
         
         QuestionnaireRest questionnaireRest = component.createFromModel(questionnaire);
 
@@ -39,5 +39,6 @@ class QuestionnaireComponentTest {
         assertEquals(questionnaireRest.label(), questionnaire.getLabel());
         assertEquals(questionnaireRest.modes().size(), questionnaire.getQuestionnaireModes().size());
         assertEquals(questionnaireRest.state(), questionnaire.getPersonalizationState());
+        assertEquals(questionnaireRest.isOutdated(), questionnaire.isOutdated());
     }
 }

@@ -64,8 +64,8 @@ class QueenServiceTest {
 
         QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
         List<QuestionnaireMode> questionnaireModes = List.of(questionnaireMode);
-        questionnaire = new Questionnaire(1L, "l8wwljbo", "label", Context.BUSINESS,
-                questionnaireModes, "data".getBytes(), false, null);
+        questionnaire = new Questionnaire(1L, "l8wwljbo", "uuid", "label", Context.BUSINESS,
+                questionnaireModes, "data".getBytes(), false, null, false);
     }
 
     @Test

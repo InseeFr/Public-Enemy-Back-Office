@@ -1,12 +1,12 @@
-insert into questionnaire (context, creation_date, synchronized, label, questionnaire_pogues_id, survey_unit_data,
+insert into questionnaire (context, creation_date, synchronized, label, questionnaire_pogues_id, questionnaire_pogues_version_id, survey_unit_data,
                            updated_date)
-values ('HOUSEHOLD', CURRENT_TIMESTAMP(), true, 'questionnaire_label 1', 'l8wwljbo', 'content1', CURRENT_TIMESTAMP());
-insert into questionnaire (context, creation_date, synchronized, label, questionnaire_pogues_id, survey_unit_data,
+values ('HOUSEHOLD', CURRENT_TIMESTAMP(), true, 'questionnaire_label 1', 'l8wwljbo', 'uuid', 'content1', CURRENT_TIMESTAMP());
+insert into questionnaire (context, creation_date, synchronized, label, questionnaire_pogues_id, questionnaire_pogues_version_id, survey_unit_data,
                            updated_date)
-values ('HOUSEHOLD', CURRENT_TIMESTAMP(), true, 'questionnaire_label 2', 'lqdfgdf', 'content2', CURRENT_TIMESTAMP());
-insert into questionnaire (context, creation_date, synchronized, label, questionnaire_pogues_id, survey_unit_data,
+values ('HOUSEHOLD', CURRENT_TIMESTAMP(), true, 'questionnaire_label 2', 'lqdfgdf', 'uuid2', 'content2', CURRENT_TIMESTAMP());
+insert into questionnaire (context, creation_date, synchronized, label, questionnaire_pogues_id, questionnaire_pogues_version_id, survey_unit_data,
                            updated_date)
-values ('HOUSEHOLD', CURRENT_TIMESTAMP(), true, 'questionnaire_label 3', 'a1z2e3456', 'content3', CURRENT_TIMESTAMP());
+values ('HOUSEHOLD', CURRENT_TIMESTAMP(), true, 'questionnaire_label 3', 'a1z2e3456', 'uuid3', 'content3', CURRENT_TIMESTAMP());
 
 insert into questionnaire_mode (questionnaire_id, mode, state)
 values (1, 'CAWI', 'OK');

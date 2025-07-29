@@ -24,6 +24,9 @@ public class QuestionnaireEntity implements Serializable {
     @NotNull
     private String poguesId;
 
+    @Column(name = "questionnaire_pogues_version_id")
+    private String versionId;
+
     @Column
     @NotNull
     private String label;
@@ -64,10 +67,11 @@ public class QuestionnaireEntity implements Serializable {
      * @param interrogationData     csv interrogation data
      * @param isSynchronized     is this questionnaire full synchronized with orchestrator
      */
-    public QuestionnaireEntity(String poguesId, String label, Context context, List<QuestionnaireMode> questionnaireModes,
+    public QuestionnaireEntity(String poguesId, String versionId, String label, Context context, List<QuestionnaireMode> questionnaireModes,
                                @NotNull byte[] interrogationData, boolean isSynchronized, String personalizationState) {
         Date date = Calendar.getInstance().getTime();
         this.poguesId = poguesId;
+        this.versionId = versionId;
         this.label = label;
         this.context = context;
         this.modeEntities = QuestionnaireModeEntity.fromModel(this, questionnaireModes);
@@ -82,21 +86,21 @@ public class QuestionnaireEntity implements Serializable {
      * @return application model of this questionnaire
      */
     public Questionnaire toModel(byte[] interrogationData) {
-        return new Questionnaire(getId(), getPoguesId(), getLabel(),
+        return new Questionnaire(getId(), getPoguesId(), getVersionId(), getLabel(),
                 getContext(), QuestionnaireModeEntity.toModel(modeEntities),
                 interrogationData,
                 isSynchronized(),
-                PersonalizationState.valueOf(personalizationState));
+                PersonalizationState.valueOf(personalizationState), false);
     }
 
     /**
      * @return application model of this questionnaire
      */
     public Questionnaire toModel() {
-        return new Questionnaire(getId(), getPoguesId(), getLabel(),
+        return new Questionnaire(getId(), getPoguesId(), getVersionId(), getLabel(),
                 getContext(), QuestionnaireModeEntity.toModel(modeEntities), null,
                 isSynchronized(),
-                PersonalizationState.valueOf(personalizationState));
+                PersonalizationState.valueOf(personalizationState), false);
     }
 
     /**
@@ -106,7 +110,7 @@ public class QuestionnaireEntity implements Serializable {
      * @return the entity representation of the questionnaire
      */
     public static QuestionnaireEntity createEntity(@NonNull Questionnaire questionnaire) {
-        return new QuestionnaireEntity(questionnaire.getPoguesId(), questionnaire.getLabel(),
+        return new QuestionnaireEntity(questionnaire.getPoguesId(), questionnaire.getVersionId(), questionnaire.getLabel(),
                 questionnaire.getContext(), questionnaire.getQuestionnaireModes(), questionnaire.getInterrogationData(), questionnaire.isSynchronized(), questionnaire.getPersonalizationState().name());
     }
 
@@ -120,6 +124,7 @@ public class QuestionnaireEntity implements Serializable {
         if (questionnaireUnitData != null && questionnaireUnitData.length > 0) {
             setInterrogationData(questionnaireUnitData);
         }
+        setVersionId(questionnaire.getVersionId());
         setContext(questionnaire.getContext());
         setLabel(questionnaire.getLabel());
         setUpdatedDate(Calendar.getInstance().getTime());
@@ -191,6 +196,7 @@ public class QuestionnaireEntity implements Serializable {
         return "QuestionnaireEntity{" +
                 "id=" + id +
                 ", poguesId='" + poguesId + '\'' +
+                ", versionId='" + versionId + '\'' +
                 ", label='" + label + '\'' +
                 ", context=" + context +
                 ", modeEntities=" + modeEntities +

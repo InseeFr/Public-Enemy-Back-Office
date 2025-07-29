@@ -37,7 +37,7 @@ class QuestionnaireRepositoryTest {
     @BeforeEach
     public void init() {
         repository = new QuestionnaireRepository(questionnaireEntityRepository, messageService);
-        questionnaire = new Questionnaire(1L, "l8wwljbo", "label", Context.HOUSEHOLD, List.of(new QuestionnaireMode(Mode.CAWI)), "content".getBytes(), true, null);
+        questionnaire = new Questionnaire(1L, "l8wwljbo", "uuid", "label", Context.HOUSEHOLD, List.of(new QuestionnaireMode(Mode.CAWI)), "content".getBytes(), true, null, false);
     }
 
     @Test
