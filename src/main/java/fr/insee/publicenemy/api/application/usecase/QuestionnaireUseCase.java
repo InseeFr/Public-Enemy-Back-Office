@@ -53,7 +53,6 @@ public class QuestionnaireUseCase {
 
     public PreparedQuestionnaire prepareUpdateQuestionnaire(Long id, Context updatedContext, byte[] updatedInterrogationData){
         Questionnaire questionnaire = getQuestionnaire(id);
-        log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
         QuestionnaireModel latestQuestionnaireModel = poguesUseCase.getQuestionnaireModel(questionnaire.getPoguesId());
         questionnaire.setContext(updatedContext);
         questionnaire.setInterrogationData(updatedInterrogationData);
@@ -100,7 +99,9 @@ public class QuestionnaireUseCase {
      * @return the questionnaire
      */
     public Questionnaire getQuestionnaire(Long id) {
-        return questionnairePort.getQuestionnaire(id);
+        Questionnaire questionnaire =  questionnairePort.getQuestionnaire(id);
+        computeOutdatedAttribute(questionnaire);
+        return questionnaire;
     }
 
     /**
@@ -110,7 +111,14 @@ public class QuestionnaireUseCase {
      * @return a questionnaire based on its pogues id
      */
     public Questionnaire getQuestionnaire(String poguesId) {
-        return questionnairePort.getQuestionnaire(poguesId);
+        Questionnaire questionnaire = questionnairePort.getQuestionnaire(poguesId);
+        computeOutdatedAttribute(questionnaire);
+        return questionnaire;
+    }
+
+    private void computeOutdatedAttribute(Questionnaire questionnaire){
+        QuestionnaireModel latestQuestionnaireModel = poguesUseCase.getQuestionnaireModel(questionnaire.getPoguesId());
+        questionnaire.setOutdated(!latestQuestionnaireModel.versionId().equals(questionnaire.getVersionId()));
     }
 
     /**

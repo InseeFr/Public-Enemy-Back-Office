@@ -16,6 +16,7 @@ public class Questionnaire {
     private Long id;
     @NotNull
     private String poguesId;
+    private String versionId;
     @NotNull
     private String label;
     @NotNull
@@ -26,14 +27,17 @@ public class Questionnaire {
     private byte[] interrogationData;
     private boolean isSynchronized;
     private PersonalizationState personalizationState;
+    private boolean isOutdated;
 
-    public Questionnaire(String poguesId, String label, Context context, List<Mode> modes, byte[] interrogationData) {
+    public Questionnaire(String poguesId, String versionId, String label, Context context, List<Mode> modes, byte[] interrogationData) {
         this.poguesId = poguesId;
+        this.versionId = versionId;
         this.label = label;
         this.context = context;
         this.questionnaireModes = QuestionnaireMode.toModel(modes);
         this.interrogationData = interrogationData;
         this.isSynchronized = false;
+        this.isOutdated = false;
     }
 
     public Questionnaire(Long id, Context context, byte[] interrogationData) {
@@ -41,6 +45,7 @@ public class Questionnaire {
         this.context = context;
         this.interrogationData = interrogationData;
         this.isSynchronized = false;
+        this.isOutdated = false;
     }
 
     // usage pogues
@@ -49,16 +54,19 @@ public class Questionnaire {
         this.label = label;
         this.questionnaireModes = QuestionnaireMode.toModel(modes);
         this.isSynchronized = false;
+        this.isOutdated = false;
     }
 
     // usage: addQuestionnaire -> personalizationState STARTED
     public Questionnaire(QuestionnaireModel questionnaireModel, Context context, byte[] interrogationData) {
         this.poguesId = questionnaireModel.poguesId();
+        this.versionId = questionnaireModel.versionId();
         this.label = questionnaireModel.label();
         this.context = context;
         this.questionnaireModes = QuestionnaireMode.toModel(questionnaireModel.modes());
         this.interrogationData = interrogationData;
         this.isSynchronized = false;
+        this.isOutdated = false;
         this.personalizationState = PersonalizationState.STARTED;
     }
 
@@ -68,8 +76,10 @@ public class Questionnaire {
         if (o == null || getClass() != o.getClass()) return false;
         Questionnaire that = (Questionnaire) o;
         return isSynchronized == that.isSynchronized
+                && isOutdated == that.isOutdated
                 && Objects.equals(id, that.id)
                 && Objects.equals(poguesId, that.poguesId)
+                && Objects.equals(versionId, that.versionId)
                 && Objects.equals(label, that.label) && context == that.context
                 && Objects.equals(questionnaireModes, that.questionnaireModes)
                 && Arrays.equals(interrogationData, that.interrogationData);
@@ -77,7 +87,7 @@ public class Questionnaire {
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, poguesId, label, context, questionnaireModes, isSynchronized);
+        int result = Objects.hash(id, poguesId, versionId, label, context, questionnaireModes, isSynchronized, isOutdated);
         result = 31 * result + Arrays.hashCode(interrogationData);
         return result;
     }
