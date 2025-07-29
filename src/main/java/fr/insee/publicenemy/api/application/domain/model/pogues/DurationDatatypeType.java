@@ -37,7 +37,7 @@ public class DurationDatatypeType implements IDataType {
     }
 
     @Override
-    public DataTypeValidationResult validate(String fieldValue) {
+    public DataTypeValidationResult validate(Object fieldValue) {
         throw new IllegalArgumentException("Validate method is not yet implemented");
     }
 }

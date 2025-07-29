@@ -1,31 +1,26 @@
 package fr.insee.publicenemy.api.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Mode;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
+import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
+import fr.insee.publicenemy.api.application.usecase.InterrogationUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.ModeRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
+import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -58,7 +53,7 @@ class QuestionnaireControllerTest {
     private QuestionnaireUseCase questionnaireUseCase;
 
     @MockitoBean
-    private InterrogationCsvUseCase interrogationCsvUseCase;
+    private InterrogationUseCase interrogationUseCase;
 
     @MockitoBean
     private I18nMessagePort messageService;
@@ -93,10 +88,10 @@ class QuestionnaireControllerTest {
         List<QuestionnaireRest> questionnairesRest = new LinkedList<>();
         for (long nbQuestionnaires = 0; nbQuestionnaires < 3; nbQuestionnaires++) {
             Long id = nbQuestionnaires + 1;
-            Questionnaire q = new Questionnaire(id, "l8wwljbo" + id, "label" + id, Context.BUSINESS,
-                    questionnaireModes, "data".getBytes(), false);
+            Questionnaire q = new Questionnaire(id, "l8wwljbo" + id, "uuid", "label" + id, Context.BUSINESS,
+                    questionnaireModes, "data".getBytes(), false, PersonalizationState.STARTED, false);
             QuestionnaireRest qRest = new QuestionnaireRest(q.getId(), q.getPoguesId(),
-                    q.getLabel(), contextRest, modesRest, q.isSynchronized());
+                    q.getLabel(), contextRest, modesRest, q.isSynchronized(), q.getPersonalizationState(), q.isOutdated());
             questionnaires.add(q);
             questionnairesRest.add(qRest);
 
@@ -104,17 +99,6 @@ class QuestionnaireControllerTest {
         }
         questionnaire = questionnaires.get(0);
         questionnaireRest = questionnairesRest.get(0);
-    }
-
-    @Test
-    void onGetQuestionnairesShouldFetchAllQuestionnaires() throws Exception {
-
-        when(questionnaireUseCase.getQuestionnaires()).thenReturn(questionnaires);
-
-        mockMvc.perform(get("/api/questionnaires")
-                        .with(authentication(authenticatedUserTestHelper.getUser())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()", is(questionnaires.size())));
     }
 
     @Test
@@ -157,28 +141,33 @@ class QuestionnaireControllerTest {
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
 
-        when(questionnaireUseCase.addQuestionnaire(questionnaireAddRest.poguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(questionnaire);
+        PreparedQuestionnaire preparedQuestionnaire = new PreparedQuestionnaire(questionnaire, null);
+        when(questionnaireUseCase.prepareQuestionnaire(questionnaireAddRest.poguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(preparedQuestionnaire);
 
         questionnaireMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
+        mockMvc.perform(multipart("/api/questionnaires")
+                        .file(surveyUnitMockPart)
+                        .part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
+                .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
                 .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
                 .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
                 .andExpect(jsonPath("$.context.name", is(questionnaireRest.context().name())))
                 .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
                 .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
-                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
+                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())))
+                .andExpect(jsonPath("$.isOutdated", is(questionnaireRest.isOutdated())));
     }
 
     @Test
     void onGetQuestionnaireFromPoguesShouldFetchQuestionnaireAttributes() throws Exception {
         String poguesId = questionnaire.getPoguesId();
+        when(questionnaireUseCase.getQuestionnaire(poguesId)).thenThrow(RepositoryEntityNotFoundException.class);
         when(poguesUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
 
-        mockMvc.perform(get("/api/questionnaires/pogues/{poguesId}", poguesId)
+        mockMvc.perform(get(String.format("/api/questionnaires?poguesId=%s",poguesId))
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
@@ -186,49 +175,26 @@ class QuestionnaireControllerTest {
                 .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())));
     }
 
-    @ParameterizedTest
-    @EmptySource
-    @NullSource
-    @ValueSource(strings = {"filecontent"})
-    void onSaveQuestionnaireShouldFetchQuestionnaireAttributes(String interrogationData) throws Exception {
-
-        ObjectMapper Obj = new ObjectMapper();
-        String jsonContext = Obj.writeValueAsString(questionnaireRest.context());
-        MockPart contextMockPart = new MockPart("context", jsonContext.getBytes());
-        contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", interrogationData, MediaType.MULTIPART_FORM_DATA_VALUE, questionnaire.getInterrogationData());
-
-        Long id = questionnaire.getId();
-        when(questionnaireUseCase.updateQuestionnaire(questionnaire.getId(),
-                questionnaire.getContext(), questionnaire.getInterrogationData())).thenReturn(questionnaire);
-
-        mockMvc.perform(multipart("/api/questionnaires/{id}", id).part(contextMockPart).file(surveyUnitMockPart)
-                        .with(authentication(authenticatedUserTestHelper.getUser()))
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
-                .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
-                .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
-                .andExpect(jsonPath("$.context.name", is(questionnaireRest.context().name())))
-                .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
-                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
-                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
-    }
-
     @Test
     void onSaveQuestionnaireWhenEmptyDataShouldFetchDataFromQuestionnaire() throws Exception {
-
+        QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
+        byte[] surveyUnitData = null;
         ObjectMapper Obj = new ObjectMapper();
+        String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
+        MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
+        PreparedQuestionnaire preparedQuestionnaire = new PreparedQuestionnaire(questionnaire, null);
         String jsonContext = Obj.writeValueAsString(questionnaireRest.context());
         MockPart contextMockPart = new MockPart("context", jsonContext.getBytes());
         contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
         Long id = questionnaire.getId();
+        when(questionnaireUseCase.prepareUpdateQuestionnaire(questionnaire.getId(), Context.BUSINESS, surveyUnitData)).thenReturn(preparedQuestionnaire);
 
-        mockMvc.perform(multipart("/api/questionnaires/{id}", id).part(contextMockPart)
+        mockMvc.perform(multipart(HttpMethod.PUT,"/api/questionnaires/{id}", id)
+                        .part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk());
+                .andExpect(status().isAccepted());
         verify(questionnaireUseCase, times(1)).getInterrogationData(id);
     }
 
@@ -236,7 +202,7 @@ class QuestionnaireControllerTest {
     void onDeleteQuestionnaireShouldReturnEmptyJsonObject() throws Exception {
         Long id = questionnaire.getId();
 
-        mockMvc.perform(delete("/api/questionnaires/{id}/delete", id)
+        mockMvc.perform(delete("/api/questionnaires/{id}", id)
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(content().json("{}"));
@@ -255,8 +221,8 @@ class QuestionnaireControllerTest {
         String code = "error.code";
         when(messageService.getMessage("validation.errors")).thenReturn(code);
         InterrogationsGlobalValidationException surveyUnitsValidationException = new InterrogationsGlobalValidationException("main error message", new ArrayList<>());
-        when(interrogationCsvUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
-        mockMvc.perform(multipart("/api/questionnaires/add").file(surveyUnitMockPart).part(questionnaireMockPart)
+        when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(surveyUnitsValidationException);
+        mockMvc.perform(multipart("/api/questionnaires").file(surveyUnitMockPart).part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
@@ -279,9 +245,9 @@ class QuestionnaireControllerTest {
         String code = "error.code";
         when(messageService.getMessage("validation.errors")).thenReturn(code);
         InterrogationsSpecificValidationException interrogationsSpecificValidationException = new InterrogationsSpecificValidationException("main error message", new ArrayList<>());
-        when(interrogationCsvUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(interrogationsSpecificValidationException);
+        when(interrogationUseCase.validateInterrogations(interrogationData, "l8wwljbo")).thenThrow(interrogationsSpecificValidationException);
 
-        mockMvc.perform(multipart("/api/questionnaires/add")
+        mockMvc.perform(multipart("/api/questionnaires")
                         .file(surveyUnitMockPart)
                         .part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))

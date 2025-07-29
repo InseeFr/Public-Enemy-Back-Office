@@ -4,18 +4,21 @@ import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
+import fr.insee.publicenemy.api.application.domain.model.PreparedQuestionnaire;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import fr.insee.publicenemy.api.application.usecase.InterrogationUseCase;
 import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
 import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
 import fr.insee.publicenemy.api.controllers.dto.ContextRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
+import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,7 +30,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
@@ -38,7 +40,7 @@ public class QuestionnaireController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final InterrogationCsvUseCase csvUseCase;
+    private final InterrogationUseCase interroUseCase;
     private final PoguesUseCase poguesUseCase;
 
     private final ApiExceptionComponent errorComponent;
@@ -50,26 +52,32 @@ public class QuestionnaireController {
     private static final String VALIDATION_ERROR = "validation.errors";
 
     public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, PoguesUseCase poguesUseCase,
-                                   InterrogationCsvUseCase csvUseCase,
+                                   InterrogationUseCase interroUseCase,
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
                                    ApiExceptionComponent errorComponent) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.poguesUseCase = poguesUseCase;
-        this.csvUseCase = csvUseCase;
+        this.interroUseCase = interroUseCase;
         this.questionnaireComponent = questionnaireComponent;
         this.messageService = messagePort;
         this.errorComponent = errorComponent;
     }
 
+
     /**
-     * @return all questionnaires
+     * @return questionnaire perso by poguesId
      */
     @GetMapping("")
     @PreAuthorize(HAS_ANY_ROLE)
-    public List<QuestionnaireRest> getQuestionnaires() {
-        return questionnaireUseCase.getQuestionnaires().stream()
-                .map(questionnaireComponent::createFromModel)
-                .toList();
+    public QuestionnaireRest getQuestionnairesByPoguesId(@RequestParam String poguesId) {
+        try {
+            Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
+            return questionnaireComponent.createFromModel(questionnaire);
+        } catch (RepositoryEntityNotFoundException e) {
+            Questionnaire questionnaire = poguesUseCase.getQuestionnaire(poguesId);
+            return questionnaireComponent.createFromModel(questionnaire);
+        }
+
     }
 
     /**
@@ -83,43 +91,28 @@ public class QuestionnaireController {
         return questionnaireComponent.createFromModel(questionnaire);
     }
 
-    /**
-     * @param poguesId questionnaire pogues id
-     * @return questionnaire
-     */
-    @GetMapping("/{poguesId}/db")
-    @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest getQuestionnaire(@PathVariable String poguesId) {
-        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
-        return questionnaireComponent.createFromModel(questionnaire);
-    }
+
 
     /**
      * @param id questionnaire id
      * @return questionnaire
      */
-    @GetMapping(value = "/{id}/data", produces = "text/csv")
+    @GetMapping(value = "/{id}/data")
     @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<byte[]> getInterrogationData(@PathVariable Long id) {
-        String filename = String.format("questionnaire-%s-data.csv", id);
 
         byte[] interrogationsData = questionnaireUseCase.getInterrogationData(id);
-
-        return ResponseEntity
-                .ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
-                .body(interrogationsData);
-    }
-
-    /**
-     * @param poguesId pogues questionnaire id
-     * @return questionnaire informations from ddi
-     */
-    @GetMapping("/pogues/{poguesId}")
-    @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest getQuestionnaireFromPogues(@PathVariable String poguesId) {
-        Questionnaire questionnaire = poguesUseCase.getQuestionnaire(poguesId);
-        return questionnaireComponent.createFromModel(questionnaire);
+        InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(interrogationsData);
+        if (dataFormat != null) {
+            String filename = String.format("questionnaire-%s-data.%s", id, dataFormat.name().toLowerCase());
+            String contentType =  InterrogationData.FormatType.JSON.equals(dataFormat) ? MediaType.APPLICATION_JSON_VALUE : "text/csv";
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename))
+                    .header(HttpHeaders.CONTENT_TYPE, contentType)
+                    .body(interrogationsData);
+        }
+        return null;
     }
 
     /**
@@ -127,43 +120,55 @@ public class QuestionnaireController {
      * @param interrogationData    csv content of survey units
      * @return the saved questionnaire
      */
-    @PostMapping(path = "/add", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(path = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest addQuestionnaire(
+    public ResponseEntity<QuestionnaireRest> addQuestionnaire(
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
             @RequestPart(name = "interrogationData") MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
-        byte[] csvContent = interrogationData.getBytes();
+        byte[] dataContent = interrogationData.getBytes();
 
-        csvUseCase.validateInterrogations(csvContent, questionnaireRest.poguesId());
+        interroUseCase.validateInterrogations(dataContent, questionnaireRest.poguesId());
 
-        Questionnaire questionnaire = questionnaireUseCase.addQuestionnaire(questionnaireRest.poguesId(), ContextRest.toModel(questionnaireRest.context()), csvContent);
-        return questionnaireComponent.createFromModel(questionnaire);
+        PreparedQuestionnaire prepareQuestionnaire = questionnaireUseCase.prepareQuestionnaire(
+                questionnaireRest.poguesId(),
+                ContextRest.toModel(questionnaireRest.context()),
+                dataContent);
+
+        // Async method
+        questionnaireUseCase.addQuestionnaire(prepareQuestionnaire);
+        return ResponseEntity.accepted().body(questionnaireComponent.createFromModel(prepareQuestionnaire.getQuestionnaire()));
     }
+
 
     /**
      * @param questionnaireId questionnaire id
-     * @param context         insee context
-     * @param interrogationData  csv content of survey units
+     * @param interrogationData  csv/json content of survey units
      * @return the updated questionnaire
      */
-    @PostMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest saveQuestionnaire(
+    public ResponseEntity<QuestionnaireRest> updateQuestionnaire(
             @PathVariable Long questionnaireId,
-            @RequestPart(name = "context") ContextRest context,
+            @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
             @RequestPart(name = "interrogationData", required = false) MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
-        byte[] csvContent = null;
+        byte[] dataContent;
         if (interrogationData != null) {
-            csvContent = interrogationData.getBytes();
-            csvUseCase.validateInterrogations(csvContent, questionnaireId);
+            dataContent = interrogationData.getBytes();
         } else {
-            csvContent = questionnaireUseCase.getInterrogationData(questionnaireId);
-            csvUseCase.validateInterrogations(csvContent, questionnaireId);
+            dataContent = questionnaireUseCase.getInterrogationData(questionnaireId);
         }
-        Questionnaire questionnaire = questionnaireUseCase.updateQuestionnaire(questionnaireId, ContextRest.toModel(context), csvContent);
-        return questionnaireComponent.createFromModel(questionnaire);
+        interroUseCase.validateInterrogations(dataContent, questionnaireId);
+
+        PreparedQuestionnaire prepareQuestionnaire = questionnaireUseCase.prepareUpdateQuestionnaire(
+                questionnaireId,
+                ContextRest.toModel(questionnaireRest.context()),
+                dataContent);
+
+        // Async method
+        questionnaireUseCase.updateQuestionnaire(prepareQuestionnaire);
+        return ResponseEntity.accepted().body(questionnaireComponent.createFromModel(prepareQuestionnaire.getQuestionnaire()));
     }
 
     /**
@@ -171,10 +176,9 @@ public class QuestionnaireController {
      *
      * @param id questionnaire id to delete
      */
-    @DeleteMapping(path = "/{id}/delete")
+    @DeleteMapping(path = "/{id}")
     @PreAuthorize(HAS_ANY_ROLE)
-    public String deleteQuestionnaire(
-            @PathVariable Long id) {
+    public String deleteQuestionnaire(@PathVariable Long id) {
         questionnaireUseCase.deleteQuestionnaire(id);
         return "{}";
     }
@@ -183,7 +187,8 @@ public class QuestionnaireController {
     /**
      * @return generic errors when csv parsing errors
      */
-    @ExceptionHandler({InterrogationsGlobalValidationException.class,
+    @ExceptionHandler({
+            InterrogationsGlobalValidationException.class,
             CsvException.class,
             CsvRuntimeException.class,
             InterrogationsSpecificValidationException.class,
