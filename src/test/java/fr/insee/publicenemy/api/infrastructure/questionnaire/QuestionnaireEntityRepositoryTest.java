@@ -55,5 +55,6 @@ class QuestionnaireEntityRepositoryTest {
         assertEquals(savedQuestionnaire.isSynchronized(), questionnaire.isSynchronized());
         assertEquals(savedQuestionnaire.getPersonalizationState(), questionnaire.getPersonalizationState());
         assertEquals(savedQuestionnaire.getLabel(), questionnaire.getLabel());
+        assertEquals(savedQuestionnaire.getVersionId(), questionnaire.getVersionId());
     }
 }
