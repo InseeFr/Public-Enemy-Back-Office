@@ -1,13 +1,12 @@
 package fr.insee.publicenemy.api.application.usecase;
 
-import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
+import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QuestionnairePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,29 +29,70 @@ public class QuestionnaireUseCase {
         this.messageService = messageService;
     }
 
+    public boolean hasQuestionnaire(String poguesId){
+        return questionnairePort.hasQuestionnaire(poguesId);
+    }
+
     /**
      * Add questionnaire
      *
      * @param poguesId   pogues questionnaire id
      * @param context    insee context
-     * @param csvContent survey unit data file (csv)
+     * @param interrogationData survey unit data file (csv)
      * @return the saved questionnaire
      */
-    public Questionnaire addQuestionnaire(String poguesId, Context context, byte[] csvContent) {
-        log.info(String.format("%s: create questionnaire", poguesId));
-        if (questionnairePort.hasQuestionnaire(poguesId)) {
+
+    public PreparedQuestionnaire prepareQuestionnaire(String poguesId, Context context, byte[] interrogationData){
+        if (hasQuestionnaire(poguesId)) {
             throw new ServiceException(HttpStatus.CONFLICT, messageService.getMessage("questionnaire.exists", poguesId));
         }
         QuestionnaireModel questionnaireModel = poguesUseCase.getQuestionnaireModel(poguesId);
+        Questionnaire questionnaire = questionnairePort.addQuestionnaire(new Questionnaire(questionnaireModel, context, interrogationData));
+        return new PreparedQuestionnaire(questionnaire, questionnaireModel);
+    }
 
-        Questionnaire questionnaire = new Questionnaire(questionnaireModel, context, csvContent);
-        questionnaire = questionnairePort.addQuestionnaire(questionnaire);
+    public PreparedQuestionnaire prepareUpdateQuestionnaire(Long id, Context updatedContext, byte[] updatedInterrogationData){
+        Questionnaire questionnaire = getQuestionnaire(id);
+        log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
+        QuestionnaireModel latestQuestionnaireModel = poguesUseCase.getQuestionnaireModel(questionnaire.getPoguesId());
+        questionnaire.setContext(updatedContext);
+        questionnaire.setInterrogationData(updatedInterrogationData);
+        questionnaire.setLabel(latestQuestionnaireModel.label());
+        return new PreparedQuestionnaire(questionnaire, latestQuestionnaireModel);
+    }
 
-        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
-        questionnaire.setSynchronized(true);
-        // update questionnaire to save the synchronisation state adn update interrogationDat (unsuccessful in case of throwed ServiceException)
+    @Async
+    public void addQuestionnaire(PreparedQuestionnaire preparedQuestionnaire) {
+        log.info(String.format("%s: create questionnaire", preparedQuestionnaire.getQuestionnaire().getId()));
+        queenUseCase.synchronizeCreateAsync(preparedQuestionnaire.getQuestionnaireModel(), preparedQuestionnaire.getQuestionnaire()).exceptionally(ex -> {
+            log.error("Error during creation of personalization");
+            preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
+            return null;
+        }).thenRun(() -> questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire()));
+    }
+
+    /**
+     * Update questionnaire
+     *
+     * @param preparedQuestionnaire questionnaire id
+     * @return the saved questionnaire
+     */
+    @Async
+    public void updateQuestionnaire(PreparedQuestionnaire preparedQuestionnaire) {
+        Questionnaire questionnaire = preparedQuestionnaire.getQuestionnaire();
+
+        log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
+        // new synchronisation, first, set the questionnaire as not synchronized
+        questionnaire.setSynchronized(false);
+        questionnaire.setPersonalizationState(PersonalizationState.STARTED);
         questionnairePort.updateQuestionnaireState(questionnaire);
-        return questionnaire;
+
+        queenUseCase.synchronizeUpdateAsync(preparedQuestionnaire.getQuestionnaireModel(), preparedQuestionnaire.getQuestionnaire()).exceptionally(ex -> {
+            log.error("Error during updating of personalization");
+            preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
+            return null;
+        }).thenRun(() -> questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire()));
+
     }
 
     /**
@@ -106,26 +146,5 @@ public class QuestionnaireUseCase {
         queenUseCase.synchronizeDelete(questionnaire);
     }
 
-    /**
-     * Update questionnaire
-     *
-     * @param id             questionnaire id
-     * @param context        insee context
-     * @param interrogationData survey unit data file in csv format
-     * @return the saved questionnaire
-     */
-    public Questionnaire updateQuestionnaire(Long id, Context context, byte[] interrogationData) {
-        Questionnaire questionnaire = getQuestionnaire(id);
-        log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
-        // new synchronisation, first, set the questionnaire as not synchronized
-        questionnaire.setSynchronized(false);
-        questionnairePort.updateQuestionnaireState(questionnaire);
-        QuestionnaireModel questionnaireModel = poguesUseCase.getQuestionnaireModel(questionnaire.getPoguesId());
-        questionnaire.setContext(context);
-        questionnaire.setInterrogationData(interrogationData);
-        questionnaire.setLabel(questionnaireModel.label());
-        queenUseCase.synchronizeUpdate(questionnaireModel, questionnaire);
-        questionnaire.setSynchronized(true);
-        return questionnairePort.updateQuestionnaire(questionnaire);
-    }
+
 }
