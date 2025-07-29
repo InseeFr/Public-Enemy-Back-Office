@@ -27,5 +27,10 @@
             <column name="state" type="VARCHAR" defaultValue="COMPLETED"/>
         </addColumn>
     </changeSet>
+    <changeSet author="XBELTV (generated)" id="5" failOnError="false">
+        <addColumn tableName="questionnaire">
+            <column name="questionnaire_pogues_version_id" type="VARCHAR"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>
