@@ -58,6 +58,9 @@ public class QuestionnaireUseCase {
         questionnaire.setContext(updatedContext);
         questionnaire.setInterrogationData(updatedInterrogationData);
         questionnaire.setLabel(latestQuestionnaireModel.label());
+        questionnaire.setPersonalizationState(PersonalizationState.STARTED);
+        questionnaire.setSynchronized(false);
+        questionnairePort.updateQuestionnaireState(questionnaire);
         return new PreparedQuestionnaire(questionnaire, latestQuestionnaireModel);
     }
 
@@ -80,12 +83,7 @@ public class QuestionnaireUseCase {
     @Async
     public void updateQuestionnaire(PreparedQuestionnaire preparedQuestionnaire) {
         Questionnaire questionnaire = preparedQuestionnaire.getQuestionnaire();
-
         log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
-        // new synchronisation, first, set the questionnaire as not synchronized
-        questionnaire.setSynchronized(false);
-        questionnaire.setPersonalizationState(PersonalizationState.STARTED);
-        questionnairePort.updateQuestionnaireState(questionnaire);
 
         queenUseCase.synchronizeUpdateAsync(preparedQuestionnaire.getQuestionnaireModel(), preparedQuestionnaire.getQuestionnaire()).exceptionally(ex -> {
             log.error("Error during updating of personalization");

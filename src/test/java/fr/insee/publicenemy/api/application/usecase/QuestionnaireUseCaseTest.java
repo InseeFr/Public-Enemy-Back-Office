@@ -73,6 +73,6 @@ class QuestionnaireUseCaseTest {
         when(queenUseCase.synchronizeUpdateAsync(questionnaireModel, questionnaire)).thenReturn(CompletableFuture.runAsync(()-> {}));
         questionnaireUseCase.updateQuestionnaire(new PreparedQuestionnaire(questionnaire, questionnaireModel));
         verify(queenUseCase, times(1)).synchronizeUpdateAsync(questionnaireModel, questionnaire);
-        verify(questionnairePort, times(2)).updateQuestionnaireState(questionnaire);
+        verify(questionnairePort, times(1)).updateQuestionnaireState(questionnaire);
     }
 }
