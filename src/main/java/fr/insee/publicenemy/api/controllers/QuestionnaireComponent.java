@@ -32,6 +32,6 @@ public class QuestionnaireComponent {
         }
 
         return new QuestionnaireRest(questionnaire.getId(), questionnaire.getPoguesId(), questionnaire.getLabel(),
-                contextRest, modesRest, questionnaire.isSynchronized(), questionnaire.getPersonalizationState(), questionnaire.isOutdated());
+                contextRest, modesRest, questionnaire.getPersonalizationState(), questionnaire.isOutdated());
     }
 }

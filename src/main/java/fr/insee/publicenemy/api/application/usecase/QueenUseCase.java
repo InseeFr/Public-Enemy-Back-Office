@@ -128,8 +128,6 @@ public class QueenUseCase {
         List<Mode> modes = questionnaireModel.modes();
         List<QuestionnaireMode> questionnaireModes = new ArrayList<>(questionnaire.getQuestionnaireModes());
 
-        log.info(String.format("%s is synchronized: %b", questionnaire.getPoguesId(), questionnaire.isSynchronized()));
-
         // retrieve questionnaire modes not in DDI (these modes need to be deleted) and delete them
         questionnaire.getQuestionnaireModes().stream()
                 .filter(questionnaireMode -> !modes.contains(questionnaireMode.getMode()))
@@ -166,7 +164,6 @@ public class QueenUseCase {
                 });
         questionnaire.setQuestionnaireModes(questionnaireModes);
         questionnaire.setPersonalizationState(PersonalizationState.COMPLETED);
-        questionnaire.setSynchronized(true);
     }
 
     /**

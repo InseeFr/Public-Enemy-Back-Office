@@ -58,7 +58,6 @@ public class QuestionnaireUseCase {
         questionnaire.setInterrogationData(updatedInterrogationData);
         questionnaire.setLabel(latestQuestionnaireModel.label());
         questionnaire.setPersonalizationState(PersonalizationState.STARTED);
-        questionnaire.setSynchronized(false);
         questionnairePort.updateQuestionnaireState(questionnaire);
         return new PreparedQuestionnaire(questionnaire, latestQuestionnaireModel);
     }

@@ -27,7 +27,7 @@ class QuestionnaireEntityRepositoryTest {
     @Test
     void shouldSaveQuestionnaire() {
         List<QuestionnaireMode> questionnaireModes = QuestionnaireMode.toModel(List.of(Mode.CAWI, Mode.CAPI));
-        QuestionnaireEntity questionnaire = new QuestionnaireEntity("ae3z1rz", "uuid", "questionnaire label", Context.BUSINESS, questionnaireModes, "content".getBytes(), false, PersonalizationState.COMPLETED.name());
+        QuestionnaireEntity questionnaire = new QuestionnaireEntity("ae3z1rz", "uuid", "questionnaire label", Context.BUSINESS, questionnaireModes, "content".getBytes(), PersonalizationState.COMPLETED.name());
         QuestionnaireEntity savedQuestionnaire = repository.saveAndFlush(questionnaire);
         assertThat(savedQuestionnaire).usingRecursiveComparison().ignoringFields("id").isEqualTo(questionnaire);
     }
@@ -41,7 +41,7 @@ class QuestionnaireEntityRepositoryTest {
     @Test
     void onFindByIdReturnsCorrectQuestionnaire() {
         List<QuestionnaireMode> questionnaireModes = QuestionnaireMode.toModel(List.of(Mode.CAWI, Mode.CAPI));
-        QuestionnaireEntity questionnaire = new QuestionnaireEntity("l8wwljbo", "uuid","questionnaire_label 1", Context.HOUSEHOLD, questionnaireModes, "content1".getBytes(), true, PersonalizationState.COMPLETED.name());
+        QuestionnaireEntity questionnaire = new QuestionnaireEntity("l8wwljbo", "uuid","questionnaire_label 1", Context.HOUSEHOLD, questionnaireModes, "content1".getBytes(), PersonalizationState.COMPLETED.name());
         QuestionnaireEntity savedQuestionnaire = repository.findById(1L).get();
         assertEquals(1L, savedQuestionnaire.getId());
         List<QuestionnaireModeEntity> modes = savedQuestionnaire.getModeEntities();
@@ -52,7 +52,6 @@ class QuestionnaireEntityRepositoryTest {
         assertEquals("OK", modes.get(1).getSynchronisationState());
         assertEquals(savedQuestionnaire.getContext(), questionnaire.getContext());
         assertEquals(savedQuestionnaire.getPoguesId(), questionnaire.getPoguesId());
-        assertEquals(savedQuestionnaire.isSynchronized(), questionnaire.isSynchronized());
         assertEquals(savedQuestionnaire.getPersonalizationState(), questionnaire.getPersonalizationState());
         assertEquals(savedQuestionnaire.getLabel(), questionnaire.getLabel());
         assertEquals(savedQuestionnaire.getVersionId(), questionnaire.getVersionId());
