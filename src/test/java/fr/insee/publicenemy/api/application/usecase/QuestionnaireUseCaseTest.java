@@ -62,9 +62,9 @@ class QuestionnaireUseCaseTest {
 
     @Test
     void onDeleteQuestionnaireShouldInvokeCampaignDeletionInQueen() {
-        Long questionnaireId = 1L;
-        when(questionnairePort.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
-        questionnaireUseCase.deleteQuestionnaire(questionnaireId);
+        String poguesId = "poguesId";
+        when(questionnairePort.getQuestionnaire(poguesId)).thenReturn(questionnaire);
+        questionnaireUseCase.deleteQuestionnaire(poguesId);
         verify(queenUseCase, times(1)).synchronizeDelete(questionnaire);
     }
 

@@ -51,8 +51,8 @@ public class QuestionnaireUseCase {
         return new PreparedQuestionnaire(questionnaire, questionnaireModel);
     }
 
-    public PreparedQuestionnaire prepareUpdateQuestionnaire(Long id, Context updatedContext, byte[] updatedInterrogationData){
-        Questionnaire questionnaire = getQuestionnaire(id);
+    public PreparedQuestionnaire prepareUpdateQuestionnaire(String poguesId, Context updatedContext, byte[] updatedInterrogationData){
+        Questionnaire questionnaire = getQuestionnaire(poguesId);
         QuestionnaireModel latestQuestionnaireModel = poguesUseCase.getQuestionnaireModel(questionnaire.getPoguesId());
         questionnaire.setContext(updatedContext);
         questionnaire.setInterrogationData(updatedInterrogationData);
@@ -94,11 +94,11 @@ public class QuestionnaireUseCase {
     /**
      * Get questionnaire
      *
-     * @param id questionnaire id
-     * @return the questionnaire
+     * @param questionnaireId id
+     * @return a questionnaire based on its pogues id
      */
-    public Questionnaire getQuestionnaire(Long id) {
-        Questionnaire questionnaire =  questionnairePort.getQuestionnaire(id);
+    public Questionnaire getQuestionnaire(Long questionnaireId) {
+        Questionnaire questionnaire = questionnairePort.getQuestionnaire(questionnaireId);
         computeOutdatedAttribute(questionnaire);
         return questionnaire;
     }
@@ -131,6 +131,16 @@ public class QuestionnaireUseCase {
     }
 
     /**
+     * Get interrogation data from questionnaire
+     *
+     * @param poguesId questionnaire id
+     * @return csv of interrogation
+     */
+    public byte[] getInterrogationData(String poguesId) {
+        return questionnairePort.getInterrogationData(poguesId);
+    }
+
+    /**
      * Get questionnaire list
      *
      * @return the questionnaire list
@@ -142,12 +152,12 @@ public class QuestionnaireUseCase {
     /**
      * delete questionnaire
      *
-     * @param id questionnaire id
+     * @param poguesId questionnaire id
      */
-    public void deleteQuestionnaire(Long id) {
-        Questionnaire questionnaire = questionnairePort.getQuestionnaire(id);
+    public void deleteQuestionnaire(String poguesId) {
+        Questionnaire questionnaire = questionnairePort.getQuestionnaire(poguesId);
         log.info(String.format("%s: delete questionnaire", questionnaire.getPoguesId()));
-        questionnairePort.deleteQuestionnaire(id);
+        questionnairePort.deleteQuestionnaire(poguesId);
         queenUseCase.synchronizeDelete(questionnaire);
     }
 

@@ -113,20 +113,6 @@ class InterrogationControllerTest {
     }
 
     @Test
-    void onGetSurveyUnitsShouldFetchAllInterrogations() throws Exception {
-        Long questionnaireId = 12L;
-        Mode cawi = Mode.valueOf("CAWI");
-        String questionnaireModelId = String.format("%s-%s", questionnaireId, cawi.name());
-        when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
-        when(poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
-        when(personalizationUseCase.getPersonalizationByQuestionnaireIdAndMode(questionnaireId, cawi)).thenReturn(personalizationMappings);
-        mockMvc.perform(get("/api/questionnaires/{questionnaireModelId}/modes/{mode}/interrogations", questionnaireId, cawi.name())
-                        .with(authentication(authenticatedUserTestHelper.getUser())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.interrogations.size()", is(personalizationMappings.size())));
-    }
-
-    @Test
     void onGetCsvSchemaReturnsCSVHeaders() throws Exception {
         String poguesId = "l8wwljbo";
         Set<String> headers = new HashSet<>();
