@@ -108,6 +108,7 @@ public class QueenUseCase {
         questionnaire.getQuestionnaireModes().stream()
                 .filter(qm -> qm.getMode().isWebMode())
                 .forEach(qm -> createQueenCampaign(questionnaireModel, questionnaire, qm));
+        questionnaire.setPersonalizationState(PersonalizationState.COMPLETED);
     }
 
     public CompletableFuture<Void> synchronizeCreateAsync(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
