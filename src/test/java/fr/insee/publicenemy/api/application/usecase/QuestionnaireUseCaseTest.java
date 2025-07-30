@@ -45,15 +45,15 @@ class QuestionnaireUseCaseTest {
     }
 
     @Test
-    void onAddQuestionnaireShouldInvokeCampaignCreationInQueen() {
+    void onAddQuestionnaireAsyncShouldInvokeCampaignCreationInQueen() {
         PreparedQuestionnaire preparedQuestionnaire = new PreparedQuestionnaire(questionnaire, questionnaireModel);
         when(queenUseCase.synchronizeCreateAsync(questionnaireModel, questionnaire)).thenReturn(CompletableFuture.runAsync(()-> {}));
-        questionnaireUseCase.addQuestionnaire(preparedQuestionnaire);
+        questionnaireUseCase.addQuestionnaireAsync(preparedQuestionnaire);
         verify(queenUseCase, times(1)).synchronizeCreateAsync(questionnaireModel, questionnaire);
     }
 
     @Test
-    void onAddQuestionnaireWhenQuestionnaireAlreadyExistsThrowsException() {
+    void onAddQuestionnaireWhenQuestionnaireAsyncAlreadyExistsThrowsException() {
         String poguesId = "l8wwljbo";
         Context context = Context.BUSINESS;
         when(questionnairePort.hasQuestionnaire(poguesId)).thenReturn(true);
@@ -69,9 +69,9 @@ class QuestionnaireUseCaseTest {
     }
 
     @Test
-    void onUpdateQuestionnaireShouldInvokeCampaignUpdateInQueen() {
+    void onUpdateQuestionnaireShouldInvokeCampaignUpdateInQueenAsync() {
         when(queenUseCase.synchronizeUpdateAsync(questionnaireModel, questionnaire)).thenReturn(CompletableFuture.runAsync(()-> {}));
-        questionnaireUseCase.updateQuestionnaire(new PreparedQuestionnaire(questionnaire, questionnaireModel));
+        questionnaireUseCase.updateQuestionnaireAsync(new PreparedQuestionnaire(questionnaire, questionnaireModel));
         verify(queenUseCase, times(1)).synchronizeUpdateAsync(questionnaireModel, questionnaire);
         verify(questionnairePort, times(1)).updateQuestionnaireState(questionnaire);
     }
