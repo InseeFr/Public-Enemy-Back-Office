@@ -63,13 +63,13 @@ public class QuestionnaireController {
         this.errorComponent = errorComponent;
     }
 
-
     /**
-     * @return questionnaire perso by poguesId
+     * @param poguesId questionnaire id
+     * @return questionnaire
      */
-    @GetMapping("")
+    @GetMapping("/{poguesId}")
     @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest getQuestionnairesByPoguesId(@RequestParam String poguesId) {
+    public QuestionnaireRest getQuestionnaire(@PathVariable String poguesId) {
         try {
             Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
             return questionnaireComponent.createFromModel(questionnaire);
@@ -77,34 +77,22 @@ public class QuestionnaireController {
             Questionnaire questionnaire = poguesUseCase.getQuestionnaire(poguesId);
             return questionnaireComponent.createFromModel(questionnaire);
         }
-
-    }
-
-    /**
-     * @param id questionnaire id
-     * @return questionnaire
-     */
-    @GetMapping("/{id}")
-    @PreAuthorize(HAS_ANY_ROLE)
-    public QuestionnaireRest getQuestionnaire(@PathVariable Long id) {
-        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(id);
-        return questionnaireComponent.createFromModel(questionnaire);
     }
 
 
 
     /**
-     * @param id questionnaire id
+     * @param poguesId questionnaire id
      * @return questionnaire
      */
-    @GetMapping(value = "/{id}/data")
+    @GetMapping(value = "/{poguesId}/data")
     @PreAuthorize(HAS_ANY_ROLE)
-    public ResponseEntity<byte[]> getInterrogationData(@PathVariable Long id) {
+    public ResponseEntity<byte[]> getInterrogationData(@PathVariable String poguesId) {
 
-        byte[] interrogationsData = questionnaireUseCase.getInterrogationData(id);
+        byte[] interrogationsData = questionnaireUseCase.getInterrogationData(poguesId);
         InterrogationData.FormatType dataFormat = InterrogationData.getDataFormat(interrogationsData);
         if (dataFormat != null) {
-            String filename = String.format("questionnaire-%s-data.%s", id, dataFormat.name().toLowerCase());
+            String filename = String.format("questionnaire-%s-data.%s", poguesId, dataFormat.name().toLowerCase());
             String contentType =  InterrogationData.FormatType.JSON.equals(dataFormat) ? MediaType.APPLICATION_JSON_VALUE : "text/csv";
             return ResponseEntity
                     .ok()
@@ -142,14 +130,12 @@ public class QuestionnaireController {
 
 
     /**
-     * @param questionnaireId questionnaire id
      * @param interrogationData  csv/json content of survey units
      * @return the updated questionnaire
      */
-    @PutMapping(path = "/{questionnaireId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<QuestionnaireRest> updateQuestionnaire(
-            @PathVariable Long questionnaireId,
             @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
             @RequestPart(name = "interrogationData", required = false) MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
@@ -157,12 +143,12 @@ public class QuestionnaireController {
         if (interrogationData != null) {
             dataContent = interrogationData.getBytes();
         } else {
-            dataContent = questionnaireUseCase.getInterrogationData(questionnaireId);
+            dataContent = questionnaireUseCase.getInterrogationData(questionnaireRest.poguesId());
         }
-        interroUseCase.validateInterrogations(dataContent, questionnaireId);
+        interroUseCase.validateInterrogations(dataContent, questionnaireRest.poguesId());
 
         PreparedQuestionnaire prepareQuestionnaire = questionnaireUseCase.prepareUpdateQuestionnaire(
-                questionnaireId,
+                questionnaireRest.poguesId(),
                 ContextRest.toModel(questionnaireRest.context()),
                 dataContent);
 
@@ -174,12 +160,12 @@ public class QuestionnaireController {
     /**
      * Delete questionnaire
      *
-     * @param id questionnaire id to delete
+     * @param poguesId questionnaire id to delete
      */
-    @DeleteMapping(path = "/{id}")
+    @DeleteMapping(path = "/{poguesId}")
     @PreAuthorize(HAS_ANY_ROLE)
-    public String deleteQuestionnaire(@PathVariable Long id) {
-        questionnaireUseCase.deleteQuestionnaire(id);
+    public String deleteQuestionnaire(@PathVariable String poguesId) {
+        questionnaireUseCase.deleteQuestionnaire(poguesId);
         return "{}";
     }
 

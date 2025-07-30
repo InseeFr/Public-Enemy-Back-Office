@@ -103,10 +103,10 @@ class QuestionnaireControllerTest {
 
     @Test
     void onGetQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
-        Long id = questionnaire.getId();
-        when(questionnaireUseCase.getQuestionnaire(id)).thenReturn(questionnaire);
+        String poguesId = questionnaire.getPoguesId();
+        when(questionnaireUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
 
-        mockMvc.perform(get("/api/questionnaires/{id}", id)
+        mockMvc.perform(get("/api/questionnaires/{id}", poguesId)
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(questionnaireRest.id().intValue())))
@@ -119,11 +119,11 @@ class QuestionnaireControllerTest {
 
     @Test
     void onGetSurveyUnitsDataReturnCSV() throws Exception {
-        Long id = 1L;
+        String poguesId = "poguesId";
         byte[] data = "\"att1\",\"att2\"".getBytes();
-        when(questionnaireUseCase.getInterrogationData(id)).thenReturn(data);
+        when(questionnaireUseCase.getInterrogationData(poguesId)).thenReturn(data);
 
-        MvcResult result = mockMvc.perform(get("/api/questionnaires/{id}/data", id)
+        MvcResult result = mockMvc.perform(get("/api/questionnaires/{id}/data", poguesId)
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -162,10 +162,9 @@ class QuestionnaireControllerTest {
     @Test
     void onGetQuestionnaireFromPoguesShouldFetchQuestionnaireAttributes() throws Exception {
         String poguesId = questionnaire.getPoguesId();
-        when(questionnaireUseCase.getQuestionnaire(poguesId)).thenThrow(RepositoryEntityNotFoundException.class);
-        when(poguesUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
+        when(questionnaireUseCase.getQuestionnaire(poguesId)).thenReturn(questionnaire);
 
-        mockMvc.perform(get(String.format("/api/questionnaires?poguesId=%s",poguesId))
+        mockMvc.perform(get("/api/questionnaires/{poguesId}",poguesId)
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.poguesId", is(questionnaireRest.poguesId())))
@@ -175,7 +174,7 @@ class QuestionnaireControllerTest {
 
     @Test
     void onSaveQuestionnaireWhenEmptyDataShouldFetchDataFromQuestionnaire() throws Exception {
-        QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
+        QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest(questionnaire.getPoguesId(), new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = null;
         ObjectMapper Obj = new ObjectMapper();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
@@ -185,15 +184,15 @@ class QuestionnaireControllerTest {
         MockPart contextMockPart = new MockPart("context", jsonContext.getBytes());
         contextMockPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        Long id = questionnaire.getId();
-        when(questionnaireUseCase.prepareUpdateQuestionnaire(questionnaire.getId(), Context.BUSINESS, surveyUnitData)).thenReturn(preparedQuestionnaire);
+        String poguesId = questionnaire.getPoguesId();
+        when(questionnaireUseCase.prepareUpdateQuestionnaire(questionnaire.getPoguesId(), Context.BUSINESS, surveyUnitData)).thenReturn(preparedQuestionnaire);
 
-        mockMvc.perform(multipart(HttpMethod.PUT,"/api/questionnaires/{id}", id)
+        mockMvc.perform(multipart(HttpMethod.PUT,"/api/questionnaires")
                         .part(questionnaireMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isAccepted());
-        verify(questionnaireUseCase, times(1)).getInterrogationData(id);
+        verify(questionnaireUseCase, times(1)).getInterrogationData(poguesId);
     }
 
     @Test
