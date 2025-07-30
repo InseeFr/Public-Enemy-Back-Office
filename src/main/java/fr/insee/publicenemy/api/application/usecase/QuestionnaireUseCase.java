@@ -57,8 +57,9 @@ public class QuestionnaireUseCase {
         questionnaire.setContext(updatedContext);
         questionnaire.setInterrogationData(updatedInterrogationData);
         questionnaire.setLabel(latestQuestionnaireModel.label());
+        questionnaire.setVersionId(latestQuestionnaireModel.versionId());
         questionnaire.setPersonalizationState(PersonalizationState.STARTED);
-        questionnairePort.updateQuestionnaireState(questionnaire);
+        questionnairePort.updateQuestionnaire(questionnaire);
         return new PreparedQuestionnaire(questionnaire, latestQuestionnaireModel);
     }
 
