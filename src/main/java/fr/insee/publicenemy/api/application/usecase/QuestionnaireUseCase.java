@@ -64,13 +64,25 @@ public class QuestionnaireUseCase {
     }
 
     @Async
-    public void addQuestionnaire(PreparedQuestionnaire preparedQuestionnaire) {
+    public void addQuestionnaireAsync(PreparedQuestionnaire preparedQuestionnaire) {
         log.info(String.format("%s: create questionnaire", preparedQuestionnaire.getQuestionnaire().getId()));
         queenUseCase.synchronizeCreateAsync(preparedQuestionnaire.getQuestionnaireModel(), preparedQuestionnaire.getQuestionnaire()).exceptionally(ex -> {
             log.error("Error during creation of personalization");
             preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
             return null;
         }).thenRun(() -> questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire()));
+    }
+
+    public void addQuestionnaire(PreparedQuestionnaire preparedQuestionnaire) {
+        log.info(String.format("%s: create questionnaire", preparedQuestionnaire.getQuestionnaire().getId()));
+        try {
+            queenUseCase.synchronizeCreate(preparedQuestionnaire.getQuestionnaireModel(), preparedQuestionnaire.getQuestionnaire());
+        } catch (Exception e){
+            log.error("Error during creation of personalization");
+            preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
+        } finally {
+            questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire());
+        }
     }
 
     /**
@@ -80,16 +92,27 @@ public class QuestionnaireUseCase {
      * @return the saved questionnaire
      */
     @Async
-    public void updateQuestionnaire(PreparedQuestionnaire preparedQuestionnaire) {
+    public void updateQuestionnaireAsync(PreparedQuestionnaire preparedQuestionnaire) {
         Questionnaire questionnaire = preparedQuestionnaire.getQuestionnaire();
         log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
-
         queenUseCase.synchronizeUpdateAsync(preparedQuestionnaire.getQuestionnaireModel(), preparedQuestionnaire.getQuestionnaire()).exceptionally(ex -> {
             log.error("Error during updating of personalization");
             preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
             return null;
         }).thenRun(() -> questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire()));
+    }
 
+    public void updateQuestionnaire(PreparedQuestionnaire preparedQuestionnaire) {
+        Questionnaire questionnaire = preparedQuestionnaire.getQuestionnaire();
+        log.info(String.format("%s: update questionnaire", questionnaire.getPoguesId()));
+        try {
+            queenUseCase.synchronizeUpdate(preparedQuestionnaire.getQuestionnaireModel(), preparedQuestionnaire.getQuestionnaire());
+        } catch (Exception e){
+            log.error("Error during updating of personalization");
+            preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
+        } finally {
+            questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire());
+        }
     }
 
     /**

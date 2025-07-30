@@ -72,6 +72,8 @@ feature:
     port:
   debug:
     webclient: false
+  webSocket:
+    enabled: false
 
 springdoc:
   swagger-ui:

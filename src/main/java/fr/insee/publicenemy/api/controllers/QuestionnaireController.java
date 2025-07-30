@@ -23,6 +23,7 @@ import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -53,6 +54,7 @@ public class QuestionnaireController {
 
     private final QuestionnaireComponent questionnaireComponent;
     private final InterrogationMessagesComponent messageComponent;
+    private final boolean webSocketEnabled;
 
     private static final String VALIDATION_ERROR = "validation.errors";
 
@@ -60,7 +62,8 @@ public class QuestionnaireController {
                                    InterrogationUseCase interroUseCase,
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
                                    ApiExceptionComponent errorComponent,
-                                   InterrogationMessagesComponent messageComponent) {
+                                   InterrogationMessagesComponent messageComponent,
+                                   @Value("${feature.webSocket.enabled}") boolean webSocketEnabled) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.poguesUseCase = poguesUseCase;
         this.interroUseCase = interroUseCase;
@@ -68,6 +71,7 @@ public class QuestionnaireController {
         this.messageService = messagePort;
         this.errorComponent = errorComponent;
         this.messageComponent = messageComponent;
+        this.webSocketEnabled = webSocketEnabled;
     }
 
     /**
@@ -130,8 +134,12 @@ public class QuestionnaireController {
                 ContextRest.toModel(questionnaireRest.context()),
                 dataContent);
 
-        // Async method
-        questionnaireUseCase.addQuestionnaire(prepareQuestionnaire);
+        if(webSocketEnabled){
+            // Async method
+            questionnaireUseCase.addQuestionnaireAsync(prepareQuestionnaire);
+        } else {
+            questionnaireUseCase.addQuestionnaire(prepareQuestionnaire);
+        }
         return ResponseEntity.accepted().body(questionnaireComponent.createFromModel(prepareQuestionnaire.getQuestionnaire()));
     }
 
@@ -159,8 +167,13 @@ public class QuestionnaireController {
                 ContextRest.toModel(questionnaireRest.context()),
                 dataContent);
 
-        // Async method
-        questionnaireUseCase.updateQuestionnaire(prepareQuestionnaire);
+        if(webSocketEnabled){
+            // Async method
+            questionnaireUseCase.updateQuestionnaireAsync(prepareQuestionnaire);
+        } else {
+            questionnaireUseCase.updateQuestionnaire(prepareQuestionnaire);
+        }
+
         return ResponseEntity.accepted().body(questionnaireComponent.createFromModel(prepareQuestionnaire.getQuestionnaire()));
     }
 
