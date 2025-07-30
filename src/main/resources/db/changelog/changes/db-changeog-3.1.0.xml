@@ -1,0 +1,39 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:pro="http://www.liquibase.org/xml/ns/pro" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="XBELTV (generated)" id="1">
+        <createTable tableName="personalization_mapping">
+            <column name="interrogation_id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="personalization_mapping_pkey"/>
+            </column>
+            <column name="questionnaire_id" type="INTEGER"/>
+            <column name="mode" type="VARCHAR(255)"/>
+            <column name="data_index" type="INTEGER"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="XBELTV (generated)" id="2">
+        <addForeignKeyConstraint baseColumnNames="questionnaire_id" baseTableName="personalization_mapping"
+                                 constraintName="questionnaire_id_perso_fk" deferrable="false" initiallyDeferred="false"
+                                 onDelete="CASCADE" onUpdate="NO ACTION" referencedColumnNames="id"
+                                 referencedTableName="questionnaire" validate="true"/>
+    </changeSet>
+    <changeSet author="XBELTV (generated)" id="3" failOnError="false">
+        <createIndex tableName="personalization_mapping" indexName="idx_questionnaire_mode">
+            <column name="questionnaire_id"/>
+            <column name="mode"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="XBELTV (generated)" id="4" failOnError="false">
+        <addColumn tableName="questionnaire">
+            <column name="state" type="VARCHAR" defaultValue="COMPLETED"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="XBELTV (generated)" id="5" failOnError="false">
+        <addColumn tableName="questionnaire">
+            <column name="questionnaire_pogues_version_id" type="VARCHAR"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="XBELTV (generated)" id="6" failOnError="false">
+        <dropColumn tableName="questionnaire" columnName="synchronized"/>
+    </changeSet>
+
+</databaseChangeLog>
