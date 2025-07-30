@@ -14,12 +14,12 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValid
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.*;
-import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithInterrogations;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -229,7 +229,7 @@ public class InterrogationController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrorWithInterrogations handleInterrogationsValidationException(
             InterrogationsSpecificValidationException validationException, WebRequest request) {
-        List<InterrogationErrors> errors = messageComponent.getErrors(validationException.getInterrogationsErrors());
+        List<InterrogationError> errors = messageComponent.getErrors(validationException.getInterrogationsErrors());
         return errorComponent.buildApiErrorWithInterrogations(request, validationException.getCode().value(),
                 validationException.getMessage(), errors);
     }

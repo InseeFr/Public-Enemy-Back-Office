@@ -6,7 +6,7 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidati
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataValidationResult;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,7 +62,7 @@ class InterrogationMessagesComponentTest {
         attributesValidations.add(new InterrogationDataAttributeValidationResult(atts.get(1), typeValidation));
         interrogationDataValidationResults.add(new InterrogationDataValidationResult(surveyUnitsIds.get(0), attributesValidations));
         interrogationDataValidationResults.add(new InterrogationDataValidationResult(surveyUnitsIds.get(1), attributesValidations));
-        List<InterrogationErrors> surveyUnitsErrors = component.getErrors(interrogationDataValidationResults);
+        List<InterrogationError> surveyUnitsErrors = component.getErrors(interrogationDataValidationResults);
 
 
         assertEquals(8, surveyUnitsErrors.size());

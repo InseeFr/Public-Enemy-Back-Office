@@ -4,7 +4,7 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.Interroga
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataValidationResult;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationAttributeError;
-import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +27,7 @@ public class InterrogationMessagesComponent {
      * @param interrogationDataValidationResults list of survey unit validation error objects
      * @return list of errors to be displayed for client
      */
-    public List<InterrogationErrors> getErrors(@NonNull List<InterrogationDataValidationResult> interrogationDataValidationResults) {
+    public List<InterrogationError> getErrors(@NonNull List<InterrogationDataValidationResult> interrogationDataValidationResults) {
 
         return IntStream.range(0, interrogationDataValidationResults.size())
                 .mapToObj(dataIndex -> {
@@ -37,7 +37,7 @@ public class InterrogationMessagesComponent {
                         error.attributeKey(),
                         String.valueOf(dataIndex + 1),
                         error.message());
-                        return new InterrogationErrors(dataIndex, error.attributeKey(), finalMessage);
+                        return new InterrogationError(dataIndex, error.attributeKey(), finalMessage);
                     }).toList();
                 })
                 .flatMap(Collection::stream)
