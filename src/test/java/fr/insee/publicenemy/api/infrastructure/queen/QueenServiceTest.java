@@ -6,7 +6,7 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.Interroga
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.configuration.MetadataProps;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.InterrogationsNotFoundException;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -64,8 +64,8 @@ class QueenServiceTest {
 
         QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
         List<QuestionnaireMode> questionnaireModes = List.of(questionnaireMode);
-        questionnaire = new Questionnaire(1L, "l8wwljbo", "label", Context.BUSINESS,
-                questionnaireModes, "data".getBytes(), false);
+        questionnaire = new Questionnaire(1L, "l8wwljbo", "uuid", "label", Context.BUSINESS,
+                questionnaireModes, "data".getBytes(), null, false);
     }
 
     @Test

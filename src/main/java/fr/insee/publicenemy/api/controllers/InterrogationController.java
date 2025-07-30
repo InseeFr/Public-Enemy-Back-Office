@@ -7,21 +7,20 @@ import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationIdentifierHandler;
-import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.usecase.*;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
+import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationsRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
-import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithInterrogations;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
@@ -35,8 +34,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
@@ -51,9 +51,10 @@ public class InterrogationController {
 
     private final QuestionnaireUseCase questionnaireUseCase;
 
-    private final InterrogationCsvUseCase interrogationCsvUseCase;
-
     private final InterrogationUseCase interrogationUseCase;
+    private final PersonalizationUseCase personalizationUseCase;
+
+    private final InterrogationUseCaseUtils interrogationUtils;
 
     private final I18nMessagePort messageService;
 
@@ -63,13 +64,14 @@ public class InterrogationController {
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
-    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationCsvUseCase interrogationCsvUseCase,
+    public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationUseCase, PersonalizationUseCase personalizationUseCase,
                                    I18nMessagePort messageService, InterrogationMessagesComponent messageComponent,
-                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCase interrogationUseCase) {
+                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUtils) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
-        this.interrogationCsvUseCase = interrogationCsvUseCase;
         this.interrogationUseCase = interrogationUseCase;
+        this.personalizationUseCase = personalizationUseCase;
+        this.interrogationUtils = interrogationUtils;
         this.messageService = messageService;
         this.messageComponent = messageComponent;
         this.errorComponent = errorComponent;
@@ -83,26 +85,56 @@ public class InterrogationController {
      */
     @GetMapping("/questionnaires/{questionnaireId}/modes/{modeName}/interrogations")
     @PreAuthorize(HAS_ANY_ROLE)
-    public InterrogationsRest getInterrogations(@PathVariable Long questionnaireId, @PathVariable String modeName) {
+    @Deprecated(since = "3.0.0")
+    public InterrogationsRest getInterrogationsByQuestionnairesAndMode(@PathVariable Long questionnaireId, @PathVariable String modeName) {
 
-        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
-        JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
-        String questionnaireModelId = IdentifierGenerationUtils.generateQueenIdentifier(questionnaireId, Mode.valueOf(modeName));
-        List<Interrogation> interrogations = queenUseCase.getInterrogations(questionnaireModelId);
+        List<PersonalizationMapping> personalizationMappings = personalizationUseCase.getPersonalizationByQuestionnaireIdAndMode(questionnaireId, Mode.valueOf(modeName));
+
+        JsonNode nomenclatures;
+        if(!Mode.CAWI.equals(Mode.valueOf(modeName))){
+            Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
+            nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
+        } else {
+            nomenclatures = null;
+        }
 
         return new InterrogationsRest(
-                interrogations.stream().map(interrogation -> {
-                    try {
-                        return interrogationUseCase.buildInterrogationRest(
-                                interrogation,
-                                questionnaireModelId,
+                personalizationMappings.stream()
+                        .map(personalizationMapping -> interrogationUtils.buildInterrogationRest(
+                                personalizationMapping,
                                 Mode.valueOf(modeName),
-                                nomenclatures);
-                    } catch (UnsupportedEncodingException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList(),
-                questionnaireModelId);
+                                nomenclatures
+                        ))
+                        .toList());
+    }
+
+    /**
+     * @param questionnaireId questionnaire id
+     * @return all interrogations fro the questionnaire
+     */
+    @GetMapping("/questionnaires/{questionnaireId}/interrogations")
+    @PreAuthorize(HAS_ANY_ROLE)
+    public Map<Mode, List<InterrogationRest>> getInterrogationsByQuestionnaireId(@PathVariable Long questionnaireId) {
+
+        List<PersonalizationMapping> personalizationMappings = personalizationUseCase.getPersonalizationByQuestionnaireId(questionnaireId);
+        Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(questionnaireId);
+        JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
+
+        Map<Mode, List<InterrogationRest>> interrogationsByModes = new EnumMap<>(Mode.class);
+        questionnaire.getQuestionnaireModes().forEach(questionnaireMode -> {
+            interrogationsByModes.put(
+                    questionnaireMode.getMode(),
+                    personalizationMappings.stream()
+                            .filter(mapping -> questionnaireMode.getMode().equals(mapping.mode()))
+                            .map(mapping -> interrogationUtils.buildInterrogationRest(
+                                    mapping,
+                                    questionnaireMode.getMode(),
+                                    nomenclatures
+                            ))
+                            .toList());
+        });
+
+        return interrogationsByModes;
     }
 
     /**
@@ -113,9 +145,9 @@ public class InterrogationController {
     @PutMapping("/interrogations/{interrogationId}/reset")
     @PreAuthorize(HAS_ANY_ROLE)
     public String resetInterrogation(@PathVariable String interrogationId) {
-        InterrogationIdentifierHandler identifierHandler = new InterrogationIdentifierHandler(interrogationId);
-        byte[] interrogationCsvData = questionnaireUseCase.getInterrogationData(identifierHandler.getQuestionnaireId());
-        queenUseCase.resetInterrogation(interrogationId, interrogationCsvData);
+        PersonalizationMapping personalizationMapping = personalizationUseCase.getPersoMappingByInterrogationId(interrogationId);
+        byte[] interrogationData = questionnaireUseCase.getInterrogationData(personalizationMapping.questionnaireId());
+        queenUseCase.resetInterrogation(personalizationMapping, interrogationData);
         return "{}";
     }
 
@@ -136,11 +168,10 @@ public class InterrogationController {
                 String.format("attachment; filename=\"%s\"", filename));
 
         CSVWriter writer = new CSVWriter(response.getWriter());
-        InterrogationCsvHeaderLine attributes = interrogationCsvUseCase.getHeadersLine(poguesId);
+        InterrogationCsvHeaderLine attributes = interrogationUseCase.getHeadersLine(poguesId);
         writer.writeNext(attributes.headers().toArray(String[]::new));
         writer.close();
     }
-
 
     /**
      * Check Data from interrogation csv data
@@ -158,7 +189,7 @@ public class InterrogationController {
             @PathVariable String poguesId,
             @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
         byte[] csvContent = interrogation.getBytes();
-        List<ValidationWarningMessage> validationMessages = interrogationCsvUseCase.validateInterrogations(csvContent, poguesId);
+        List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(csvContent, poguesId);
 
         return validationMessages.stream()
                 .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))
