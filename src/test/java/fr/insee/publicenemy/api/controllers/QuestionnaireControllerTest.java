@@ -13,7 +13,6 @@ import fr.insee.publicenemy.api.controllers.dto.ModeRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
-import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
@@ -123,7 +121,7 @@ class QuestionnaireControllerTest {
         byte[] data = "\"att1\",\"att2\"".getBytes();
         when(questionnaireUseCase.getInterrogationData(poguesId)).thenReturn(data);
 
-        MvcResult result = mockMvc.perform(get("/api/questionnaires/{id}/data", poguesId)
+        MvcResult result = mockMvc.perform(get("/api/questionnaires/{poguesId}/data", poguesId)
                         .with(authentication(authenticatedUserTestHelper.getUser())))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -224,8 +222,7 @@ class QuestionnaireControllerTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
 
-        verify(errorComponent).buildApiErrorObject(any(), eq(HttpStatus.BAD_REQUEST),
-                eq(code));
+        verify(errorComponent, times(1)).buildApiErrorWithMessages(any(),eq(1001),eq("main error message"), any());
     }
 
     @Test
@@ -251,8 +248,7 @@ class QuestionnaireControllerTest {
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isBadRequest());
 
-        verify(errorComponent).buildApiErrorObject(any(), eq(HttpStatus.BAD_REQUEST),
-                eq(code));
+        verify(errorComponent, times(1)).buildApiErrorWithInterrogations(any(),eq(1002),eq("main error message"), any());
     }
 
 

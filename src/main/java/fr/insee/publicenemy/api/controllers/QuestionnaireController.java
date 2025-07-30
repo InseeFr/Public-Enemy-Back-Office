@@ -18,6 +18,9 @@ import fr.insee.publicenemy.api.controllers.dto.QuestionnaireAddRest;
 import fr.insee.publicenemy.api.controllers.dto.QuestionnaireRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiError;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithInterrogations;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +33,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
 
@@ -48,19 +52,22 @@ public class QuestionnaireController {
     private final I18nMessagePort messageService;
 
     private final QuestionnaireComponent questionnaireComponent;
+    private final InterrogationMessagesComponent messageComponent;
 
     private static final String VALIDATION_ERROR = "validation.errors";
 
     public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, PoguesUseCase poguesUseCase,
                                    InterrogationUseCase interroUseCase,
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
-                                   ApiExceptionComponent errorComponent) {
+                                   ApiExceptionComponent errorComponent,
+                                   InterrogationMessagesComponent messageComponent) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.poguesUseCase = poguesUseCase;
         this.interroUseCase = interroUseCase;
         this.questionnaireComponent = questionnaireComponent;
         this.messageService = messagePort;
         this.errorComponent = errorComponent;
+        this.messageComponent = messageComponent;
     }
 
     /**
@@ -174,10 +181,8 @@ public class QuestionnaireController {
      * @return generic errors when csv parsing errors
      */
     @ExceptionHandler({
-            InterrogationsGlobalValidationException.class,
             CsvException.class,
             CsvRuntimeException.class,
-            InterrogationsSpecificValidationException.class,
             CsvMultilineLimitBrokenException.class,
             CsvMalformedLineException.class
     })
@@ -185,5 +190,35 @@ public class QuestionnaireController {
     public ApiError handleCsvValidationException(WebRequest request) {
         return errorComponent.buildApiErrorObject(request, HttpStatus.BAD_REQUEST,
                 messageService.getMessage(VALIDATION_ERROR));
+    }
+
+    /**
+     * Handle global survey units errors when checking csv data
+     *
+     * @param validationException global validation exception
+     * @return list of error messages
+     */
+    @ExceptionHandler(InterrogationsGlobalValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorWithMessages handleInterrogationsGlobalValidationException(
+            InterrogationsGlobalValidationException validationException, WebRequest request) {
+        List<String> errors = validationException.getGlobalErrorMessages().stream()
+                .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))
+                .toList();
+        return errorComponent.buildApiErrorWithMessages(request, validationException.getCode().value(),
+                validationException.getMessage(), errors);
+    }
+
+    /**
+     * @param validationException specific interrogation validation exception
+     * @return list of interrogations specific errors
+     */
+    @ExceptionHandler(InterrogationsSpecificValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorWithInterrogations handleInterrogationsValidationException(
+            InterrogationsSpecificValidationException validationException, WebRequest request) {
+        List<InterrogationError> errors = messageComponent.getErrors(validationException.getInterrogationsErrors());
+        return errorComponent.buildApiErrorWithInterrogations(request, validationException.getCode().value(),
+                validationException.getMessage(), errors);
     }
 }
