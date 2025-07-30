@@ -32,5 +32,8 @@
             <column name="questionnaire_pogues_version_id" type="VARCHAR"/>
         </addColumn>
     </changeSet>
+    <changeSet author="XBELTV (generated)" id="6" failOnError="false">
+        <dropColumn tableName="questionnaire" columnName="synchronized"/>
+    </changeSet>
 
 </databaseChangeLog>

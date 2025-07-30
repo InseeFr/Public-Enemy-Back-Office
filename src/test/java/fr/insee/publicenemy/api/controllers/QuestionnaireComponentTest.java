@@ -28,14 +28,13 @@ class QuestionnaireComponentTest {
     @Test
     void onCreateFromModelReturnsAllAttributesFromQuestionnaire() {
         Questionnaire questionnaire = new Questionnaire(1L, "l8wwljbo","uuid", "label", Context.HOUSEHOLD,
-                List.of(new QuestionnaireMode(Mode.CAWI), new QuestionnaireMode(Mode.CAPI)), "content".getBytes(), true, PersonalizationState.STARTED, false);
+                List.of(new QuestionnaireMode(Mode.CAWI), new QuestionnaireMode(Mode.CAPI)), "content".getBytes(), PersonalizationState.STARTED, false);
         
         QuestionnaireRest questionnaireRest = component.createFromModel(questionnaire);
 
         assertEquals(questionnaireRest.id(), questionnaire.getId());
         assertEquals(questionnaireRest.context().name(), questionnaire.getContext().name());
         assertEquals(questionnaireRest.poguesId(), questionnaire.getPoguesId());
-        assertEquals(questionnaireRest.isSynchronized(), questionnaire.isSynchronized());
         assertEquals(questionnaireRest.label(), questionnaire.getLabel());
         assertEquals(questionnaireRest.modes().size(), questionnaire.getQuestionnaireModes().size());
         assertEquals(questionnaireRest.state(), questionnaire.getPersonalizationState());

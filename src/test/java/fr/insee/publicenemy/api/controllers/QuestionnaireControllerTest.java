@@ -89,9 +89,9 @@ class QuestionnaireControllerTest {
         for (long nbQuestionnaires = 0; nbQuestionnaires < 3; nbQuestionnaires++) {
             Long id = nbQuestionnaires + 1;
             Questionnaire q = new Questionnaire(id, "l8wwljbo" + id, "uuid", "label" + id, Context.BUSINESS,
-                    questionnaireModes, "data".getBytes(), false, PersonalizationState.STARTED, false);
+                    questionnaireModes, "data".getBytes(), PersonalizationState.STARTED, false);
             QuestionnaireRest qRest = new QuestionnaireRest(q.getId(), q.getPoguesId(),
-                    q.getLabel(), contextRest, modesRest, q.isSynchronized(), q.getPersonalizationState(), q.isOutdated());
+                    q.getLabel(), contextRest, modesRest, q.getPersonalizationState(), q.isOutdated());
             questionnaires.add(q);
             questionnairesRest.add(qRest);
 
@@ -114,8 +114,7 @@ class QuestionnaireControllerTest {
                 .andExpect(jsonPath("$.label", is(questionnaireRest.label())))
                 .andExpect(jsonPath("$.context.name", is(questionnaireRest.context().name())))
                 .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
-                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
-                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())));
+                .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())));
     }
 
     @Test
@@ -157,7 +156,6 @@ class QuestionnaireControllerTest {
                 .andExpect(jsonPath("$.context.name", is(questionnaireRest.context().name())))
                 .andExpect(jsonPath("$.context.value", is(questionnaireRest.context().name())))
                 .andExpect(jsonPath("$.modes.size()", is(questionnaireRest.modes().size())))
-                .andExpect(jsonPath("$.isSynchronized", is(questionnaireRest.isSynchronized())))
                 .andExpect(jsonPath("$.isOutdated", is(questionnaireRest.isOutdated())));
     }
 

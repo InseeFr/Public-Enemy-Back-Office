@@ -108,6 +108,7 @@ public class QueenUseCase {
         questionnaire.getQuestionnaireModes().stream()
                 .filter(qm -> qm.getMode().isWebMode())
                 .forEach(qm -> createQueenCampaign(questionnaireModel, questionnaire, qm));
+        questionnaire.setPersonalizationState(PersonalizationState.COMPLETED);
     }
 
     public CompletableFuture<Void> synchronizeCreateAsync(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
@@ -126,8 +127,6 @@ public class QueenUseCase {
     public void synchronizeUpdate(QuestionnaireModel questionnaireModel, Questionnaire questionnaire) {
         List<Mode> modes = questionnaireModel.modes();
         List<QuestionnaireMode> questionnaireModes = new ArrayList<>(questionnaire.getQuestionnaireModes());
-
-        log.info(String.format("%s is synchronized: %b", questionnaire.getPoguesId(), questionnaire.isSynchronized()));
 
         // retrieve questionnaire modes not in DDI (these modes need to be deleted) and delete them
         questionnaire.getQuestionnaireModes().stream()
@@ -165,7 +164,6 @@ public class QueenUseCase {
                 });
         questionnaire.setQuestionnaireModes(questionnaireModes);
         questionnaire.setPersonalizationState(PersonalizationState.COMPLETED);
-        questionnaire.setSynchronized(true);
     }
 
     /**
