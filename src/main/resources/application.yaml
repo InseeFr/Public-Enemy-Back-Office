@@ -72,7 +72,7 @@ feature:
     port:
   debug:
     webclient: false
-  webSocket:
+  async:
     enabled: false
 
 springdoc:

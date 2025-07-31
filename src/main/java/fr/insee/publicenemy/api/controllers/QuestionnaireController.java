@@ -54,7 +54,7 @@ public class QuestionnaireController {
 
     private final QuestionnaireComponent questionnaireComponent;
     private final InterrogationMessagesComponent messageComponent;
-    private final boolean webSocketEnabled;
+    private final boolean asyncEnabled;
 
     private static final String VALIDATION_ERROR = "validation.errors";
 
@@ -63,7 +63,7 @@ public class QuestionnaireController {
                                    QuestionnaireComponent questionnaireComponent, I18nMessagePort messagePort,
                                    ApiExceptionComponent errorComponent,
                                    InterrogationMessagesComponent messageComponent,
-                                   @Value("${feature.webSocket.enabled}") boolean webSocketEnabled) {
+                                   @Value("${feature.async.enabled}") boolean asyncEnabled) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.poguesUseCase = poguesUseCase;
         this.interroUseCase = interroUseCase;
@@ -71,7 +71,7 @@ public class QuestionnaireController {
         this.messageService = messagePort;
         this.errorComponent = errorComponent;
         this.messageComponent = messageComponent;
-        this.webSocketEnabled = webSocketEnabled;
+        this.asyncEnabled = asyncEnabled;
     }
 
     /**
@@ -134,7 +134,7 @@ public class QuestionnaireController {
                 ContextRest.toModel(questionnaireRest.context()),
                 dataContent);
 
-        if(webSocketEnabled){
+        if(asyncEnabled){
             // Async method
             questionnaireUseCase.addQuestionnaireAsync(prepareQuestionnaire);
         } else {
@@ -167,7 +167,7 @@ public class QuestionnaireController {
                 ContextRest.toModel(questionnaireRest.context()),
                 dataContent);
 
-        if(webSocketEnabled){
+        if(asyncEnabled){
             // Async method
             questionnaireUseCase.updateQuestionnaireAsync(prepareQuestionnaire);
         } else {
