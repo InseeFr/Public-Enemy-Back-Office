@@ -15,20 +15,29 @@ public class BooleanDatatypeType implements IDataType {
     }
 
     @Override
-    public DataTypeValidationResult validate(String fieldValue) {
+    public DataTypeValidationResult validate(Object fieldValue) {
         if (fieldValue == null) {
             return DataTypeValidationResult.createOkDataTypeValidation();
         }
 
-        List<String> correctValues = List.of("", "1", "0");
-        if (correctValues.contains(fieldValue)) {
+        if(fieldValue instanceof Boolean){
             return DataTypeValidationResult.createOkDataTypeValidation();
         }
+        if(fieldValue instanceof String){
+            List<String> correctValues = List.of("", "1", "0");
+            if (correctValues.contains(fieldValue)) {
+                return DataTypeValidationResult.createOkDataTypeValidation();
+            }
 
-        String delimiter = ", ";
-        String correctValuesString = String.join(delimiter, correctValues);
+            String delimiter = ", ";
+            String correctValuesString = String.join(delimiter, correctValues);
 
-        return DataTypeValidationResult.createErrorDataTypeValidation(
-                DataTypeValidationMessage.createMessage("datatype.error.boolean.incorrect-value", fieldValue, correctValuesString));
+            return DataTypeValidationResult.createErrorDataTypeValidation(
+                    DataTypeValidationMessage.createMessage("datatype.error.boolean.incorrect-value", fieldValue.toString(), correctValuesString));
+        }
+
+        return null;
+
+
     }
 }

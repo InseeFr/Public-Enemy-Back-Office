@@ -22,4 +22,6 @@ public interface QuestionnaireEntityRepository extends JpaRepository<Questionnai
     Optional<QuestionnaireEntity> findByPoguesId(String poguesId);
 
     boolean existsByPoguesId(String poguesId);
-} 
+
+    void deleteByPoguesId(String poguesId);
+}

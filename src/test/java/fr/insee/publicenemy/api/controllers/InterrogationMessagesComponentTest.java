@@ -6,8 +6,7 @@ import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidati
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataValidationResult;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.controllers.dto.InterrogationAttributeError;
-import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -48,6 +46,10 @@ class InterrogationMessagesComponentTest {
 
         when(messagePort.getMessage(eq(codes.get(0)), any())).thenReturn(codes.get(0));
         when(messagePort.getMessage(eq(codes.get(1)), any())).thenReturn(codes.get(1));
+        when(messagePort.getMessage(eq("data.error.variable.line"), any(),any(),any())).thenAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            return String.format("%s - %s. %s %s", args);
+        });
 
         List<InterrogationDataValidationResult> interrogationDataValidationResults = new ArrayList<>();
         List<InterrogationDataAttributeValidationResult> attributesValidations = new ArrayList<>();
@@ -60,19 +62,17 @@ class InterrogationMessagesComponentTest {
         attributesValidations.add(new InterrogationDataAttributeValidationResult(atts.get(1), typeValidation));
         interrogationDataValidationResults.add(new InterrogationDataValidationResult(surveyUnitsIds.get(0), attributesValidations));
         interrogationDataValidationResults.add(new InterrogationDataValidationResult(surveyUnitsIds.get(1), attributesValidations));
-        List<InterrogationErrors> surveyUnitsErrors = component.getErrors(interrogationDataValidationResults);
+        List<InterrogationError> surveyUnitsErrors = component.getErrors(interrogationDataValidationResults);
 
-        for (int index = 0; index < surveyUnitsErrors.size(); index++) {
-            InterrogationErrors interrogationErrors = surveyUnitsErrors.get(index);
-            List<InterrogationAttributeError> attributesErrors = interrogationErrors.attributesErrors();
-            assertEquals(surveyUnitsIds.get(index), interrogationErrors.interrogationId());
-            for (int indexAttributes = 0; indexAttributes < attributesErrors.size(); indexAttributes++) {
-                InterrogationAttributeError attributeErrors = attributesErrors.get(indexAttributes);
-                assertEquals(atts.get(indexAttributes), attributeErrors.attributeKey());
-                List<String> attributeMessages = attributeErrors.messages();
-                assertTrue(attributeMessages.contains(codes.get(0)));
-                assertTrue(attributeMessages.contains(codes.get(1)));
-            }
-        }
+
+        assertEquals(8, surveyUnitsErrors.size());
+        assertEquals(4, surveyUnitsErrors.stream()
+                .filter(error -> error.message().contains(codes.getFirst()))
+                .count());
+        assertEquals(4, surveyUnitsErrors.stream()
+                .filter(error -> error.message().contains(codes.getLast()))
+                .count());
+
+
     }
 }
