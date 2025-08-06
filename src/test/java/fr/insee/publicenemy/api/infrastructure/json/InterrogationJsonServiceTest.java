@@ -36,11 +36,12 @@ class InterrogationJsonServiceTest {
         this.service = new InterrogationJsonService(messageService);
     }
 
-    @Test
-    void onGetSurveyUnitsReturnCorrectCountNumber() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {"interrogation-list-data", "interrogation-data"})
+    void onGetSurveyUnitsReturnCorrectCountNumber(String dataPath) throws IOException {
         String questionnaireModelId = "13-CAPI";
 
-        String resourcePath = "src/test/resources/interrogation-list-data.json";
+        String resourcePath = String.format("src/test/resources/%s.json", dataPath);
         File file = new File(resourcePath);
         byte[] surveyUnitData = Files.readAllBytes(file.toPath());
         List<Interrogation> interrogations = service.initInterrogations(surveyUnitData, questionnaireModelId);
@@ -48,11 +49,12 @@ class InterrogationJsonServiceTest {
         assertEquals(1, interrogations.size());
     }
 
-    @Test
-    void onGetSurveyUnitsReturnCorrectSurveyUnitsInfo() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {"interrogation-list-data", "interrogation-data"})
+    void onGetSurveyUnitsReturnCorrectSurveyUnitsInfo(String dataPath) throws IOException {
         String questionnaireModelId = "13-CAPI";
 
-        String resourcePath = "src/test/resources/interrogation-list-data.json";
+        String resourcePath = String.format("src/test/resources/%s.json", dataPath);
         File file = new File(resourcePath);
         byte[] surveyUnitData = Files.readAllBytes(file.toPath());
 
