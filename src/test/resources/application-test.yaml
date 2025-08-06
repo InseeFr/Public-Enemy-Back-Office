@@ -22,4 +22,6 @@ spring:
       enabled: false
     swagger:
       enabled: true
+    async:
+      enabled: true
 

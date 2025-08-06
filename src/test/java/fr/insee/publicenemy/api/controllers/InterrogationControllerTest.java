@@ -1,7 +1,7 @@
 package fr.insee.publicenemy.api.controllers;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationMessage;
 import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
@@ -15,13 +15,10 @@ import fr.insee.publicenemy.api.application.exceptions.InterrogationExceptionCod
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
-import fr.insee.publicenemy.api.application.usecase.PoguesUseCase;
-import fr.insee.publicenemy.api.application.usecase.QueenUseCase;
-import fr.insee.publicenemy.api.application.usecase.QuestionnaireUseCase;
-import fr.insee.publicenemy.api.application.usecase.InterrogationCsvUseCase;
+import fr.insee.publicenemy.api.application.usecase.*;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
-import fr.insee.publicenemy.api.infrastructure.csv.InterrogationStateData;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +39,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -50,7 +46,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -65,7 +60,10 @@ class InterrogationControllerTest {
     private PoguesUseCase poguesUseCase;
 
     @MockitoBean
-    private InterrogationCsvUseCase csvUseCase;
+    private PersonalizationUseCase personalizationUseCase;
+
+    @MockitoBean
+    private InterrogationUseCase csvUseCase;
 
     @MockitoBean
     private InterrogationMessagesComponent messageComponent;
@@ -88,6 +86,9 @@ class InterrogationControllerTest {
     private List<Interrogation> interrogations;
 
     @Mock
+    private List<PersonalizationMapping> personalizationMappings;
+
+    @Mock
     private Questionnaire questionnaire;
 
 
@@ -99,22 +100,12 @@ class InterrogationControllerTest {
         interrogations.add(new Interrogation("11-CAPI-2", "q1", data, InterrogationStateData.createInitialStateData()));
         interrogations.add(new Interrogation("11-CAPI-3", "q1", data, InterrogationStateData.createInitialStateData()));
 
-        questionnaire = new Questionnaire("poguesId","label",List.of(Mode.valueOf("CAWI"), Mode.valueOf("CATI")));
-    }
+        personalizationMappings = new ArrayList<>();
+        personalizationMappings.add(new PersonalizationMapping("11-CAWI-1", 11L, Mode.CAWI, 0));
+        personalizationMappings.add(new PersonalizationMapping("11-CAWI-2", 11L, Mode.CAWI, 1));
+        personalizationMappings.add(new PersonalizationMapping("11-CAWI-3", 11L, Mode.CAWI, 2));
 
-    @Test
-    void onGetSurveyUnitsShouldFetchAllInterrogations() throws Exception {
-        Long questionnaireId = 12L;
-        Mode cawi = Mode.valueOf("CAWI");
-        String questionnaireModelId = String.format("%s-%s", questionnaireId, cawi.name());
-        when(questionnaireUseCase.getQuestionnaire(questionnaireId)).thenReturn(questionnaire);
-        when(poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId())).thenReturn(JsonNodeFactory.instance.missingNode());
-        when(queenUseCase.getInterrogations(questionnaireModelId)).thenReturn(interrogations);
-        mockMvc.perform(get("/api/questionnaires/{questionnaireId}/modes/{mode}/interrogations", questionnaireId, cawi.name())
-                        .with(authentication(authenticatedUserTestHelper.getUser())))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.interrogations.size()", is(interrogations.size())))
-                .andExpect(jsonPath("$.questionnaireModelId", is(questionnaireModelId)));
+        questionnaire = new Questionnaire("poguesId","label",List.of(Mode.valueOf("CAWI"), Mode.valueOf("CATI")));
     }
 
     @Test
@@ -137,19 +128,21 @@ class InterrogationControllerTest {
     void onCheckCorrectCsvSchemaReturnsEmptyWarningMessages() throws Exception {
         String poguesId = "l8wwljbo";
         byte[] surveyUnitData = "".getBytes();
-
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenReturn(new ArrayList<>());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals("[]", result.getResponse().getContentAsString());
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(200),
+                eq(null), eq(List.of()));
     }
 
     @Test
     void onCheckInCorrectCsvSchemaReturnsWarningMessages() throws Exception {
+
+        String validationWarningsCode = "validation.warnings";
         String poguesId = "l8wwljbo";
         byte[] surveyUnitData = "".getBytes();
         List<ValidationWarningMessage> messages = new ArrayList<>();
@@ -157,13 +150,15 @@ class InterrogationControllerTest {
         messages.add(new ValidationWarningMessage(code, "plop"));
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenReturn(messages);
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
+        when(messageService.getMessage(validationWarningsCode)).thenReturn(validationWarningsCode);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals("[\"" + code + "\"]", result.getResponse().getContentAsString());
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(200),
+                eq(validationWarningsCode), eq(List.of(code)));
     }
 
     @Test
@@ -183,7 +178,7 @@ class InterrogationControllerTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
-        verify(errorComponent).buildApiErrorWithMessages(any(), eq(InterrogationExceptionCode.SURVEY_UNIT_GLOBAL_VALIDATION_FAILED.value()),
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(InterrogationExceptionCode.INTERROGATION_GLOBAL_VALIDATION_FAILED.value()),
                 eq(surveyUnitsValidationException.getMessage()), any());
 
     }
@@ -219,16 +214,18 @@ class InterrogationControllerTest {
 
     @Test
     void onResetSurveyUnitCallResetService() throws Exception {
-        String surveyUnitId = "11-CAPI-1";
-        byte[] surveyUnitData = "".getBytes();
-        when(questionnaireUseCase.getInterrogationData(11L)).thenReturn(surveyUnitData);
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, 0);
 
-        mockMvc.perform(put("/api/interrogations/{InterrogationId}/reset", surveyUnitId)
+        byte[] surveyUnitData = "".getBytes();
+        when(questionnaireUseCase.getInterrogationData(mapping.questionnaireId())).thenReturn(surveyUnitData);
+        when(personalizationUseCase.getPersoMappingByInterrogationId(mapping.interrogationId())).thenReturn(mapping);
+
+        mockMvc.perform(put("/api/interrogations/{interrogationId}/reset", mapping.interrogationId())
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        verify(queenUseCase).resetInterrogation(surveyUnitId, surveyUnitData);
+        verify(queenUseCase).resetInterrogation(mapping, surveyUnitData);
     }
 }

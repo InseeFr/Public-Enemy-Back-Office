@@ -4,12 +4,14 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.Interroga
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataValidationResult;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationAttributeError;
-import fr.insee.publicenemy.api.controllers.dto.InterrogationErrors;
+import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Component
 public class InterrogationMessagesComponent {
@@ -25,15 +27,21 @@ public class InterrogationMessagesComponent {
      * @param interrogationDataValidationResults list of survey unit validation error objects
      * @return list of errors to be displayed for client
      */
-    public List<InterrogationErrors> getErrors(@NonNull List<InterrogationDataValidationResult> interrogationDataValidationResults) {
-        List<InterrogationErrors> interrogationsErrors = new ArrayList<>();
+    public List<InterrogationError> getErrors(@NonNull List<InterrogationDataValidationResult> interrogationDataValidationResults) {
 
-        for (InterrogationDataValidationResult interrogationErrors : interrogationDataValidationResults) {
-            List<InterrogationAttributeError> attributeErrors = getAttributesErrors(interrogationErrors);
-            String interrogationId = interrogationErrors.InterrogationId();
-            interrogationsErrors.add(new InterrogationErrors(interrogationId, attributeErrors));
-        }
-        return interrogationsErrors;
+        return IntStream.range(0, interrogationDataValidationResults.size())
+                .mapToObj(dataIndex -> {
+                    List<InterrogationAttributeError> errors = getAttributesErrors(interrogationDataValidationResults.get(dataIndex));
+                    return errors.stream().map(error -> {
+                        String finalMessage =  messageService.getMessage("data.error.variable.line",
+                        error.attributeKey(),
+                        String.valueOf(dataIndex + 1),
+                        error.message());
+                        return new InterrogationError(dataIndex, error.attributeKey(), finalMessage);
+                    }).toList();
+                })
+                .flatMap(Collection::stream)
+                .toList();
     }
 
     /**
@@ -43,7 +51,7 @@ public class InterrogationMessagesComponent {
     private List<InterrogationAttributeError> getAttributesErrors(InterrogationDataValidationResult interrogationErrors) {
         List<InterrogationAttributeError> attributesErrors = new ArrayList<>();
         for (InterrogationDataAttributeValidationResult attributeError : interrogationErrors.attributesValidation()) {
-            attributesErrors.add(getAttributeErrors(attributeError));
+            attributesErrors.addAll(getAttributeErrors(attributeError));
         }
         return attributesErrors;
     }
@@ -52,11 +60,10 @@ public class InterrogationMessagesComponent {
      * @param attributeErrors object containing all errors for an attribute
      * @return all error messages for an attribute error object
      */
-    private InterrogationAttributeError getAttributeErrors(InterrogationDataAttributeValidationResult attributeErrors) {
-        List<String> messages = attributeErrors.dataTypeValidationResult().errorMessages().stream()
+    private List<InterrogationAttributeError> getAttributeErrors(InterrogationDataAttributeValidationResult attributeErrors) {
+        return attributeErrors.dataTypeValidationResult().errorMessages().stream()
                 .map(validationMessage -> messageService.getMessage(validationMessage.getCode(), validationMessage.getArguments()))
+                .map(message -> new InterrogationAttributeError(attributeErrors.attributeName(), message))
                 .toList();
-
-        return new InterrogationAttributeError(attributeErrors.attributeName(), messages);
     }
 }

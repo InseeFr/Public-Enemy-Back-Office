@@ -4,8 +4,8 @@ package fr.insee.publicenemy.api.application.exceptions;
  * Code returned for exceptions
  */
 public enum InterrogationExceptionCode {
-    SURVEY_UNIT_GLOBAL_VALIDATION_FAILED(1001),
-    SURVEY_UNIT_SPECIFIC_VALIDATION_FAILED(1002);
+    INTERROGATION_GLOBAL_VALIDATION_FAILED(1001),
+    INTERROGATION_SPECIFIC_VALIDATION_FAILED(1002);
 
     private final int value;
 
