@@ -150,7 +150,7 @@ class InterrogationControllerTest {
         messages.add(new ValidationWarningMessage(code, "plop"));
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenReturn(messages);
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
-        when(messageService.getMessage(eq(validationWarningsCode))).thenReturn(validationWarningsCode);
+        when(messageService.getMessage(validationWarningsCode)).thenReturn(validationWarningsCode);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
         mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
