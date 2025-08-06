@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.controllers.exceptions.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import java.util.Date;
  */
 @Data
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiError {
     private Integer code;
     private String path;
