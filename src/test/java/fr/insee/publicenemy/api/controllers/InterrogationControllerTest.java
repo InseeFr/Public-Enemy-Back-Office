@@ -128,19 +128,21 @@ class InterrogationControllerTest {
     void onCheckCorrectCsvSchemaReturnsEmptyWarningMessages() throws Exception {
         String poguesId = "l8wwljbo";
         byte[] surveyUnitData = "".getBytes();
-
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenReturn(new ArrayList<>());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals("[]", result.getResponse().getContentAsString());
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(200),
+                eq(null), eq(List.of()));
     }
 
     @Test
     void onCheckInCorrectCsvSchemaReturnsWarningMessages() throws Exception {
+
+        String validationWarningsCode = "validation.warnings";
         String poguesId = "l8wwljbo";
         byte[] surveyUnitData = "".getBytes();
         List<ValidationWarningMessage> messages = new ArrayList<>();
@@ -148,13 +150,15 @@ class InterrogationControllerTest {
         messages.add(new ValidationWarningMessage(code, "plop"));
         when(csvUseCase.validateInterrogations(surveyUnitData, poguesId)).thenReturn(messages);
         when(messageService.getMessage(eq(code), any())).thenReturn(code);
+        when(messageService.getMessage(validationWarningsCode)).thenReturn(validationWarningsCode);
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
-        MvcResult result = mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
+        mockMvc.perform(multipart("/api/questionnaires/{poguesId}/checkdata", poguesId).file(surveyUnitMockPart)
                         .with(authentication(authenticatedUserTestHelper.getUser()))
                         .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andReturn();
-        assertEquals("[\"" + code + "\"]", result.getResponse().getContentAsString());
+        verify(errorComponent).buildApiErrorWithMessages(any(), eq(200),
+                eq(validationWarningsCode), eq(List.of(code)));
     }
 
     @Test

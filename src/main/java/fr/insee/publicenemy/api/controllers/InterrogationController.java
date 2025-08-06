@@ -153,15 +153,19 @@ public class InterrogationController {
      */
     @PostMapping(path = "/questionnaires/{poguesId}/checkdata", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
-    public List<String> checkInterrogationsData(
+    public ApiErrorWithMessages checkInterrogationsData(
             @PathVariable String poguesId,
-            @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
+            @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation,
+            WebRequest request) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
         byte[] csvContent = interrogation.getBytes();
         List<ValidationWarningMessage> validationMessages = interrogationUseCase.validateInterrogations(csvContent, poguesId);
 
-        return validationMessages.stream()
-                .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))
-                .toList();
+        return errorComponent.buildApiErrorWithMessages(request,
+                HttpStatus.OK.value(),
+                validationMessages.isEmpty() ? null : messageService.getMessage("validation.warnings"),
+                validationMessages.stream()
+                        .map(message -> messageService.getMessage(message.getCode(), message.getArguments()))
+                        .toList());
     }
 
     /**
