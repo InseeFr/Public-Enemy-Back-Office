@@ -74,13 +74,11 @@ public class InterrogationJsonService implements InterrogationJsonPort {
             JsonNode root = objectMapper.readTree(interrogationData);
             if (root.isArray()) {
                 for (JsonNode node : root) {
-                    InterrogationJsonLine jsonLine = new InterrogationJsonLine(node);
-                    result.add(jsonLine);
+                    result.add(new InterrogationJsonLine(node));
                 }
             } else {
-                throw new ServiceException(
-                        HttpStatus.NOT_ACCEPTABLE,
-                        messageService.getMessage("validation.json.not.array.error"));
+                // Fallback to root: consider we have only one survey-unit at root level
+                result.add(new InterrogationJsonLine(root));
             }
         } catch (IOException e) {
             throw new ServiceException(
