@@ -80,6 +80,7 @@ public class QuestionnaireUseCase {
         } catch (Exception e){
             log.error("Error during creation of personalization");
             preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
+            throw e;
         } finally {
             questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire());
         }
@@ -110,6 +111,7 @@ public class QuestionnaireUseCase {
         } catch (Exception e){
             log.error("Error during updating of personalization");
             preparedQuestionnaire.getQuestionnaire().setPersonalizationState(PersonalizationState.ERROR);
+            throw e;
         } finally {
             questionnairePort.updateQuestionnaireState(preparedQuestionnaire.getQuestionnaire());
         }
