@@ -16,6 +16,9 @@ public class InterrogationSerializer extends StdSerializer<InterrogationDto> {
     @Serial
     private static final long serialVersionUID = 5928430315100640987L;
 
+    private static final String COLLECTED = "COLLECTED";
+    private static final String EXTERNAL = "EXTERNAL";
+
     public InterrogationSerializer() {
         this(null);
     }
@@ -39,16 +42,31 @@ public class InterrogationSerializer extends StdSerializer<InterrogationDto> {
         jgen.writeObjectFieldStart("comment");
         jgen.writeEndObject();
         jgen.writeObjectFieldStart("data");
-        jgen.writeObjectFieldStart("EXTERNAL");
         InterrogationData data = interrogationDto.data();
         if (data != null) {
-            for (Map.Entry<String, IInterrogationDataAttributeValue<?>> attribute : data.getAttributes().entrySet()) {
-                IInterrogationDataAttributeValue<?> objectData = attribute.getValue();
-                jgen.writeObjectField(attribute.getKey(), objectData.getValue());
+            if(data.getExternalAttributes() != null) {
+                jgen.writeObjectFieldStart(EXTERNAL);
+                // External data
+                for (Map.Entry<String, IInterrogationDataAttributeValue> attribute : data.getExternalAttributes().entrySet()) {
+                    IInterrogationDataAttributeValue objectData = attribute.getValue();
+                    jgen.writeObjectField(attribute.getKey(), objectData.getValue());
+                }
+                jgen.writeEndObject(); // close EXTERNAL
+            }
+
+            if(data.getCollectedAttributes() != null){
+                jgen.writeObjectFieldStart(COLLECTED);
+                // Collected data
+                for (Map.Entry<String, IInterrogationDataAttributeValue> attribute : data.getCollectedAttributes().entrySet()) {
+                    IInterrogationDataAttributeValue objectData = attribute.getValue();
+                    jgen.writeObjectFieldStart(attribute.getKey());
+                    jgen.writeObjectField(COLLECTED, objectData.getValue());
+                    jgen.writeEndObject(); // close name of variable
+                }
+                jgen.writeEndObject(); // close COLLECTED
             }
         }
-        jgen.writeEndObject();
-        jgen.writeEndObject();
+        jgen.writeEndObject(); // close data
         jgen.writeObjectField("stateData", interrogationDto.stateData());
         jgen.writeEndObject();
     }

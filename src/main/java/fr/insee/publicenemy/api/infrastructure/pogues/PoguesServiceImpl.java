@@ -50,8 +50,10 @@ public class PoguesServiceImpl implements PoguesServicePort {
     @Override
     public QuestionnaireModel getQuestionnaireModel(@NonNull String poguesId) {
         JsonNode jsonPogues = getJsonPogues(poguesId);
+        JsonNode jsonVersion = getLatestVersion(poguesId);
         PoguesDataSummary summary = getPoguesSummary(jsonPogues);
-        return new QuestionnaireModel(poguesId, summary.label(), summary.modes(), jsonPogues);
+        String versionId = getPoguesVersionId(jsonVersion);
+        return new QuestionnaireModel(poguesId, versionId, summary.label(), summary.modes(), jsonPogues);
     }
 
     @Override
@@ -93,6 +95,32 @@ public class PoguesServiceImpl implements PoguesServicePort {
         return new PoguesDataSummary(label, modes);
     }
 
+    private String getPoguesVersionId(@NonNull JsonNode jsonVersion) {
+        String versionId = "";
+        JsonNode versionIdNode =  jsonVersion.get("id");
+        if (versionIdNode != null && !versionIdNode.isNull()) {
+            versionId = versionIdNode.asText();
+        }
+        return versionId;
+    }
+
+    private JsonNode getLatestVersion(@NonNull String questionnaireId) {
+        return webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}/version/last", questionnaireId)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR))))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
+                )
+                .bodyToMono(JsonNode.class)
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR, questionnaireId)));
+    }
+
     /**
      * Get Json Pogues
      *
@@ -113,7 +141,7 @@ public class PoguesServiceImpl implements PoguesServicePort {
                                 .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
                 )
                 .bodyToMono(JsonNode.class)
-                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR, questionnaireId)));
     }
 
     private JsonNode getNomeclatureOfQuestionnaire(@NonNull String questionnaireId) {

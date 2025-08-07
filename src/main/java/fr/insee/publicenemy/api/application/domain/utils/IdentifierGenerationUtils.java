@@ -17,7 +17,7 @@ public class IdentifierGenerationUtils {
      * @param mode            mode
      * @return campaign/questionnaire-model identifier for queen
      */
-    public static String generateQueenIdentifier(Long questionnaireId, Mode mode) {
+    public static String generateCampaignAndQuestionnaireModelIdentifier(Long questionnaireId, Mode mode) {
         return String.format("%s-%s", questionnaireId, mode.name());
     }
 

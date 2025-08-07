@@ -63,6 +63,13 @@ public class QuestionnaireRepository implements QuestionnairePort {
     }
 
     @Override
+    public byte[] getInterrogationData(String poguesId) {
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findByPoguesId(poguesId)
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, poguesId)));
+        return questionnaireEntity.getInterrogationData();
+    }
+
+    @Override
     public Questionnaire addQuestionnaire(Questionnaire questionnaire) {
         QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createEntity(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
@@ -83,6 +90,11 @@ public class QuestionnaireRepository implements QuestionnairePort {
     @Override
     public void deleteQuestionnaire(Long id) {
         questionnaireEntityRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteQuestionnaire(String poguesId) {
+        questionnaireEntityRepository.deleteByPoguesId(poguesId);
     }
 
     @Override
