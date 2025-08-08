@@ -4,6 +4,8 @@ import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationSurveyUnitDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 
 import java.util.List;
@@ -39,7 +41,7 @@ public interface QueenServicePort {
      * Create interrogations for campaign
      *
      * @param questionnaireModelId questionnaire model id
-     * @param interrogations          interrogations to save
+     * @param interrogations interrogations to save
      */
     void createInterrogations(String questionnaireModelId, List<Interrogation> interrogations);
 
@@ -47,7 +49,14 @@ public interface QueenServicePort {
      * @param campaignId campaign id
      * @return list of all interrogations for a campaign
      */
-    List<Interrogation> getInterrogations(String campaignId);
+    List<InterrogationDto> getInterrogations(String campaignId);
+
+
+    /**
+     * @param interrogationId interrogation id
+     * @return interrogation according interrogation id
+     */
+    InterrogationDto getInterrogation(String interrogationId);
 
     /**
      * @param questionnaireModelId questionnaire model id
@@ -65,4 +74,6 @@ public interface QueenServicePort {
     void deteteInterrogation(Interrogation interrogation);
 
     void createInterrogation(String questionnaireId, Interrogation interrogation);
+
+    List<InterrogationSurveyUnitDto> getInterrogationsBySurveyUnit(String surveyUnitId);
 }

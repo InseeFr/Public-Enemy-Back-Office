@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -67,9 +66,7 @@ public class PoguesUseCase {
      * @return variables type for a questionnaire. It only returns external variables right now
      */
     public List<VariableType> getQuestionnaireVariables(String questionnaireId) {
-        List<VariableType> variables = poguesServicePort.getQuestionnaireVariables(questionnaireId);
-        // return only external variables types (may be extended later)
-        return variables.stream().filter(variable -> variable.type() == VariableTypeEnum.EXTERNAL).toList();
+        return poguesServicePort.getQuestionnaireVariables(questionnaireId);
     }
 
     public JsonNode getNomenclatureOfQuestionnaire(String poguesId){

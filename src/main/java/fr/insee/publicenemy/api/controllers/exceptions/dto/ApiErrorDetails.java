@@ -1,5 +1,6 @@
 package fr.insee.publicenemy.api.controllers.exceptions.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 public class ApiErrorDetails<T> extends ApiError {
     @JsonProperty("details")
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private T details;
 
     /**

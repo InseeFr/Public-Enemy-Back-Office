@@ -4,10 +4,12 @@ import fr.insee.publicenemy.api.configuration.PropertiesLogger;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication(scanBasePackages = "fr.insee.publicenemy")
 @EnableTransactionManagement
+@EnableAsync
 @ConfigurationPropertiesScan
 public class PublicEnemyApplication {
 
