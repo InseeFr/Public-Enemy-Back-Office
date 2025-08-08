@@ -6,13 +6,16 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Getter
 @Setter
 @EqualsAndHashCode
 @ToString
+@Slf4j
 public class DurationDatatypeType implements IDataType {
-
     /**
      * used to check that a field value is equals or greater to that minimum field
      */
@@ -38,7 +41,8 @@ public class DurationDatatypeType implements IDataType {
 
     @Override
     public DataTypeValidationResult validate(Object fieldValue) {
-        throw new IllegalArgumentException("Validate method is not yet implemented");
+        log.warn("Validate method of DURATION field is not yet implemented");
+        return DataTypeValidationResult.createOkDataTypeValidation();
     }
 }
 

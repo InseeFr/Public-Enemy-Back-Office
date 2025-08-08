@@ -5,10 +5,7 @@ import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrog
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValidationResult;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataValidationResult;
-import fr.insee.publicenemy.api.application.domain.model.pogues.DataTypeValidationResult;
-import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationErrorMessage;
-import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
-import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import fr.insee.publicenemy.api.application.domain.model.pogues.*;
 import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
@@ -106,7 +103,7 @@ public class InterrogationUseCase {
         }
 
         Interrogation su = interrogations.get(0);
-        List<ValidationErrorMessage> missingVariablesMessages = getMissingVariablesMessages(su, variablesType);
+        List<ValidationErrorMessage> missingVariablesMessages = getMissingExternalVariablesMessages(su, variablesType);
         if (!missingVariablesMessages.isEmpty()) {
             throw new InterrogationsGlobalValidationException(messageService.getMessage(VALIDATION_ERROR), missingVariablesMessages);
         }
@@ -128,12 +125,13 @@ public class InterrogationUseCase {
      * @param variablesType list of defined variables for a questionnaire
      * @return messages about the missing variables on the survey unit
      */
-    private List<ValidationErrorMessage> getMissingVariablesMessages(Interrogation interrogation, List<VariableType> variablesType) {
+    private List<ValidationErrorMessage> getMissingExternalVariablesMessages(Interrogation interrogation, List<VariableType> variablesType) {
         Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getExternalAttributes();
         Set<String> attributesKeys = attributes.keySet();
 
-        // check if questionnaire variables are missing in a survey unit data
+        // check if EXTERNAL questionnaire variables are missing in a survey unit data
         return variablesType.stream()
+                .filter(variable -> VariableTypeEnum.EXTERNAL.equals(variable.type()))
                 .map(VariableType::name)
                 .filter(variableName -> attributesKeys.stream().noneMatch(variableName::equalsIgnoreCase))
                 .map(missingVariableKey -> new ValidationErrorMessage("validation.variable.not-defined", missingVariableKey))
