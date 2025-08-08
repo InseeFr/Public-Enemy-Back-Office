@@ -34,8 +34,8 @@ public class TextDatatypeType implements IDataType {
 
     @Override
     public DataTypeValidationResult validate(Object abstractFieldValue) {
-        String fieldValue = (String) abstractFieldValue;
-        if (fieldValue == null || fieldValue.isEmpty()) {
+        String fieldValue = String.valueOf(abstractFieldValue);
+        if (abstractFieldValue == null || fieldValue == null || fieldValue.isEmpty()) {
             return DataTypeValidationResult.createOkDataTypeValidation();
         }
 

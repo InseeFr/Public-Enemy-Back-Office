@@ -46,8 +46,8 @@ public class NumericDatatypeType implements IDataType {
      * @return data validation object validation success ii successful, object validation failure otherwise
      */
     public DataTypeValidationResult validate(Object abstractFieldValue) {
-        String fieldValue = (String) abstractFieldValue;
-        if (fieldValue == null || fieldValue.isEmpty()) {
+        String fieldValue = String.valueOf(abstractFieldValue);
+        if (abstractFieldValue == null || fieldValue == null || fieldValue.isEmpty()) {
             return DataTypeValidationResult.createOkDataTypeValidation();
         }
 
@@ -63,7 +63,7 @@ public class NumericDatatypeType implements IDataType {
             numericValue = new BigDecimal(fieldValue);
         } catch (NumberFormatException nfe) {
             return DataTypeValidationResult.createErrorDataTypeValidation(
-                    DataTypeValidationMessage.createMessage("datatype.error.numeric.format"));
+                    DataTypeValidationMessage.createMessage("datatype.error.numeric.format", fieldValue));
         }
 
         List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
