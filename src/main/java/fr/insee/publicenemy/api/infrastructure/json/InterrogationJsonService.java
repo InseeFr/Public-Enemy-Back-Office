@@ -83,8 +83,18 @@ public class InterrogationJsonService implements InterrogationJsonPort {
         } catch (IOException e) {
             throw new ServiceException(
                     HttpStatus.NOT_ACCEPTABLE,
-                    messageService.getMessage("validation.json.malform.error"));
+                    messageService.getMessage("validation.json.malform.error", simplifyMessage(e.getMessage())));
         }
         return result;
+    }
+
+    /**
+     *
+     * @param input from IOException from objectMapper
+     * @return only technical message and the line of file with error
+     */
+    public static String simplifyMessage(String input) {
+        String regex = "(.*) at \\[Source: .*; (line: \\d+, column: \\d+)\\]";
+        return input.replaceAll("[\n\r]", "").replaceAll(regex,"$1 ($2)");
     }
 }
