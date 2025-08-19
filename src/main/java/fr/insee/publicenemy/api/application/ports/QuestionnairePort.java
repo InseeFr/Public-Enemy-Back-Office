@@ -50,6 +50,12 @@ public interface QuestionnairePort {
      * @param id questionnaire id to delete
      */
     void deleteQuestionnaire(Long id);
+    /**
+     * delete questionnaire
+     *
+     * @param poguesId id to delete
+     */
+    void deleteQuestionnaire(String poguesId);
 
     /**
      * update questionnaire synchronisation state
@@ -70,5 +76,13 @@ public interface QuestionnairePort {
      * @param questionnaireId questionnaire id
      * @return survey units csv data
      */
-    byte[] getSurveyUnitData(Long questionnaireId);
+    byte[] getInterrogationData(Long questionnaireId);
+
+    /**
+     * Get questionnaire
+     *
+     * @param poguesId questionnaire id
+     * @return survey units csv data
+     */
+    byte[] getInterrogationData(String poguesId);
 }

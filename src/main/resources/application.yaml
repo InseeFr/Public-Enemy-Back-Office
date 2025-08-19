@@ -72,6 +72,8 @@ feature:
     port:
   debug:
     webclient: false
+  async:
+    enabled: false
 
 springdoc:
   swagger-ui:
@@ -84,6 +86,7 @@ springdoc:
     doc-expansion: none
 
 application:
+  dataMigration: false
   public-urls:
     - /actuator/**
     - /swagger-ui/**
@@ -105,7 +108,7 @@ application:
   orchestrator:
     cawi:
       url:
-      visualize-schema: '%s/questionnaire/%s/unite-enquetee/%s'
+      visualize-schema: '%s/interrogations/%s'
     capi-cati:
       url:
       visualize-schema: '%s/queen/visualize?questionnaire=%s&data=%s&nomenclature=%s'
@@ -113,8 +116,6 @@ application:
     iteration-header-count: 1
   campaign:
     max-interrogations: 10
-  mode:
-    handle-only-cawi: false
   questionnaire:
     metadata:
       -

@@ -37,7 +37,7 @@ class QuestionnaireRepositoryTest {
     @BeforeEach
     public void init() {
         repository = new QuestionnaireRepository(questionnaireEntityRepository, messageService);
-        questionnaire = new Questionnaire(1L, "l8wwljbo", "label", Context.HOUSEHOLD, List.of(new QuestionnaireMode(Mode.CAWI)), "content".getBytes(), true);
+        questionnaire = new Questionnaire(1L, "l8wwljbo", "uuid", "label", Context.HOUSEHOLD, List.of(new QuestionnaireMode(Mode.CAWI)), "content".getBytes(), null, false);
     }
 
     @Test
@@ -97,10 +97,10 @@ class QuestionnaireRepositoryTest {
     }
 
     @Test
-    void onGetSurveyUnitDataWhenQuestionnaireNotExistsThrowRepositoryEntityNotFoundException() {
+    void onGetInterrogationDataWhenQuestionnaireNotExistsThrowRepositoryEntityNotFoundException() {
         Long questionnaireId = 1L;
         Optional<QuestionnaireEntity> emptyQuestionnaire = Optional.empty();
         when(questionnaireEntityRepository.findById(questionnaireId)).thenReturn(emptyQuestionnaire);
-        assertThrows(RepositoryEntityNotFoundException.class, () -> repository.getSurveyUnitData(questionnaireId));
+        assertThrows(RepositoryEntityNotFoundException.class, () -> repository.getInterrogationData(questionnaireId));
     }
 }

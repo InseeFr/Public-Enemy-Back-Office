@@ -56,18 +56,25 @@ public class QuestionnaireRepository implements QuestionnairePort {
     }
 
     @Override
-    public byte[] getSurveyUnitData(Long questionnaireId) {
+    public byte[] getInterrogationData(Long questionnaireId) {
         QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findById(questionnaireId)
                 .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, Long.toString(questionnaireId))));
-        return questionnaireEntity.getSurveyUnitData();
+        return questionnaireEntity.getInterrogationData();
+    }
+
+    @Override
+    public byte[] getInterrogationData(String poguesId) {
+        QuestionnaireEntity questionnaireEntity = questionnaireEntityRepository.findByPoguesId(poguesId)
+                .orElseThrow(() -> new RepositoryEntityNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_KEY, poguesId)));
+        return questionnaireEntity.getInterrogationData();
     }
 
     @Override
     public Questionnaire addQuestionnaire(Questionnaire questionnaire) {
         QuestionnaireEntity questionnaireEntity = QuestionnaireEntity.createEntity(questionnaire);
         questionnaireEntity = questionnaireEntityRepository.save(questionnaireEntity);
-        // add surveyUnitData to model as it is not retrieved in DB for perf reasons
-        return questionnaireEntity.toModel(questionnaire.getSurveyUnitData());
+        // add interrogationData to model as it is not retrieved in DB for perf reasons
+        return questionnaireEntity.toModel(questionnaire.getInterrogationData());
     }
 
     @Override
@@ -83,6 +90,11 @@ public class QuestionnaireRepository implements QuestionnairePort {
     @Override
     public void deleteQuestionnaire(Long id) {
         questionnaireEntityRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteQuestionnaire(String poguesId) {
+        questionnaireEntityRepository.deleteByPoguesId(poguesId);
     }
 
     @Override

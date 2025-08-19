@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * API Error object returned as JSON response to client including messages details
  */
-public class ApiErrorWithMessages extends ApiErrorDetails<List<String>> {
+public class ApiErrorWithMessages extends ApiErrorDetails<List<MessageError>> {
     /**
      * @param code error code
      * @param path origin request path
@@ -17,6 +17,6 @@ public class ApiErrorWithMessages extends ApiErrorDetails<List<String>> {
      * @param details specific details about this error
      */
     public ApiErrorWithMessages(int code, String path, Date timestamp, String errorMessage, @NonNull List<String> details) {
-        super(code, path, timestamp, errorMessage, details);
+        super(code, path, timestamp, errorMessage, details.stream().map(MessageError::new).toList());
     }
 }

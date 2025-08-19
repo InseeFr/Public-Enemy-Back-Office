@@ -1,9 +1,6 @@
 package fr.insee.publicenemy.api.infrastructure.questionnaire.entity;
 
-import fr.insee.publicenemy.api.application.domain.model.Context;
-import fr.insee.publicenemy.api.application.domain.model.Mode;
-import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
-import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
+import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.infrastructure.questionnaire.RepositoryEntityNotFoundException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +24,9 @@ public class QuestionnaireEntity implements Serializable {
     @NotNull
     private String poguesId;
 
+    @Column(name = "questionnaire_pogues_version_id")
+    private String versionId;
+
     @Column
     @NotNull
     private String label;
@@ -47,11 +47,12 @@ public class QuestionnaireEntity implements Serializable {
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
+    @Column(name = "survey_unit_data")
     @NotNull
-    private byte[] surveyUnitData;
+    private byte[] interrogationData;
 
-    @Column(name = "synchronized", nullable = false)
-    private boolean isSynchronized;
+    @Column(name = "state", nullable = false)
+    private String personalizationState;
 
     /**
      * Constructor
@@ -60,38 +61,39 @@ public class QuestionnaireEntity implements Serializable {
      * @param label              questionnaire label
      * @param context            insee context
      * @param questionnaireModes questionnaire modes
-     * @param surveyUnitData     csv survey unit data
-     * @param isSynchronized     is this questionnaire full synchronized with orchestrator
+     * @param interrogationData     csv interrogation data
      */
-    public QuestionnaireEntity(String poguesId, String label, Context context, List<QuestionnaireMode> questionnaireModes,
-                               @NotNull byte[] surveyUnitData, boolean isSynchronized) {
+    public QuestionnaireEntity(String poguesId, String versionId, String label, Context context, List<QuestionnaireMode> questionnaireModes,
+                               @NotNull byte[] interrogationData, String personalizationState) {
         Date date = Calendar.getInstance().getTime();
         this.poguesId = poguesId;
+        this.versionId = versionId;
         this.label = label;
         this.context = context;
         this.modeEntities = QuestionnaireModeEntity.fromModel(this, questionnaireModes);
         this.creationDate = date;
         this.updatedDate = date;
-        this.surveyUnitData = surveyUnitData;
-        this.isSynchronized = isSynchronized;
+        this.interrogationData = interrogationData;
+        this.personalizationState = personalizationState;
     }
 
     /**
      * @return application model of this questionnaire
      */
-    public Questionnaire toModel(byte[] surveyUnitData) {
-        return new Questionnaire(getId(), getPoguesId(), getLabel(),
-                getContext(), QuestionnaireModeEntity.toModel(modeEntities), surveyUnitData,
-                isSynchronized());
+    public Questionnaire toModel(byte[] interrogationData) {
+        return new Questionnaire(getId(), getPoguesId(), getVersionId(), getLabel(),
+                getContext(), QuestionnaireModeEntity.toModel(modeEntities),
+                interrogationData,
+                PersonalizationState.valueOf(personalizationState), false);
     }
 
     /**
      * @return application model of this questionnaire
      */
     public Questionnaire toModel() {
-        return new Questionnaire(getId(), getPoguesId(), getLabel(),
+        return new Questionnaire(getId(), getPoguesId(), getVersionId(), getLabel(),
                 getContext(), QuestionnaireModeEntity.toModel(modeEntities), null,
-                isSynchronized());
+                PersonalizationState.valueOf(personalizationState), false);
     }
 
     /**
@@ -101,8 +103,8 @@ public class QuestionnaireEntity implements Serializable {
      * @return the entity representation of the questionnaire
      */
     public static QuestionnaireEntity createEntity(@NonNull Questionnaire questionnaire) {
-        return new QuestionnaireEntity(questionnaire.getPoguesId(), questionnaire.getLabel(),
-                questionnaire.getContext(), questionnaire.getQuestionnaireModes(), questionnaire.getSurveyUnitData(), false);
+        return new QuestionnaireEntity(questionnaire.getPoguesId(), questionnaire.getVersionId(), questionnaire.getLabel(),
+                questionnaire.getContext(), questionnaire.getQuestionnaireModes(), questionnaire.getInterrogationData(), questionnaire.getPersonalizationState().name());
     }
 
     /**
@@ -111,10 +113,11 @@ public class QuestionnaireEntity implements Serializable {
      * @param questionnaire questionnaire to update
      */
     public void update(@NonNull Questionnaire questionnaire) {
-        byte[] questionnaireUnitData = questionnaire.getSurveyUnitData();
+        byte[] questionnaireUnitData = questionnaire.getInterrogationData();
         if (questionnaireUnitData != null && questionnaireUnitData.length > 0) {
-            setSurveyUnitData(questionnaireUnitData);
+            setInterrogationData(questionnaireUnitData);
         }
+        setVersionId(questionnaire.getVersionId());
         setContext(questionnaire.getContext());
         setLabel(questionnaire.getLabel());
         setUpdatedDate(Calendar.getInstance().getTime());
@@ -122,7 +125,7 @@ public class QuestionnaireEntity implements Serializable {
                 QuestionnaireModeEntity.fromModel(this, questionnaire.getQuestionnaireModes());
         // need to create a mutable list from the immutable one or jpa fails on merge lists
         setModeEntities(new ArrayList<>(qModeEntities));
-        setSynchronized(questionnaire.isSynchronized());
+        setPersonalizationState(questionnaire.getPersonalizationState().name());
     }
 
     /**
@@ -131,7 +134,7 @@ public class QuestionnaireEntity implements Serializable {
      * @param questionnaire with synchronisation state
      */
     public void updateState(@NotNull Questionnaire questionnaire) {
-        this.isSynchronized = questionnaire.isSynchronized();
+        this.personalizationState = questionnaire.getPersonalizationState().name();
         questionnaire.getQuestionnaireModes()
                 .forEach(questionnaireMode -> {
                     QuestionnaireModeEntity questionnaireModeEntity = getQuestionnaireModeEntity(questionnaireMode.getMode());
@@ -167,14 +170,14 @@ public class QuestionnaireEntity implements Serializable {
                 && Objects.equals(modeEntities, that.modeEntities)
                 && Objects.equals(creationDate, that.creationDate)
                 && Objects.equals(updatedDate, that.updatedDate)
-                && Arrays.equals(surveyUnitData, that.surveyUnitData)
-                && Objects.equals(isSynchronized, that.isSynchronized);
+                && Arrays.equals(interrogationData, that.interrogationData)
+                && Objects.equals(personalizationState, that.personalizationState);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, poguesId, label, context, modeEntities, creationDate, updatedDate, isSynchronized);
-        result = 31 * result + Arrays.hashCode(surveyUnitData);
+        int result = Objects.hash(id, poguesId, label, context, modeEntities, creationDate, updatedDate, personalizationState);
+        result = 31 * result + Arrays.hashCode(interrogationData);
         return result;
     }
 
@@ -183,13 +186,14 @@ public class QuestionnaireEntity implements Serializable {
         return "QuestionnaireEntity{" +
                 "id=" + id +
                 ", poguesId='" + poguesId + '\'' +
+                ", versionId='" + versionId + '\'' +
                 ", label='" + label + '\'' +
                 ", context=" + context +
                 ", modeEntities=" + modeEntities +
                 ", creationDate=" + creationDate +
                 ", updatedDate=" + updatedDate +
-                ", surveyUnitData=" + Arrays.toString(surveyUnitData) +
-                ", isSynchronized='" + isSynchronized + '\'' +
+                ", interrogationData=" + Arrays.toString(interrogationData) +
+                ", personalizationState='" + personalizationState + '\'' +
                 '}';
     }
 }

@@ -1,0 +1,104 @@
+package fr.insee.publicenemy.api.infrastructure.json;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.*;
+import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import fr.insee.publicenemy.api.infrastructure.json.exceptions.InterrogationJsonNotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(MockitoExtension.class)
+class InterrogationJsonServiceTest {
+
+    private InterrogationJsonService service;
+
+    @Mock
+    private I18nMessagePort messageService;
+
+    @BeforeEach
+    void init() {
+        this.service = new InterrogationJsonService(messageService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"interrogation-list-data", "interrogation-data"})
+    void onGetSurveyUnitsReturnCorrectCountNumber(String dataPath) throws IOException {
+        String questionnaireModelId = "13-CAPI";
+
+        String resourcePath = String.format("src/test/resources/%s.json", dataPath);
+        File file = new File(resourcePath);
+        byte[] surveyUnitData = Files.readAllBytes(file.toPath());
+        List<Interrogation> interrogations = service.initInterrogations(surveyUnitData, questionnaireModelId);
+
+        assertEquals(1, interrogations.size());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"interrogation-list-data", "interrogation-data"})
+    void onGetSurveyUnitsReturnCorrectSurveyUnitsInfo(String dataPath) throws IOException {
+        String questionnaireModelId = "13-CAPI";
+
+        String resourcePath = String.format("src/test/resources/%s.json", dataPath);
+        File file = new File(resourcePath);
+        byte[] surveyUnitData = Files.readAllBytes(file.toPath());
+
+        List<Interrogation> interrogations = service.initInterrogations(surveyUnitData, questionnaireModelId);
+
+        Interrogation interrogation = interrogations.getFirst();
+        Map<String, IInterrogationDataAttributeValue> attributes = interrogation.data().getCollectedAttributes();
+
+        InterrogationDataAttributeValue<String> bonjourValue = new InterrogationDataAttributeValue<>("Bonjour");
+        InterrogationDataAttributeValueList<String> prenomList = new InterrogationDataAttributeValueList<>();
+        prenomList.addValue("Alice");
+        prenomList.addValue("Bob");
+        assertEquals(bonjourValue, attributes.get("QUESTIONTEXT"));
+        assertEquals(prenomList, attributes.get("PRENOM"));
+
+        assertEquals("INIT", interrogation.stateData().state());
+        assertEquals("5", interrogation.stateData().currentPage());
+        assertEquals(1752053082781L, interrogation.stateData().date());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, 1})
+    void onGetCsvSurveyUnitReturnCorrectInterrogation(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
+        byte[] data = """
+        [
+            {
+                "data": { "COLLECTED": { "name": { "COLLECTED" : "value 0" } } }
+            },
+            {
+                "data": { "COLLECTED": { "name": { "COLLECTED" : "value 1" } } }
+            }
+        ]
+        """.getBytes();
+        Interrogation su = service.getJsonInterrogation(mapping, data);
+        assertEquals(("value " + dataIndex), su.data().getCollectedAttributes().get("name").getValue());
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 10})
+    void onGetCsvSurveyUnitWhenInterrogationIdIncorrectThrowsException(int dataIndex) {
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, dataIndex);
+        byte[] data = "[]".getBytes();
+        assertThrows(InterrogationJsonNotFoundException.class, () -> service.getJsonInterrogation(mapping, data));
+    }
+
+}

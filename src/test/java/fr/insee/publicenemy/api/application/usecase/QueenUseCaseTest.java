@@ -1,11 +1,12 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnit;
-import fr.insee.publicenemy.api.application.domain.model.surveyunit.SurveyUnitIdentifierHandler;
+import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
+import fr.insee.publicenemy.api.application.ports.PersonalizationPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
-import fr.insee.publicenemy.api.application.ports.SurveyUnitCsvPort;
-import fr.insee.publicenemy.api.infrastructure.csv.SurveyUnitStateData;
+import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
+import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,11 @@ class QueenUseCaseTest {
     @Mock
     private QueenServicePort queenServicePort;
     @Mock
-    private SurveyUnitCsvPort surveyUnitServicePort;
+    private InterrogationCsvPort surveyUnitServicePort;
+    @Mock
+    private InterrogationJsonPort surveyUnitJsonServicePort;
+    @Mock
+    private PersonalizationPort personalizationPort;
     @Mock
     private PoguesUseCase poguesUseCase;
     @Mock
@@ -43,7 +48,7 @@ class QueenUseCaseTest {
 
     @BeforeEach
     public void init() {
-        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, false);
+        queenUseCase = new QueenUseCase(poguesUseCase, queenServicePort, surveyUnitServicePort, surveyUnitJsonServicePort,personalizationPort);
     }
 
     @Test
@@ -142,10 +147,10 @@ class QueenUseCaseTest {
     }
 
     @Test
-    void onGetSurveyUnitsReturnSurveyUnits() {
+    void onGetSurveyUnitsReturnInterrogations() {
         String questionnaireModelId = "13-CAWI";
-        queenUseCase.getSurveyUnits(questionnaireModelId);
-        verify(queenServicePort, times(1)).getSurveyUnits(questionnaireModelId);
+        queenUseCase.getInterrogations(questionnaireModelId);
+        verify(queenServicePort, times(1)).getInterrogations(questionnaireModelId);
     }
 
     @Test
@@ -157,8 +162,8 @@ class QueenUseCaseTest {
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
 
-        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "uuid","Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "uuid", "Label", context, questionnaireModes, null, null, false);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
         verify(queenServicePort, times(0)).deleteCampaign("1-PAPI");
         verify(queenServicePort, times(1)).deleteCampaign("1-CAWI");
@@ -174,8 +179,8 @@ class QueenUseCaseTest {
         Context context = Context.HOUSEHOLD;
 
         Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
-        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "uuid","Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "uuid", "Label", context, questionnaireModes, "data".getBytes(), null, false);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
         verify(queenServicePort, times(0)).createCampaign("1-PAPI", questionnaireTest, questionnaireModelTest);
@@ -192,8 +197,8 @@ class QueenUseCaseTest {
         List<QuestionnaireMode> questionnaireModes = qModes.stream().map(QuestionnaireMode::new).toList();
         Context context = Context.HOUSEHOLD;
 
-        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "Label", context, questionnaireModes, null, false);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "uuid","Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(questionnaireId, poguesId, "uuid", "Label", context, questionnaireModes, null, null, false);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
         questionnaireTest.getQuestionnaireModes().stream()
@@ -211,8 +216,8 @@ class QueenUseCaseTest {
         Context context = Context.HOUSEHOLD;
 
         Mockito.lenient().when(poguesUseCase.getJsonLunatic(eq(this.questionnaireModel), eq(context), any())).thenReturn(jsonLunatic);
-        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "Label", modes, null);
-        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "Label", context, questionnaireModes, "data".getBytes(), false);
+        QuestionnaireModel questionnaireModelTest = new QuestionnaireModel(poguesId, "uuid","Label", modes, null);
+        Questionnaire questionnaireTest = new Questionnaire(1L, poguesId, "uuid", "Label", context, questionnaireModes, "data".getBytes(), null, false);
         queenUseCase.synchronizeUpdate(questionnaireModelTest, questionnaireTest);
 
         for (QuestionnaireMode questionnaireMode : questionnaireTest.getQuestionnaireModes()) {
@@ -224,13 +229,12 @@ class QueenUseCaseTest {
 
     @Test
     void onResetSurveyUnitCallResetService() {
-        String surveyUnitId = "11-CAPI-1";
+        PersonalizationMapping mapping = new PersonalizationMapping("11-CAPI-1", 11L, Mode.CAPI, 0);
         byte[] data = "data".getBytes();
-        SurveyUnitIdentifierHandler identifierHandler = new SurveyUnitIdentifierHandler(surveyUnitId);
-        SurveyUnit su = new SurveyUnit(surveyUnitId, "11", null, SurveyUnitStateData.createInitialStateData());
-        when(surveyUnitServicePort.getCsvSurveyUnit(identifierHandler.getSurveyUnitIdentifier(), data, identifierHandler.getQuestionnaireModelId())).thenReturn(su);
-        queenUseCase.resetSurveyUnit(surveyUnitId, data);
-        verify(queenServicePort).deteteSurveyUnit(su);
-        verify(queenServicePort).createSurveyUnit(su.questionnaireId(),su);
+        Interrogation su = new Interrogation(mapping.interrogationId(), mapping.getQuestionnaireModelId(), null, InterrogationStateData.createInitialStateData());
+        when(surveyUnitServicePort.getCsvInterrogation(mapping, data)).thenReturn(su);
+        queenUseCase.resetInterrogation(mapping, data);
+        verify(queenServicePort).deteteInterrogation(su);
+        verify(queenServicePort).createInterrogation(su.questionnaireModelId(),su);
     }
 }
