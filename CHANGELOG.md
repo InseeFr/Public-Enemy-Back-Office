@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2025-08-19
+### :sparkles: New Features
+- [`85ebb2f`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/85ebb2fa26a8b1578e053f0def772605ea764e2a) - interrogation concept and json pre collected *(PR [#131](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/131) by [@laurentC35](https://github.com/laurentC35))*
+
+
 ## [2.4.6] - 2025-06-27
 ### :sparkles: New Features
 - [`f9627e8`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/f9627e8dadd276293884a4716b22a019a9fec560) - max interrogations *(PR [#129](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/129) by [@laurentC35](https://github.com/laurentC35))*
