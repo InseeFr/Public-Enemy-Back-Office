@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.2] - 2025-08-20
+### :sparkles: New Features
+- [`ea08b8f`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/ea08b8f4634db28e11d6eb06001153bce34fe211) - more explicit message invalid json *(PR [#150](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/150) by [@laurentC35](https://github.com/laurentC35))*
+
+
 ## [3.1.0] - 2025-08-19
 ### :sparkles: New Features
 - [`85ebb2f`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/85ebb2fa26a8b1578e053f0def772605ea764e2a) - interrogation concept and json pre collected *(PR [#131](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/131) by [@laurentC35](https://github.com/laurentC35))*
@@ -104,3 +109,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [2.4.4]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.3...2.4.4
 [2.4.5]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.4...2.4.5
 [2.4.6]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/2.4.5...2.4.6
+[3.1.2]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.1...3.1.2
