@@ -5,6 +5,7 @@ import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.infrastructure.csv.exceptions.InterrogationCsvNotFoundException;
@@ -70,8 +71,10 @@ public class InterrogationCsvService implements InterrogationCsvPort {
     @Override
     public InterrogationCsvHeaderLine getInterrogationsCsvHeaders(List<VariableType> variablesType) {
         Set<String> csvHeaders = new LinkedHashSet<>();
-        variablesType.forEach(
-                variableType -> csvHeaders.addAll(getCsvHeaders(variableType)));
+        // Keep only external variables
+        variablesType.stream()
+                .filter(variable -> VariableTypeEnum.EXTERNAL.equals(variable.type()))
+                .forEach(variableType -> csvHeaders.addAll(getCsvHeaders(variableType)));
         return new InterrogationCsvHeaderLine(csvHeaders);
     }
 
