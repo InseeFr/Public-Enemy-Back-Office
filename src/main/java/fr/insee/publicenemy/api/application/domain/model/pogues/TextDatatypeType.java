@@ -41,7 +41,18 @@ public class TextDatatypeType implements IDataType {
 
         List<DataTypeValidationMessage> errorMessages = new ArrayList<>();
 
-        if (maxLength != null && fieldValue.length() > maxLength) {
+
+        /*
+         * Add new condition maxLength != 1
+         * For QCU/QCM a Suggester -> response base on id of code-list, the associated variable constructed by Pogues
+         * is mal formed. The variable is always a string of maxLength 1.
+         * But the id of code-list can have max length of 3, 4, and more.
+         *
+         * Temporarily, for checking value of variable, we skip validation length when maxLength of variable is 1.
+         *
+         * TODO: remove this condition when modeling of QCU/QCM/suggester variable will be improved.
+         */
+        if (maxLength != null && fieldValue.length() > maxLength && maxLength != 1) {
             errorMessages.add(DataTypeValidationMessage.createMessage("datatype.error.text.superior-maxlength", fieldValue, maxLength.toString(), fieldValue.length() + ""));
         }
 

@@ -48,6 +48,13 @@ class TextDatatypeTypeTest {
         assertTrue(hasValidationMessage(validation.errorMessages(), "datatype.error.text.format-pattern"));
     }
 
+    @Test
+    void onValidateWhenFieldValueDataHasMaxLengthOneReturnOkValidationObject() {
+        TextDatatypeType textType = new TextDatatypeType(1, null);
+        DataTypeValidationResult validation = textType.validate("001");
+        assertTrue(validation.isValid());
+    }
+
     Boolean hasValidationMessage(List<DataTypeValidationMessage> messages, String code) {
         return messages.stream().anyMatch(message -> message.getCode().equals(code));
     }
