@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.5] - 2025-09-01
+### :bug: Bug Fixes
+- [`af468c8`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/af468c81efdb6c8f46992868859e2ba9c9382946) - validation qcu qcm *(PR [#153](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/153) by [@laurentC35](https://github.com/laurentC35))*
+
+
 ## [3.1.4] - 2025-08-25
 ### :bug: Bug Fixes
 - [`5875489`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/587548941cf3995a4e62aa5730299bad07292b7c) - **deps**: update all minor dependencies *(PR [#152](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/152) by [@renovate[bot]](https://github.com/apps/renovate))*
@@ -122,3 +127,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [3.1.2]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.1...3.1.2
 [3.1.3]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.2...3.1.3
 [3.1.4]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.3...3.1.4
+[3.1.5]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.4...3.1.5
