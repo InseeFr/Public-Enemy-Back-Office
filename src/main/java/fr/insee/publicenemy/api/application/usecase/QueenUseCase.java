@@ -10,7 +10,6 @@ import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.PersonalizationPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationSurveyUnitDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -46,10 +45,6 @@ public class QueenUseCase {
         this.interrogationCsvService = interrogationCsvService;
         this.interrogationJsonService = interrogationJsonService;
         this.personalizationService = personalizationService;
-    }
-
-    public List<InterrogationSurveyUnitDto> getInterrogationsBySurveyUnit(String surveyUnitId){
-        return queenService.getInterrogationsBySurveyUnit(surveyUnitId);
     }
 
     /**
