@@ -178,7 +178,7 @@ public class QueenServiceImpl implements QueenServicePort {
                 .block();
     }
 
-    public List<InterrogationDto> getInterrogations(@NotNull String campaignId) {
+    public List<SimpleInterrogationDto> getInterrogations(@NotNull String campaignId) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
                 .path("/api/campaign/{id}/interrogations")
@@ -195,13 +195,13 @@ public class QueenServiceImpl implements QueenServicePort {
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                 messageService.getMessage("queen.error.campaign.su", campaignId)))
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<InterrogationDto>>() {
+                .bodyToMono(new ParameterizedTypeReference<List<SimpleInterrogationDto>>() {
                 })
                 .blockOptional()
                 .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage("queen.error.campaign.su.not-found", campaignId)));
     }
 
-    public InterrogationDto getInterrogation(@NotNull String interrogationId) {
+    public SimpleInterrogationDto getInterrogation(@NotNull String interrogationId) {
         URI uri = UriComponentsBuilder
                 .fromHttpUrl(queenUrl)
                 .path(INTERROGATION_PATH)
@@ -218,7 +218,7 @@ public class QueenServiceImpl implements QueenServicePort {
                         response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
                                 messageService.getMessage("queen.error.interrogation", interrogationId)))
                 )
-                .bodyToMono(new ParameterizedTypeReference<InterrogationDto>() {
+                .bodyToMono(new ParameterizedTypeReference<SimpleInterrogationDto>() {
                 })
                 .blockOptional()
                 .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage(INTERROGATION_NOT_FOUND_MSG, interrogationId)));
