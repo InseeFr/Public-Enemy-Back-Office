@@ -98,6 +98,8 @@ application:
   corsOrigins: 
   pogues:
     url: https://pogues-url.insee.fr
+  lunatic-pdf-api:
+    url: http://lunatic-pdf.insee.fr
   queen:
     url: https://queen-url.insee.fr
     public-url: ${application.queen.url}
