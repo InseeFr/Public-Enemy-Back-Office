@@ -10,6 +10,7 @@ import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.PersonalizationPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.SimpleInterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -51,7 +52,7 @@ public class QueenUseCase {
      * @param campaignId questionnaire model id
      * @return all interrogations linked to the campaign
      */
-    public List<InterrogationDto> getInterrogations(String campaignId) {
+    public List<SimpleInterrogationDto> getInterrogations(String campaignId) {
         return queenService.getInterrogations(campaignId);
     }
 
@@ -60,7 +61,7 @@ public class QueenUseCase {
      * @param interrogationId id of interrogation
      * @return interrogation object according interrogationId
      */
-    public InterrogationDto getInterrogation(String interrogationId){
+    public SimpleInterrogationDto getInterrogation(String interrogationId){
         return queenService.getInterrogation(interrogationId);
     }
 

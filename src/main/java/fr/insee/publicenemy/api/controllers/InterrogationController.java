@@ -7,12 +7,14 @@ import com.opencsv.exceptions.CsvMalformedLineException;
 import com.opencsv.exceptions.CsvMultilineLimitBrokenException;
 import com.opencsv.exceptions.CsvRuntimeException;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
+import fr.insee.publicenemy.api.application.domain.model.PdfRecap;
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.pogues.ValidationWarningMessage;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
+import fr.insee.publicenemy.api.application.ports.PdfServicePort;
 import fr.insee.publicenemy.api.application.usecase.*;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
 import fr.insee.publicenemy.api.controllers.exceptions.ApiExceptionComponent;
@@ -21,12 +23,14 @@ import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithInterroga
 import fr.insee.publicenemy.api.controllers.exceptions.dto.ApiErrorWithMessages;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import fr.insee.publicenemy.api.infrastructure.csv.InterrogationCsvHeaderLine;
+import fr.insee.publicenemy.api.infrastructure.queen.dto.SimpleInterrogationDto;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
@@ -60,12 +64,13 @@ public class InterrogationController {
     private final InterrogationMessagesComponent messageComponent;
 
     private final ApiExceptionComponent errorComponent;
+    private final PdfServicePort pdfServicePort;
 
     private static final String CSV_ERROR_MESSAGE = "CSV Error: ";
 
     public InterrogationController(QuestionnaireUseCase questionnaireUseCase, QueenUseCase queenUseCase, InterrogationUseCase interrogationUseCase, PersonalizationUseCase personalizationUseCase,
                                    I18nMessagePort messageService, InterrogationMessagesComponent messageComponent,
-                                   ApiExceptionComponent errorComponent, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUtils) {
+                                   ApiExceptionComponent errorComponent, PdfServicePort pdfServicePort, PoguesUseCase poguesUseCase, InterrogationUseCaseUtils interrogationUtils) {
         this.questionnaireUseCase = questionnaireUseCase;
         this.queenUseCase = queenUseCase;
         this.interrogationUseCase = interrogationUseCase;
@@ -75,6 +80,7 @@ public class InterrogationController {
         this.messageComponent = messageComponent;
         this.errorComponent = errorComponent;
         this.poguesUseCase = poguesUseCase;
+        this.pdfServicePort = pdfServicePort;
     }
     /**
      * @param poguesId questionnaire id
@@ -117,6 +123,26 @@ public class InterrogationController {
         byte[] interrogationData = questionnaireUseCase.getInterrogationData(personalizationMapping.questionnaireId());
         queenUseCase.resetInterrogation(personalizationMapping, interrogationData);
         return "{}";
+    }
+
+    /**
+     * Download pdf recapt for interrogation
+     *
+     * @param interrogationId interrogation id
+     */
+    @GetMapping("/interrogations/{interrogationId}/recap-pdf")
+    @PreAuthorize(HAS_ANY_ROLE)
+    public ResponseEntity<byte[]> getRecapPdfInterrogation(@PathVariable String interrogationId) {
+        SimpleInterrogationDto interrogation = queenUseCase.getInterrogation(interrogationId);
+
+        PdfRecap pdfRecap = pdfServicePort.getPdfFromSourceAndData(
+                interrogationUtils.buildLunaticUri(interrogation.questionnaireId()),
+                interrogation);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + pdfRecap.filename() + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfRecap.content());
     }
 
     /**
