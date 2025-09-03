@@ -74,6 +74,4 @@ public interface QueenServicePort {
     void deteteInterrogation(Interrogation interrogation);
 
     void createInterrogation(String questionnaireId, Interrogation interrogation);
-
-    List<InterrogationSurveyUnitDto> getInterrogationsBySurveyUnit(String surveyUnitId);
 }

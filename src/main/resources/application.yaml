@@ -86,7 +86,6 @@ springdoc:
     doc-expansion: none
 
 application:
-  dataMigration: false
   public-urls:
     - /actuator/**
     - /swagger-ui/**

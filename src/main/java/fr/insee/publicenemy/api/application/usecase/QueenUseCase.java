@@ -48,10 +48,6 @@ public class QueenUseCase {
         this.personalizationService = personalizationService;
     }
 
-    public List<InterrogationSurveyUnitDto> getInterrogationsBySurveyUnit(String surveyUnitId){
-        return queenService.getInterrogationsBySurveyUnit(surveyUnitId);
-    }
-
     /**
      * @param campaignId questionnaire model id
      * @return all interrogations linked to the campaign
