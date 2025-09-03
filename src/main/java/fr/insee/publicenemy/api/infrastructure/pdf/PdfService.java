@@ -7,7 +7,6 @@ import fr.insee.publicenemy.api.application.ports.PdfServicePort;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.SimpleInterrogationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
