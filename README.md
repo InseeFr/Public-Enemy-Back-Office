@@ -1,13 +1,14 @@
 # Public-Enemy-Back-Office
 Back-office services for Public-Enemy
 REST API for communication with: 
-- [Public-Enemy frontend](https://github.com/InseeFr/Public-Enemy)
+- [Pogues UI](https://github.com/InseeFr/Pogues)
 - [Pogues Backoffice](https://github.com/InseeFr/Pogues-Back-Office)
+- [Lunatic-pdf-api](https://github.com/InseeFr/lunatic-pdf-api)
 - [Eno](https://github.com/InseeFr/Eno/)
 - [Stromae backoffice](https://github.com/InseeFr/Queen-Back-Office)
 
 ## Global project concept
-Public-Enemy Backoffice (& frontend) is a tool used to test questionnaires with data. Questionnaire designer create questionnaire in pogues but can't test them with predefined data directly. Public-Enemy gives to the designer the ability to inject a questionnaire in orchestrators (stromae, queen soon), and add predefined survey units data in the orchestrators for this questionnaire.
+Public-Enemy Backoffice is a tool used to test questionnaires with data. Questionnaire designer create questionnaire in pogues but can't test them with predefined data directly. Public-Enemy gives to the designer the ability to inject a questionnaire in orchestrators (stromae, queen soon), and add predefined survey units data in the orchestrators for this questionnaire.
 
 Public-Enemy's global functionalities for a designer:
 
