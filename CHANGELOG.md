@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.6] - 2025-09-08
+### :sparkles: New Features
+- [`5640832`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/5640832fe927c2a291b2b1fad9f7918a2efe886e) - remove oldDataMigration *(PR [#155](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/155) by [@laurentC35](https://github.com/laurentC35))*
+
+### :bug: Bug Fixes
+- [`5a7e480`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/5a7e480a5efb847c59d95f22184c9b415a68407a) - **deps**: update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.13 *(PR [#157](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/157) by [@renovate[bot]](https://github.com/apps/renovate))*
+
+
 ## [3.1.5] - 2025-09-01
 ### :bug: Bug Fixes
 - [`af468c8`](https://github.com/InseeFr/Public-Enemy-Back-Office/commit/af468c81efdb6c8f46992868859e2ba9c9382946) - validation qcu qcm *(PR [#153](https://github.com/InseeFr/Public-Enemy-Back-Office/pull/153) by [@laurentC35](https://github.com/laurentC35))*
@@ -128,3 +136,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [3.1.3]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.2...3.1.3
 [3.1.4]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.3...3.1.4
 [3.1.5]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.4...3.1.5
+[3.1.6]: https://github.com/InseeFr/Public-Enemy-Back-Office/compare/3.1.5...3.1.6
