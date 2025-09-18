@@ -28,6 +28,12 @@ public class InterrogationUseCaseUtils {
     @Value("${application.queen.public-url}")
     private String apiQuestionnaire;
 
+    public String buildLunaticUri(String questionnaireModelId){
+        return String.format("%s/api/questionnaire/%s/data",
+                apiQuestionnaire,
+                questionnaireModelId);
+    }
+
     public String getUrlOfInterrogation(PersonalizationMapping personalizationMapping, Mode mode, JsonNode nomenclatures) {
         String interrogationId = personalizationMapping.interrogationId();
         String questionnaireModelId = personalizationMapping.getQuestionnaireModelId();
@@ -38,9 +44,7 @@ public class InterrogationUseCaseUtils {
                         interrogationId);
             }
             case CAPI,CATI -> {
-                String questionnaireUrl = String.format("%s/api/questionnaire/%s/data",
-                        apiQuestionnaire,
-                        questionnaireModelId);
+                String questionnaireUrl = buildLunaticUri(questionnaireModelId);
                 String dataUrl = String.format("%s/api/interrogations/%s",
                         apiQuestionnaire,
                         interrogationId);
