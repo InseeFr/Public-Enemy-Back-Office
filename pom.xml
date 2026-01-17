@@ -5,7 +5,7 @@
 
     <groupId>fr.insee</groupId>
     <artifactId>public-enemy-api</artifactId>
-    <version>3.2.4</version>
+    <version>3.2.5</version>
     <packaging>jar</packaging>
 
     <name>public-enemy-api</name>
@@ -205,7 +205,7 @@
                     <dependency>
                         <groupId>org.postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>42.7.8</version>
+                        <version>42.7.9</version>
                     </dependency>
                 </dependencies>
                 <configuration>
