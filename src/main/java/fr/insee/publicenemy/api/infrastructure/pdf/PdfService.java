@@ -35,7 +35,7 @@ public class PdfService implements PdfServicePort {
     @Override
     public PdfRecap getPdfFromSourceAndData(String lunaticUri, SimpleInterrogationDto interrogation) {
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(lunaticPdfApiUrl)
+                .fromUriString(lunaticPdfApiUrl)
                 .path("/api/pdf/generate-from-source")
                 .queryParam("source", lunaticUri)
                 .build()

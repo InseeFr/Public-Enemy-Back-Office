@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.util.*;
 
 import static fr.insee.publicenemy.api.infrastructure.json.InterrogationJsonService.simplifyMessage;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -63,7 +64,7 @@ class InterrogationJsonServiceTest {
                 invocation -> simplifyMessage(invocation.getArgument(1)));
 
         ServiceException exception = assertThrows(ServiceException.class, () -> service.initInterrogations(surveyUnitData, questionnaireModelId));
-        assertEquals("Unexpected character (']' (code 93)): was expecting double-quote to start field name (line: 4, column: 3)", exception.getMessage());
+        assertThat(exception.getMessage()).contains("Unexpected character (']' (code 93))");
     }
 
     @ParameterizedTest

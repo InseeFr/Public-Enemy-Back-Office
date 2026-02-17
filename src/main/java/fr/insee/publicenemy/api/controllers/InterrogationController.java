@@ -1,6 +1,5 @@
 package fr.insee.publicenemy.api.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvException;
 import com.opencsv.exceptions.CsvMalformedLineException;
@@ -35,6 +34,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
 import java.util.EnumMap;

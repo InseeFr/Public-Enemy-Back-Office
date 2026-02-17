@@ -1,6 +1,5 @@
 package fr.insee.publicenemy.api.infrastructure.queen;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
@@ -23,6 +22,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.JsonNode;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class QueenServiceImpl implements QueenServicePort {
         QuestionnaireModelDto questionnaireModelDto = new QuestionnaireModelDto(questionnaireModelId, questionnaireModel.label(), new ArrayList<>(), jsonLunatic.jsonContent());
 
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path("/api/questionnaire-models")
                 .build()
                 .toUri();
@@ -74,7 +74,7 @@ public class QueenServiceImpl implements QueenServicePort {
     public boolean hasQuestionnaireModel(String questionnaireModelId) {
 
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path("/api/questionnaire/{id}/data")
                 .build(questionnaireModelId);
 
@@ -100,7 +100,7 @@ public class QueenServiceImpl implements QueenServicePort {
         CampaignDto campaign = new CampaignDto(campaignId, questionnaireModel.label(), metadata);
 
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path("/api/campaign")
                 .build()
                 .toUri();
@@ -119,7 +119,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
     public void deleteCampaign(String campaignId) throws CampaignNotFoundException {
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path("/api/campaign/{id}")
                 .queryParam("force", true)
                 .build(campaignId);
@@ -142,7 +142,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
     public void createInterrogations(@NotNull String questionnaireModelId, @NotNull List<Interrogation> interrogations) {
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path("/api/campaign/{id}/interrogation")
                 .build(questionnaireModelId);
 
@@ -164,7 +164,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
         InterrogationDto interrogationDto = InterrogationDto.fromModel(interrogation);
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path("/api/campaign/{id}/interrogation")
                 .build(questionnaireModelId);
 
@@ -180,7 +180,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
     public List<SimpleInterrogationDto> getInterrogations(@NotNull String campaignId) {
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path("/api/campaign/{id}/interrogations")
                 .build(campaignId);
 
@@ -203,7 +203,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
     public SimpleInterrogationDto getInterrogation(@NotNull String interrogationId) {
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path(INTERROGATION_PATH)
                 .build(interrogationId);
 
@@ -227,7 +227,7 @@ public class QueenServiceImpl implements QueenServicePort {
     public void updateInterrogation(@NotNull Interrogation interrogation) {
         InterrogationUpdateDto interrogationUpdateDto = InterrogationUpdateDto.fromModel(interrogation);
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path(INTERROGATION_PATH)
                 .build(interrogation.id());
 
@@ -246,7 +246,7 @@ public class QueenServiceImpl implements QueenServicePort {
     @Override
     public void deteteInterrogation(Interrogation interrogation) {
         URI uri = UriComponentsBuilder
-                .fromHttpUrl(queenUrl)
+                .fromUriString(queenUrl)
                 .path(INTERROGATION_PATH)
                 .build(interrogation.id());
 

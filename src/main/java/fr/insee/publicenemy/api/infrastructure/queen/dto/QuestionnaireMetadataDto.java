@@ -1,15 +1,16 @@
 package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
 import lombok.NonNull;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.LocalDate;
 import java.time.Year;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
 @JsonSerialize(using = QuestionnaireMetadataSerializer.class)
 public record QuestionnaireMetadataDto(String inseeContext, List<MetadataAttributeDto<?>> metadataAttributes) {
 

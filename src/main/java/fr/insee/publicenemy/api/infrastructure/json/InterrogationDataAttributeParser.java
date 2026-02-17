@@ -1,11 +1,11 @@
 package fr.insee.publicenemy.api.infrastructure.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValueList;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValueListList;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import java.util.*;
 
@@ -32,8 +32,7 @@ public class InterrogationDataAttributeParser {
             return attributes;
         }
 
-        for (Iterator<String> it = targetNode.fieldNames(); it.hasNext(); ) {
-            String key = it.next();
+        for(String key : targetNode.propertyNames()){
             JsonNode valueNode = expectCollectedSubNode
                     ? targetNode.get(key).path("COLLECTED")
                     : targetNode.get(key);

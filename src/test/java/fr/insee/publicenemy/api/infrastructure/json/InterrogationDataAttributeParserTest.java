@@ -1,7 +1,8 @@
 package fr.insee.publicenemy.api.infrastructure.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValueList;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InterrogationDataAttributeParserTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = JsonMapper.builder().build();
 
     private InterrogationJsonLine createInterrogationJsonLine(String jsonContent) throws Exception {
         JsonNode node = objectMapper.readTree(jsonContent);

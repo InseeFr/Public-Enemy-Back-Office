@@ -1,7 +1,6 @@
 package fr.insee.publicenemy.api.infrastructure.pogues;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fr.insee.publicenemy.api.application.domain.model.Context;
 import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
@@ -20,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 
@@ -51,10 +51,10 @@ class EnoServiceTest {
     }
 
     @BeforeEach
-    void init() throws JsonProcessingException {
+    void init() {
         String enoUrl = String.format("http://localhost:%s", mockWebServer.getPort());
         service = new EnoServiceImpl(webClient, enoUrl);
-        when(questionnaireModel.content()).thenReturn(new ObjectMapper().readTree("{}"));
+        when(questionnaireModel.content()).thenReturn(JsonMapper.builder().build().readTree("{}"));
     }
 
     @Test

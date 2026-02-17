@@ -1,11 +1,11 @@
 package fr.insee.publicenemy.api.application.usecase;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.controllers.dto.InterrogationRest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

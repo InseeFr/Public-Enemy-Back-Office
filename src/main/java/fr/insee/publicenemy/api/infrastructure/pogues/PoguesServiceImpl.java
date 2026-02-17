@@ -1,9 +1,5 @@
 package fr.insee.publicenemy.api.infrastructure.pogues;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
@@ -20,6 +16,11 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,10 +88,10 @@ public class PoguesServiceImpl implements PoguesServicePort {
     private PoguesDataSummary getPoguesSummary(@NonNull JsonNode jsonPogues) {
         List<Mode> modes = new ArrayList<>();
         String label = "";
-        jsonPogues.get("TargetMode").forEach(node -> modes.add(Mode.valueOf(node.asText())));
+        jsonPogues.get("TargetMode").forEach(node -> modes.add(Mode.valueOf(node.asString())));
         JsonNode labelNode = jsonPogues.get("Label");
         if (!labelNode.isEmpty()) {
-            label = labelNode.get(0).asText();
+            label = labelNode.get(0).asString();
         }
         return new PoguesDataSummary(label, modes);
     }
@@ -99,7 +100,7 @@ public class PoguesServiceImpl implements PoguesServicePort {
         String versionId = "";
         JsonNode versionIdNode =  jsonVersion.get("id");
         if (versionIdNode != null && !versionIdNode.isNull()) {
-            versionId = versionIdNode.asText();
+            versionId = versionIdNode.asString();
         }
         return versionId;
     }
@@ -178,11 +179,11 @@ public class PoguesServiceImpl implements PoguesServicePort {
                 .bodyToMono(String.class)
                 .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder().build();
         try {
             return mapper.readValue(variablesString, new TypeReference<List<VariableType>>() {
             });
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error(String.format("Exception during variables deserialization of questionnaire id: %s", questionnaireId), e);
             throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Error retrieving variables from questionnaire id %s", questionnaireId));
         }

@@ -6,7 +6,7 @@ import fr.insee.publicenemy.api.application.domain.model.QuestionnaireMode;
 import java.util.Comparator;
 import java.util.List;
 
-public record ModeRest(String name, boolean isWebMode) {
+public record ModeRest(String name, Boolean isWebMode) {
     public static List<ModeRest> fromModesModel(List<Mode> modes) {
         return modes.stream()
                 .sorted(Comparator.comparing(Mode::ordinal))

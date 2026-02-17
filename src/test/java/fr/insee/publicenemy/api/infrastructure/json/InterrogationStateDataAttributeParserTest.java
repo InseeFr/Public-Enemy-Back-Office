@@ -1,16 +1,12 @@
 package fr.insee.publicenemy.api.infrastructure.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValue;
-import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValueList;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -18,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 class InterrogationStateDataAttributeParserTest {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = JsonMapper.builder().build();
 
     @Test
     void testParseStateData_validJson() throws Exception {

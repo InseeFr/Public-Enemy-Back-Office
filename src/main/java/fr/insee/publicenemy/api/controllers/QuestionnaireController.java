@@ -32,6 +32,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -57,6 +59,10 @@ public class QuestionnaireController {
     private final boolean asyncEnabled;
 
     private static final String VALIDATION_ERROR = "validation.errors";
+
+
+    private final ObjectMapper objectMapper = JsonMapper.builder().build();
+
 
     public QuestionnaireController(QuestionnaireUseCase questionnaireUseCase, PoguesUseCase poguesUseCase,
                                    InterrogationUseCase interroUseCase,
@@ -115,17 +121,19 @@ public class QuestionnaireController {
     }
 
     /**
-     * @param questionnaireRest questionnaire form
+     * @param questionnaireRestByte questionnaire form
      * @param interrogationData    csv content of survey units
      * @return the saved questionnaire
      */
     @PostMapping(path = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<QuestionnaireRest> addQuestionnaire(
-            @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
+            @RequestPart(name = "questionnaire") byte[] questionnaireRestByte,
             @RequestPart(name = "interrogationData") MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
         byte[] dataContent = interrogationData.getBytes();
+
+        QuestionnaireRest questionnaireRest = objectMapper.readValue(questionnaireRestByte, QuestionnaireRest.class);
 
         interroUseCase.validateInterrogations(dataContent, questionnaireRest.poguesId());
 
@@ -151,10 +159,11 @@ public class QuestionnaireController {
     @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<QuestionnaireRest> updateQuestionnaire(
-            @RequestPart(name = "questionnaire") QuestionnaireAddRest questionnaireRest,
+            @RequestPart(name = "questionnaire") byte[] questionnaireRestByte,
             @RequestPart(name = "interrogationData", required = false) MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
 
         byte[] dataContent;
+        QuestionnaireRest questionnaireRest = objectMapper.readValue(questionnaireRestByte, QuestionnaireRest.class);
         if (interrogationData != null) {
             dataContent = interrogationData.getBytes();
         } else {

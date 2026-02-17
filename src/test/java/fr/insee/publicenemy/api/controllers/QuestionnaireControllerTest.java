@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsGlobalValidationException;
 import fr.insee.publicenemy.api.application.exceptions.InterrogationsSpecificValidationException;
@@ -17,7 +18,7 @@ import fr.insee.publicenemy.api.utils.AuthenticatedUserTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -133,7 +134,7 @@ class QuestionnaireControllerTest {
     void onAddQuestionnaireShouldFetchQuestionnaireAttributes() throws Exception {
         QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = "test".getBytes();
-        ObjectMapper Obj = new ObjectMapper();
+        ObjectMapper Obj = JsonMapper.builder().build();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file", MediaType.MULTIPART_FORM_DATA_VALUE, surveyUnitData);
@@ -174,7 +175,7 @@ class QuestionnaireControllerTest {
     void onSaveQuestionnaireWhenEmptyDataShouldFetchDataFromQuestionnaire() throws Exception {
         QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest(questionnaire.getPoguesId(), new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] surveyUnitData = null;
-        ObjectMapper Obj = new ObjectMapper();
+        ObjectMapper Obj = JsonMapper.builder().build();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
         PreparedQuestionnaire preparedQuestionnaire = new PreparedQuestionnaire(questionnaire, null);
@@ -207,7 +208,7 @@ class QuestionnaireControllerTest {
     void onAddQuestionnaireWhenGlobalErrorsOnCsvSchemaReturnGenericErrorMessages() throws Exception {
         QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] interrogationData = "test".getBytes();
-        ObjectMapper Obj = new ObjectMapper();
+        ObjectMapper Obj = JsonMapper.builder().build();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file",
@@ -229,7 +230,7 @@ class QuestionnaireControllerTest {
     void onAddQuestionnaireWhenSpecificErrorsOnCsvSchemaReturnGenericErrorMessages() throws Exception {
         QuestionnaireAddRest questionnaireAddRest = new QuestionnaireAddRest("l8wwljbo", new ContextRest(Context.BUSINESS.name(), Context.BUSINESS.name()));
         byte[] interrogationData = "test".getBytes();
-        ObjectMapper Obj = new ObjectMapper();
+        ObjectMapper Obj = JsonMapper.builder().build();
         String jsonQuestionnaire = Obj.writeValueAsString(questionnaireAddRest);
         MockPart questionnaireMockPart = new MockPart("questionnaire", jsonQuestionnaire.getBytes());
         MockMultipartFile surveyUnitMockPart = new MockMultipartFile("interrogationData", "file",

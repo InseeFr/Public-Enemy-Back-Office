@@ -1,9 +1,9 @@
 package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using = InterrogationUpdateSerializer.class)
 public record InterrogationUpdateDto(

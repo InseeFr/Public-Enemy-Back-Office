@@ -1,9 +1,5 @@
 package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValue;
@@ -13,25 +9,29 @@ import fr.insee.publicenemy.api.infrastructure.json.InterrogationJsonLine;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class InterrogationSerializerTest {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = JsonMapper.builder().build();
 
     private static JsonNode readJsonFromFile(File file) throws IOException {
         return objectMapper.readTree(file);
     }
 
     @Test
-    void checkJsonFormatOnSerialize() throws JsonProcessingException {
+    void checkJsonFormatOnSerialize() throws JacksonException {
         List<InterrogationDto> surveyUnits = new ArrayList<>();
 
         Map<String, IInterrogationDataAttributeValue> attributes = new TreeMap<>();
@@ -56,13 +56,7 @@ class InterrogationSerializerTest {
         surveyUnits.add(new InterrogationDto("1", "su-1","q1", data, InterrogationStateData.createInitialStateData()));
         surveyUnits.add(new InterrogationDto("2", "su-2","q2", data, InterrogationStateData.createInitialStateData()));
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(InterrogationDto.class, new InterrogationSerializer());
-        mapper.registerModule(module);
-
-        String jsonSurveyUnits = mapper.writeValueAsString(surveyUnits);
+        String jsonSurveyUnits = objectMapper.writeValueAsString(surveyUnits);
 
         assertEquals("""
                         [
@@ -132,13 +126,7 @@ class InterrogationSerializerTest {
         surveyUnits.add(new InterrogationDto("1", "su-1","q1", data, InterrogationStateData.createInitialStateData()));
         surveyUnits.add(new InterrogationDto("2", "su-2","q2", data, InterrogationStateData.createInitialStateData()));
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(InterrogationDto.class, new InterrogationSerializer());
-        mapper.registerModule(module);
-
-        String jsonSurveyUnits = mapper.writeValueAsString(surveyUnits);
+        String jsonSurveyUnits = objectMapper.writeValueAsString(surveyUnits);
         assertEquals("""
                         [
                             {

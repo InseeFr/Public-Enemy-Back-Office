@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
+
+import tools.jackson.databind.JsonNode;
 
 public record SimpleInterrogationDto(
         String id,

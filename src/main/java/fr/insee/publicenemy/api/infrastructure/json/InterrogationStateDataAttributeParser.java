@@ -1,7 +1,7 @@
 package fr.insee.publicenemy.api.infrastructure.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
+import tools.jackson.databind.JsonNode;
 
 import static fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData.*;
 
@@ -23,7 +23,7 @@ public class InterrogationStateDataAttributeParser {
     }
     private static String safeGetText(JsonNode node, String fieldName, String defaultValue) {
         JsonNode field = node.get(fieldName);
-        return (field != null && !field.isNull() && field.isTextual()) ? field.asText() : defaultValue;
+        return (field != null && !field.isNull() && field.isString()) ? field.asString() : defaultValue;
     }
     private static long safeGetLong(JsonNode node, String fieldName, long defaultValue) {
         JsonNode field = node.get(fieldName);

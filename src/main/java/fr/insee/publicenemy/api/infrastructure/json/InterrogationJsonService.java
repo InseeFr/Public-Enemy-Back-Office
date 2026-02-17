@@ -1,7 +1,9 @@
 package fr.insee.publicenemy.api.infrastructure.json;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import fr.insee.publicenemy.api.application.domain.model.PersonalizationMapping;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
@@ -15,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +25,7 @@ import java.util.UUID;
 @Slf4j
 public class InterrogationJsonService implements InterrogationJsonPort {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = JsonMapper.builder().build();
 
     private final I18nMessagePort messageService;
 
@@ -80,7 +81,7 @@ public class InterrogationJsonService implements InterrogationJsonPort {
                 // Fallback to root: consider we have only one survey-unit at root level
                 result.add(new InterrogationJsonLine(root));
             }
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new ServiceException(
                     HttpStatus.NOT_ACCEPTABLE,
                     messageService.getMessage("validation.json.malform.error", simplifyMessage(e.getMessage())));

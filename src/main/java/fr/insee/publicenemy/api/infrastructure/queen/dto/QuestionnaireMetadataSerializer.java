@@ -1,10 +1,9 @@
 package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 public class QuestionnaireMetadataSerializer extends StdSerializer<QuestionnaireMetadataDto> {
 
@@ -17,13 +16,10 @@ public class QuestionnaireMetadataSerializer extends StdSerializer<Questionnaire
     }
 
     @Override
-    public void serialize(
-            QuestionnaireMetadataDto metadata, JsonGenerator jgen, SerializerProvider provider)
-            throws IOException {
-
+    public void serialize(QuestionnaireMetadataDto metadata, JsonGenerator jgen, SerializationContext provider) throws JacksonException {
         jgen.writeStartObject();
-            jgen.writeStringField("inseeContext", metadata.inseeContext());
-            jgen.writeObjectField("variables", metadata.metadataAttributes());
+        jgen.writeStringProperty("inseeContext", metadata.inseeContext());
+        jgen.writePOJOProperty("variables", metadata.metadataAttributes());
         jgen.writeEndObject();
     }
 }

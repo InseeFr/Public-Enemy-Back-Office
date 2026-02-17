@@ -4,11 +4,12 @@ import fr.insee.publicenemy.api.controllers.exceptions.dto.InterrogationError;
 import fr.insee.publicenemy.api.controllers.exceptions.dto.*;
 import lombok.NonNull;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
-import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.boot.webmvc.error.ErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.reactive.function.server.ServerRequest;
 
 import java.util.Date;
 import java.util.List;

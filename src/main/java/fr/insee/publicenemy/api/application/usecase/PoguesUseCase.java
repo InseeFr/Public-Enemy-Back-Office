@@ -1,14 +1,13 @@
 package fr.insee.publicenemy.api.application.usecase;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
-import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 import fr.insee.publicenemy.api.application.ports.PoguesServicePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 

@@ -1,8 +1,5 @@
 package fr.insee.publicenemy.api.infrastructure.queen.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.IInterrogationDataAttributeValue;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationDataAttributeValue;
@@ -11,6 +8,8 @@ import fr.insee.publicenemy.api.infrastructure.interro.InterrogationStateData;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 class InterrogationUpdateSerializerTest {
 
+    private static final ObjectMapper objectMapper = JsonMapper.builder().build();
+
     @Test
-    void checkJsonFormatOnSerialize() throws JsonProcessingException {
+    void checkJsonFormatOnSerialize() {
         List<InterrogationUpdateDto> surveyUnits = new ArrayList<>();
 
         Map<String, IInterrogationDataAttributeValue> attributes = new TreeMap<>();
@@ -48,13 +49,7 @@ class InterrogationUpdateSerializerTest {
         surveyUnits.add(new InterrogationUpdateDto(data, InterrogationStateData.createInitialStateData()));
         surveyUnits.add(new InterrogationUpdateDto(data, InterrogationStateData.createInitialStateData()));
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(InterrogationUpdateDto.class, new InterrogationUpdateSerializer());
-        mapper.registerModule(module);
-
-        String jsonSurveyUnits = mapper.writeValueAsString(surveyUnits);
+        String jsonSurveyUnits = objectMapper.writeValueAsString(surveyUnits);
 
         assertEquals("""
                         [

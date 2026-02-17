@@ -1,9 +1,9 @@
 package fr.insee.publicenemy.api.application.ports;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
