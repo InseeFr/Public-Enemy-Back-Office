@@ -3,7 +3,8 @@ name: Public-Enemy Back Office tests
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    paths-ignore: ['docs/**', 'Dockerfile', 'LICENSE', 'CHANGELOG.md', 'README.md']
+    paths-ignore:
+      ["docs/**", "Dockerfile", "LICENSE", "CHANGELOG.md", "README.md"]
 
 jobs:
   test:
@@ -15,12 +16,11 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: "temurin"
+          java-version: "25"
 
       - name: Run tests with Maven
         run: mvn clean test --no-transfer-progress
-
 #      - name: Test, package and analyze with maven & SonarCloud
 #        run: mvn --no-transfer-progress verify sonar:sonar -Dsonar.projectKey=InseeFr_Pogues-Back-Office -Dsonar.organization=inseefr -Dsonar.host.url=https://sonarcloud.io
 #        env:

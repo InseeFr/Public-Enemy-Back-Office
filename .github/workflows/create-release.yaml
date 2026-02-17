@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: "25"
 
       - name: Checkout Public-Enemy Back Office repo
         uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: "25"
 
       - uses: actions/checkout@v4
       - name: Build Public-Enemy Back Office with Maven
@@ -103,9 +103,9 @@ jobs:
       - name: Commit changelog file
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          branch: 'main'
-          commit_message: 'docs(changelog): ${{ needs.check-version.outputs.release-version }} update [skip ci]'
-          file_pattern: 'CHANGELOG.md'
+          branch: "main"
+          commit_message: "docs(changelog): ${{ needs.check-version.outputs.release-version }} update [skip ci]"
+          file_pattern: "CHANGELOG.md"
 
       - name: Download jar
         id: download
