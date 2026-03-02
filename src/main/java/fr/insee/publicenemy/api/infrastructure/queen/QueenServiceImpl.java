@@ -40,6 +40,7 @@ public class QueenServiceImpl implements QueenServicePort {
 
     private static final String INTERROGATION_PATH = "/api/interrogations/{id}";
     private static final String INTERROGATION_NOT_FOUND_MSG = "queen.error.interrogation.not-found";
+    private static final String QUESTIONNAIRE_NOT_FOUND_MSG = "queen.error.questionnaire.not-found";
 
     public QueenServiceImpl(I18nMessagePort messagePort, WebClient webClient, @Value("${application.queen.url}") String queenUrl,
                             MetadataProps metadataProps) {
@@ -176,6 +177,30 @@ public class QueenServiceImpl implements QueenServicePort {
                 )
                 .toBodilessEntity()
                 .block();
+    }
+
+    @Override
+    public JsonNode getQuestionnaireModel(String questionnaireModelId) {
+        URI uri = UriComponentsBuilder
+                .fromUriString(queenUrl)
+                .path("/api/questionnaire/{id}/data")
+                .build(questionnaireModelId);
+
+        return webClient.get().uri(uri)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> Mono.error(new InterrogationsNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_MSG, questionnaireModelId)))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                messageService.getMessage("queen.error.questionnaire", questionnaireModelId)))
+                )
+                .bodyToMono(new ParameterizedTypeReference<JsonNode>() {
+                })
+                .blockOptional()
+                .orElseThrow(() -> new InterrogationsNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_MSG, questionnaireModelId)));
     }
 
     public List<SimpleInterrogationDto> getInterrogations(@NotNull String campaignId) {

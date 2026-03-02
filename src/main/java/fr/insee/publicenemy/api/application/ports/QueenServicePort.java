@@ -6,6 +6,7 @@ import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.SimpleInterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
+import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -73,4 +74,6 @@ public interface QueenServicePort {
     void deteteInterrogation(Interrogation interrogation);
 
     void createInterrogation(String questionnaireId, Interrogation interrogation);
+
+    JsonNode getQuestionnaireModel(String questionnaireModelId);
 }

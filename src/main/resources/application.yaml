@@ -90,6 +90,8 @@ springdoc:
     doc-expansion: none
 
 application:
+  # https://docs.oracle.com/javase/8/docs/api/java/time/ZoneId.html
+  timezoneId: "Europe/Paris"
   public-urls:
     - /actuator/**
     - /swagger-ui/**

@@ -134,9 +134,10 @@ public class InterrogationController {
     @PreAuthorize(HAS_ANY_ROLE)
     public ResponseEntity<byte[]> getRecapPdfInterrogation(@PathVariable String interrogationId) {
         SimpleInterrogationDto interrogation = queenUseCase.getInterrogation(interrogationId);
+        JsonNode lunaticModelSource = queenUseCase.getQuestionnaireModelById(interrogation.questionnaireId());
 
         PdfRecap pdfRecap = pdfServicePort.getPdfFromSourceAndData(
-                interrogationUtils.buildLunaticUri(interrogation.questionnaireId()),
+                lunaticModelSource,
                 interrogation);
 
         return ResponseEntity.ok()

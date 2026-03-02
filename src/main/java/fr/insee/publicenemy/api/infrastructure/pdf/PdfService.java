@@ -15,8 +15,13 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.JsonNode;
 
 import java.net.URI;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Slf4j
@@ -26,6 +31,8 @@ public class PdfService implements PdfServicePort {
     private final String lunaticPdfApiUrl;
     private final I18nMessagePort messageService;
 
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
     public PdfService(I18nMessagePort messageService, WebClient webClient, @Value("${application.lunatic-pdf-api.url}") String lunaticPdfApiUrl){
         this.webClient = webClient;
         this.lunaticPdfApiUrl = lunaticPdfApiUrl;
@@ -33,16 +40,21 @@ public class PdfService implements PdfServicePort {
     }
 
     @Override
-    public PdfRecap getPdfFromSourceAndData(String lunaticUri, SimpleInterrogationDto interrogation) {
+    public PdfRecap getPdfFromSourceAndData(JsonNode lunaticModel, SimpleInterrogationDto interrogation) {
+
+            PdfRequestDto pdfRequestDto = new PdfRequestDto(
+                    lunaticModel,
+                    fromSimpleInterrogationDto(interrogation)
+            );
+
         URI uri = UriComponentsBuilder
                 .fromUriString(lunaticPdfApiUrl)
-                .path("/api/pdf/generate-from-source")
-                .queryParam("source", lunaticUri)
+                .path("/api/pdf/generate")
                 .build()
                 .toUri();
         ResponseEntity<byte[]> response = webClient.post()
                 .uri(uri)
-                .body(BodyInserters.fromValue(interrogation))
+                .body(BodyInserters.fromValue(pdfRequestDto))
                 .retrieve()
                 .onStatus(
                         HttpStatusCode::isError,
@@ -60,5 +72,21 @@ public class PdfService implements PdfServicePort {
             filename = response.getHeaders().getContentDisposition().getFilename();
         }
         return new PdfRecap(filename, response.getBody());
+    }
+
+    public  InterrogationPdfDto fromSimpleInterrogationDto(SimpleInterrogationDto simpleInterrogationDto){
+        Long validationDate =  simpleInterrogationDto.stateData().get("date").longValue();
+        return new InterrogationPdfDto(
+                simpleInterrogationDto.id(),
+                "Unité enquêtée personnalisée",
+                simpleInterrogationDto.questionnaireId(),
+                getIsoDateFromMilliSec(validationDate),
+                simpleInterrogationDto.data());
+    }
+
+    private static String getIsoDateFromMilliSec(Long milliSec){
+        Instant instant = Instant.ofEpochMilli(milliSec);
+        ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
+        return zonedDateTime.format(formatter);
     }
 }

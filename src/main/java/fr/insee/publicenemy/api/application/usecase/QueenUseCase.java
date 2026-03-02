@@ -15,6 +15,7 @@ import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFound
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,6 +188,10 @@ public class QueenUseCase {
                 .filter(Mode::isWebMode)
                 .forEach(mode ->
                         deleteQueenCampaign(IdentifierGenerationUtils.generateCampaignAndQuestionnaireModelIdentifier(questionnaire.getId(), mode)));
+    }
+
+    public JsonNode getQuestionnaireModelById(String questionnaireId){
+        return queenService.getQuestionnaireModel(questionnaireId);
     }
 
     /**
