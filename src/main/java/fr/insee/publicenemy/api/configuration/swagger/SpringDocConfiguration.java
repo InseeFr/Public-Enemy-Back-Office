@@ -10,7 +10,6 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @Configuration
@@ -28,7 +27,6 @@ public class SpringDocConfiguration {
     @Bean
     @ConditionalOnProperty(name = "feature.oidc.enabled", havingValue = "true")
     protected OpenAPI oidcOpenAPI(OidcProperties oidcProperties, BuildProperties buildProperties) {
-        String authUrl = oidcProperties.authServerUrl() + "/realms/" + oidcProperties.realm() + "/protocol/openid-connect";
 
         return generateOpenAPI(buildProperties)
                 .addSecurityItem(new SecurityRequirement().addList(OAUTH2SCHEME, Arrays.asList("read", "write")))
@@ -38,7 +36,7 @@ public class SpringDocConfiguration {
                                         new SecurityScheme()
                                                 .name(OAUTH2SCHEME)
                                                 .type(SecurityScheme.Type.OAUTH2)
-                                                .flows(getFlows(authUrl))
+                                                .flows(getFlows(oidcProperties))
                                 )
                 );
 
@@ -53,10 +51,17 @@ public class SpringDocConfiguration {
         );
     }
 
-    private OAuthFlows getFlows(String authUrl) {
+    private OAuthFlows getFlows(OidcProperties oidcProperties) {
+        String authUrl = oidcProperties.authServerUrl() + "/realms/" + oidcProperties.realm() + "/protocol/openid-connect";
+
         OAuthFlows flows = new OAuthFlows();
         OAuthFlow flow = new OAuthFlow();
         Scopes scopes = new Scopes();
+
+        for(String scope: oidcProperties.scopes()){
+            scopes.addString(scope, scope);
+        }
+
         flow.setAuthorizationUrl(authUrl + "/auth");
         flow.setTokenUrl(authUrl + "/token");
         flow.setRefreshUrl(authUrl + "/token");

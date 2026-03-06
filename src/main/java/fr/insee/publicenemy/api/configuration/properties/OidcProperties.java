@@ -11,5 +11,6 @@ public record OidcProperties(
         String realm,
         String principalAttribute,
         String roleClaim,
-        String clientId) {
+        String clientId,
+        String[] scopes) {
 }

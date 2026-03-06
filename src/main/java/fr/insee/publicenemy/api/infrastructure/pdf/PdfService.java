@@ -31,7 +31,7 @@ public class PdfService implements PdfServicePort {
     private final String lunaticPdfApiUrl;
     private final I18nMessagePort messageService;
 
-    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public PdfService(I18nMessagePort messageService, WebClient webClient, @Value("${application.lunatic-pdf-api.url}") String lunaticPdfApiUrl){
         this.webClient = webClient;
@@ -75,18 +75,33 @@ public class PdfService implements PdfServicePort {
     }
 
     public  InterrogationPdfDto fromSimpleInterrogationDto(SimpleInterrogationDto simpleInterrogationDto){
-        Long validationDate =  simpleInterrogationDto.stateData().get("date").longValue();
         return new InterrogationPdfDto(
                 simpleInterrogationDto.id(),
                 "Unité enquêtée personnalisée",
                 simpleInterrogationDto.questionnaireId(),
-                getIsoDateFromMilliSec(validationDate),
+                getIsoDateFromInterrogation(simpleInterrogationDto),
                 simpleInterrogationDto.data());
     }
 
-    private static String getIsoDateFromMilliSec(Long milliSec){
-        Instant instant = Instant.ofEpochMilli(milliSec);
+
+    private static String getIsoDateFromInterrogation(SimpleInterrogationDto simpleInterrogationDto){
+        // if no stateData i.e questionnaire not opened -> fallback to Now
+        if(simpleInterrogationDto.stateData() == null || simpleInterrogationDto.stateData().isNull()){
+            return getNowIsoDate();
+        }
+        JsonNode dateField = simpleInterrogationDto.stateData().get("date");
+
+        if(dateField == null || dateField.isNull()) {
+            return getNowIsoDate();
+        }
+        Instant instant = Instant.ofEpochMilli(dateField.longValue());
         ZonedDateTime zonedDateTime = instant.atZone(ZoneId.systemDefault());
         return zonedDateTime.format(formatter);
+    }
+
+
+    private static String getNowIsoDate() {
+        ZonedDateTime zonedDateTimeNow = ZonedDateTime.now(ZoneId.systemDefault());
+        return zonedDateTimeNow.format(formatter);
     }
 }

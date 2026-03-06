@@ -65,6 +65,9 @@ feature:
     realm: my-realm
     principal-attribute: id-claim
     role-claim: 'role-claim' # can be a json Path like 'deep.value.to.roles'
+    scopes:
+      - profile
+      - roles
   swagger:
     enabled: true
   proxy:
@@ -83,6 +86,7 @@ springdoc:
     enabled: true
     oauth:
       client-id: ${feature.oidc.client-id}
+      use-pkce-with-authorization-code-grant: true
     path: /
     syntax-highlight:
       activated: false
