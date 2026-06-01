@@ -41,7 +41,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
+import static fr.insee.publicenemy.api.configuration.auth.AuthorityPrivileges.HAS_USER_PRIVILEGES;
 
 @RestController
 @RequestMapping("/api")
@@ -87,7 +87,7 @@ public class InterrogationController {
      * @return all interrogations fro the questionnaire
      */
     @GetMapping("/questionnaires/{poguesId}/interrogations")
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public Map<Mode, List<InterrogationRest>> getInterrogationsByPoguesId(@PathVariable String poguesId) {
 
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
@@ -117,7 +117,7 @@ public class InterrogationController {
      * @param interrogationId interrogation id
      */
     @PutMapping("/interrogations/{interrogationId}/reset")
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public String resetInterrogation(@PathVariable String interrogationId) {
         PersonalizationMapping personalizationMapping = personalizationUseCase.getPersoMappingByInterrogationId(interrogationId);
         byte[] interrogationData = questionnaireUseCase.getInterrogationData(personalizationMapping.questionnaireId());
@@ -131,7 +131,7 @@ public class InterrogationController {
      * @param interrogationId interrogation id
      */
     @GetMapping("/interrogations/{interrogationId}/recap-pdf")
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public ResponseEntity<byte[]> getRecapPdfInterrogation(@PathVariable String interrogationId) {
         SimpleInterrogationDto interrogation = queenUseCase.getInterrogation(interrogationId);
         JsonNode lunaticModelSource = queenUseCase.getQuestionnaireModelById(interrogation.questionnaireId());
@@ -152,7 +152,7 @@ public class InterrogationController {
      * @throws IOException IO Exception
      */
     @GetMapping("/questionnaires/{poguesId}/csv")
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public void getCsvSchema(HttpServletResponse response, @PathVariable String poguesId) throws IOException {
 
         // set file name and content type
@@ -179,7 +179,7 @@ public class InterrogationController {
      * @throws InterrogationsSpecificValidationException specific exceptions occurred when validating interrogation data csv file
      */
     @PostMapping(path = "/questionnaires/{poguesId}/checkdata", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public ApiErrorWithMessages checkInterrogationsData(
             @PathVariable String poguesId,
             @RequestPart(name = "interrogationData") @NonNull MultipartFile interrogation,

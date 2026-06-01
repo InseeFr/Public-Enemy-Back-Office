@@ -105,7 +105,9 @@ application:
   roles:
     admin: 'admin'
     designer: 'designer'
-  corsOrigins: 
+    webclient: 'webclient'
+    designer-alternative: 'designer-alternative'
+  corsOrigins:
   pogues:
     url: https://pogues-url.insee.fr
   lunatic-pdf-api:

@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
+import static fr.insee.publicenemy.api.configuration.auth.AuthorityPrivileges.HAS_USER_PRIVILEGES;
 
 @RestController
 @RequestMapping("/api/modes")
-@PreAuthorize(HAS_ANY_ROLE)
+@PreAuthorize(HAS_USER_PRIVILEGES)
 public class ModeController {
     /**
      * 

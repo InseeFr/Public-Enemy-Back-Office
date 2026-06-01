@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Arrays;
 import java.util.List;
 
-import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
+import static fr.insee.publicenemy.api.configuration.auth.AuthorityPrivileges.HAS_USER_PRIVILEGES;
 
 @RestController
 @RequestMapping("/api/contexts")
-@PreAuthorize(HAS_ANY_ROLE)
+@PreAuthorize(HAS_USER_PRIVILEGES)
 public class ContextController {
 
     private final I18nMessagePort i18nMessageService;

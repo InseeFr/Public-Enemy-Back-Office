@@ -38,7 +38,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.io.IOException;
 import java.util.List;
 
-import static fr.insee.publicenemy.api.configuration.auth.AuthorityRole.HAS_ANY_ROLE;
+import static fr.insee.publicenemy.api.configuration.auth.AuthorityPrivileges.HAS_USER_PRIVILEGES;
 
 @RestController
 @RequestMapping("/api/questionnaires")
@@ -85,7 +85,7 @@ public class QuestionnaireController {
      * @return questionnaire
      */
     @GetMapping("/{poguesId}")
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public QuestionnaireRest getQuestionnaire(@PathVariable String poguesId) {
         try {
             Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
@@ -103,7 +103,7 @@ public class QuestionnaireController {
      * @return questionnaire
      */
     @GetMapping(value = "/{poguesId}/data")
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public ResponseEntity<byte[]> getInterrogationData(@PathVariable String poguesId) {
 
         byte[] interrogationsData = questionnaireUseCase.getInterrogationData(poguesId);
@@ -126,7 +126,7 @@ public class QuestionnaireController {
      * @return the saved questionnaire
      */
     @PostMapping(path = "", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public ResponseEntity<QuestionnaireRest> addQuestionnaire(
             @RequestPart(name = "questionnaire") byte[] questionnaireRestByte,
             @RequestPart(name = "interrogationData") MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
@@ -157,7 +157,7 @@ public class QuestionnaireController {
      * @return the updated questionnaire
      */
     @PutMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public ResponseEntity<QuestionnaireRest> updateQuestionnaire(
             @RequestPart(name = "questionnaire") byte[] questionnaireRestByte,
             @RequestPart(name = "interrogationData", required = false) MultipartFile interrogationData) throws IOException, InterrogationsGlobalValidationException, InterrogationsSpecificValidationException {
@@ -192,7 +192,7 @@ public class QuestionnaireController {
      * @param poguesId questionnaire id to delete
      */
     @DeleteMapping(path = "/{poguesId}")
-    @PreAuthorize(HAS_ANY_ROLE)
+    @PreAuthorize(HAS_USER_PRIVILEGES)
     public String deleteQuestionnaire(@PathVariable String poguesId) {
         questionnaireUseCase.deleteQuestionnaire(poguesId);
         return "{}";
