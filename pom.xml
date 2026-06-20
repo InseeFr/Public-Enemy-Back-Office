@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
+        <version>4.1.0</version>
     </parent>
 
     <properties>
@@ -25,17 +25,12 @@
         <sonar.projectKey>InseeFr_Public-Enemy-Back-Office</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.java.binaries>target</sonar.java.binaries>
-        <revision>3.3.2</revision>
+        <revision>3.3.3</revision>
 
         <!-- Version properties not managed by Spring Boot -->
         <springdoc-openapi-ui.version>3.0.3</springdoc-openapi-ui.version>
 
         <!-- !!! Version properties overridden from Spring Boot !!! -->
-        <jackson-2-bom.version>2.21.3</jackson-2-bom.version>
-        <jackson-bom.version>3.1.1</jackson-bom.version>
-        <netty.version>4.2.13.Final</netty.version>
-        <postgresql.version>42.7.11</postgresql.version>
-        <tomcat.version>11.0.22</tomcat.version>
     </properties>
 
     <dependencies>
@@ -181,7 +176,7 @@
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.14</version>
+                        <version>0.8.15</version>
                         <executions>
                             <execution>
                                 <id>prepare-agent</id>
