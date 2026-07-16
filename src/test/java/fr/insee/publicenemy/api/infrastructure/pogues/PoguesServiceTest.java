@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.infrastructure.pogues;
 
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableTypeEnum;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
@@ -169,6 +170,62 @@ class PoguesServiceTest {
         assertEquals("ADMINISTRATION2", variables.get(1).name());
         assertNull(variables.get(1).scope());
         assertEquals(VariableTypeEnum.CALCULATED, variables.get(1).type());
+    }
+
+    @Test
+    void onGetNomenclatureUrlsReturnNomenclatureUrls() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("""
+                                [
+                                  {"id": "COMMUNES-2025", "url": "https://example.com/COMMUNES-2025"},
+                                  {"id": "DEPARTEMENTS-2026", "url": "https://example.com/DEPARTEMENTS-2026"}
+                                ]
+                                """)
+        );
+        List<NomenclatureUrl> result = service.getNomenclatureUrls(poguesId);
+        assertEquals(2, result.size());
+        assertEquals("COMMUNES-2025", result.get(0).id());
+        assertEquals("https://example.com/COMMUNES-2025", result.get(0).url());
+        assertEquals("DEPARTEMENTS-2026", result.get(1).id());
+        assertEquals("https://example.com/DEPARTEMENTS-2026", result.get(1).url());
+    }
+
+    @Test
+    void onGetNomenclatureUrlsWhenEmptyResponseReturnEmptyList() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("[]")
+        );
+        List<NomenclatureUrl> result = service.getNomenclatureUrls(poguesId);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void onGetNomenclatureUrlsWhenNotFoundThrowsPoguesJsonNotFoundException() {
+        createMockNotFoundResponse();
+        assertThrows(PoguesJsonNotFoundException.class, () -> service.getNomenclatureUrls(poguesId));
+    }
+
+    @Test
+    void onGetNomenclatureUrlsWhenErrorThrowsServiceException() {
+        createMockResponseError();
+        assertThrows(ServiceException.class, () -> service.getNomenclatureUrls(poguesId));
+    }
+
+    @Test
+    void onGetNomenclatureUrlsWhenMalformedJsonThrowsServiceException() {
+        mockWebServer.enqueue(
+                new MockResponse()
+                        .setResponseCode(200)
+                        .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .setBody("not valid json [")
+        );
+        assertThrows(ServiceException.class, () -> service.getNomenclatureUrls(poguesId));
     }
 
     /**

@@ -1,6 +1,7 @@
 package fr.insee.publicenemy.api.infrastructure.queen;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
@@ -84,14 +85,14 @@ class QueenServiceTest {
     void onCreateQuestionnaireModelWhenApiResponseErrorThrowsServiceException() {
         createMockResponseError();
         when(jsonLunatic.jsonContent()).thenReturn("{}");
-        assertThrows(ServiceException.class, () -> service.createQuestionnaireModel("l8wwljbo", questionnaireModel, jsonLunatic));
+        assertThrows(ServiceException.class, () -> service.createQuestionnaireModel("l8wwljbo", questionnaireModel, jsonLunatic, List.of()));
     }
 
     @Test
     void onCreateQuestionnaireModelWhenApiResponseSuccessfulReturnNothing() {
         createMockResponseSuccess();
         when(jsonLunatic.jsonContent()).thenReturn("{}");
-        assertAll(() -> service.createQuestionnaireModel("l8wwljbo", questionnaireModel, jsonLunatic));
+        assertAll(() -> service.createQuestionnaireModel("l8wwljbo", questionnaireModel, jsonLunatic, List.of()));
     }
 
     @Test
@@ -188,6 +189,42 @@ class QueenServiceTest {
                         .setBody("{\"name\":\"value\"}")
         );
         assertTrue(service.hasQuestionnaireModel("11-CAPI"));
+    }
+
+    @Test
+    void onCreateNomenclatureWhenBothCallsSucceedReturnNothing() {
+        // fetch nomenclature codes from nomenclature url
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody("[{\"code\":\"01\",\"label\":\"Paris\"}]"));
+        // queen POST nomenclature succeeds
+        createMockResponseSuccess();
+
+        String contentUrl = String.format("http://localhost:%s/codes/COMMUNES-2025", mockWebServer.getPort());
+        assertAll(() -> service.createNomenclature(new NomenclatureUrl("COMMUNES-2025", contentUrl)));
+    }
+
+    @Test
+    void onCreateNomenclatureWhenContentFetchFailsThrowsServiceException() {
+        createMockResponseError();
+
+        String contentUrl = String.format("http://localhost:%s/codes/COMMUNES-2025", mockWebServer.getPort());
+        assertThrows(ServiceException.class, () -> service.createNomenclature(new NomenclatureUrl("COMMUNES-2025", contentUrl)));
+    }
+
+    @Test
+    void onCreateNomenclatureWhenQueenPostFailsThrowsServiceException() {
+        // fetch nomenclature codes from nomenclature url
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setBody("[]"));
+        // Queen POST nomenclature fails
+        createMockResponseError();
+
+        String contentUrl = String.format("http://localhost:%s/codes/COMMUNES-2025", mockWebServer.getPort());
+        assertThrows(ServiceException.class, () -> service.createNomenclature(new NomenclatureUrl("COMMUNES-2025", contentUrl)));
     }
 
     /**

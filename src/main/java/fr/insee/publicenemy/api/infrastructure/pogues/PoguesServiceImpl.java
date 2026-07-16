@@ -3,6 +3,7 @@ package fr.insee.publicenemy.api.infrastructure.pogues;
 import fr.insee.publicenemy.api.application.domain.model.Mode;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
@@ -64,8 +65,30 @@ public class PoguesServiceImpl implements PoguesServicePort {
     }
 
     @Override
-    public JsonNode getNomenclaturesByQuestionnaire(String poguesId) {
-        return getNomeclatureOfQuestionnaire(poguesId);
+    public List<NomenclatureUrl> getNomenclatureUrls(String poguesId) {
+        String body = webClient.get()
+                .uri(poguesUrl + "/api/questionnaires/{id}/nomenclatures/urls", poguesId)
+                .retrieve()
+                .onStatus(
+                        HttpStatus.NOT_FOUND::equals,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR))))
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
+                )
+                .bodyToMono(String.class)
+                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR, poguesId)));
+
+        ObjectMapper mapper = JsonMapper.builder().build();
+        try {
+            return mapper.readValue(body, new TypeReference<List<NomenclatureUrl>>() {});
+        } catch (JacksonException e) {
+            log.error("Exception during nomenclature URLs deserialization for questionnaire id: {}", poguesId, e);
+            throw new ServiceException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Error retrieving nomenclature URLs for questionnaire id %s", poguesId));
+        }
     }
 
     /**
@@ -143,23 +166,6 @@ public class PoguesServiceImpl implements PoguesServicePort {
                 )
                 .bodyToMono(JsonNode.class)
                 .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR, questionnaireId)));
-    }
-
-    private JsonNode getNomeclatureOfQuestionnaire(@NonNull String questionnaireId) {
-        return webClient.get().uri(poguesUrl + "/api/persistence/questionnaire/{id}/nomenclatures", questionnaireId)
-                .retrieve()
-                .onStatus(
-                        HttpStatus.NOT_FOUND::equals,
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR))))
-                )
-                .onStatus(
-                        HttpStatusCode::isError,
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorMessage -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()), errorMessage)))
-                )
-                .bodyToMono(JsonNode.class)
-                .blockOptional().orElseThrow(() -> new PoguesJsonNotFoundException(messageService.getMessage(QUESTIONNAIRE_NOT_FOUND_ERROR)));
     }
 
     @Override

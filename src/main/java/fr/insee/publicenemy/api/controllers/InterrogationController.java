@@ -34,6 +34,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import tools.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -92,7 +93,7 @@ public class InterrogationController {
 
         Questionnaire questionnaire = questionnaireUseCase.getQuestionnaire(poguesId);
         List<PersonalizationMapping> personalizationMappings = personalizationUseCase.getPersonalizationByQuestionnaireId(questionnaire.getId());
-        JsonNode nomenclatures = poguesUseCase.getNomenclatureOfQuestionnaire(questionnaire.getPoguesId());
+        List<NomenclatureUrl> nomenclatureUrls = poguesUseCase.getNomenclaturesUrls(questionnaire.getPoguesId());
 
         Map<Mode, List<InterrogationRest>> interrogationsByModes = new EnumMap<>(Mode.class);
         questionnaire.getQuestionnaireModes().forEach(questionnaireMode -> {
@@ -103,7 +104,7 @@ public class InterrogationController {
                             .map(mapping -> interrogationUtils.buildInterrogationRest(
                                     mapping,
                                     questionnaireMode.getMode(),
-                                    nomenclatures
+                                    nomenclatureUrls
                             ))
                             .toList());
         });

@@ -1,13 +1,13 @@
 package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
 import fr.insee.publicenemy.api.application.ports.EnoServicePort;
 import fr.insee.publicenemy.api.application.ports.PoguesServicePort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -68,8 +68,14 @@ public class PoguesUseCase {
         return poguesServicePort.getQuestionnaireVariables(questionnaireId);
     }
 
-    public JsonNode getNomenclatureOfQuestionnaire(String poguesId){
+    /**
+     * Get nomenclatures urls by Pogues questionnaire.
+     *
+     * @param poguesId
+     * @return list of nomenclatures id+url
+     */
+    public List<NomenclatureUrl> getNomenclaturesUrls(String poguesId) {
         log.info(poguesId + ": get nomenclatures");
-        return poguesServicePort.getNomenclaturesByQuestionnaire(poguesId);
+        return poguesServicePort.getNomenclatureUrls(poguesId);
     }
 }

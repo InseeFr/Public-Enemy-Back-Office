@@ -2,20 +2,20 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.domain.utils.IdentifierGenerationUtils;
+import tools.jackson.databind.JsonNode;
 import fr.insee.publicenemy.api.application.domain.utils.InterrogationData;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.InterrogationCsvPort;
 import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.PersonalizationPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
-import fr.insee.publicenemy.api.infrastructure.queen.dto.InterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.dto.SimpleInterrogationDto;
 import fr.insee.publicenemy.api.infrastructure.queen.exceptions.CampaignNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -213,7 +213,8 @@ public class QueenUseCase {
         } else {
             log.warn("Invalid format of data");
         }
-        createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode);
+        List<NomenclatureUrl> nomenclatureUrls = createNomenclatures(questionnaire.getPoguesId());
+        createQuestionnaireModel(questionnaireModelId, questionnaireModel, questionnaire.getContext(), questionnaireMode, nomenclatureUrls);
         createCampaign(questionnaireModelId, questionnaireModel, questionnaire, questionnaireMode);
         createInterrogations(questionnaireModelId, interrogations, questionnaireMode);
         createPersonalizationMappings(interrogations, questionnaire.getId(), questionnaireMode.getMode(), questionnaireMode);
@@ -263,18 +264,34 @@ public class QueenUseCase {
     }
 
     /**
+     * Fetch nomenclature URLs from pogues and create each nomenclature in queen.
+     * If the nomenclature already exists, it is skipped.
+     *
+     * @param poguesId questionnaire pogues id
+     * @return the list of nomenclature URL info (id + url) used in the questionnaire
+     */
+    private List<NomenclatureUrl> createNomenclatures(String poguesId) {
+        List<NomenclatureUrl> nomenclatureUrls = poguesUseCase.getNomenclaturesUrls(poguesId);
+        log.info("create {} nomenclature(s) for questionnaire {}", nomenclatureUrls.size(), poguesId);
+        nomenclatureUrls.forEach(queenService::createNomenclature);
+        return nomenclatureUrls;
+    }
+
+    /**
      * Create a questionnaire model in orchestrator backoffice and update synchronisation state for questionnaire mode
      *
      * @param questionnaireModelId questionnaire model id
-     * @param questionnaireModel                  questionnaireModel
+     * @param questionnaireModel   questionnaireModel
      * @param context              context
      * @param questionnaireMode    questionnaire mode
+     * @param nomenclatureUrls     nomenclature URL info list for required nomenclature ids
      */
-    private void createQuestionnaireModel(String questionnaireModelId, QuestionnaireModel questionnaireModel, Context context, QuestionnaireMode questionnaireMode) {
+    private void createQuestionnaireModel(String questionnaireModelId, QuestionnaireModel questionnaireModel, Context context, QuestionnaireMode questionnaireMode, List<NomenclatureUrl> nomenclatureUrls) {
         log.info(String.format("create questionnaire model %s", questionnaireModelId));
         JsonLunatic jsonLunatic = poguesUseCase.getJsonLunatic(questionnaireModel, context, questionnaireMode.getMode());
+        List<String> nomenclatureIds = nomenclatureUrls.stream().map(NomenclatureUrl::id).toList();
         questionnaireMode.setSynchronisationState(SynchronisationState.INIT_QUESTIONNAIRE.name());
-        queenService.createQuestionnaireModel(questionnaireModelId, questionnaireModel, jsonLunatic);
+        queenService.createQuestionnaireModel(questionnaireModelId, questionnaireModel, jsonLunatic, nomenclatureIds);
     }
 
     /**

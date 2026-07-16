@@ -4,6 +4,7 @@ import fr.insee.publicenemy.api.application.domain.model.JsonLunatic;
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.exceptions.ServiceException;
 import fr.insee.publicenemy.api.application.ports.I18nMessagePort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
@@ -25,7 +26,6 @@ import reactor.core.publisher.Mono;
 import tools.jackson.databind.JsonNode;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -50,8 +50,8 @@ public class QueenServiceImpl implements QueenServicePort {
         this.messageService = messagePort;
     }
 
-    public void createQuestionnaireModel(String questionnaireModelId, @NotNull QuestionnaireModel questionnaireModel, @NotNull JsonLunatic jsonLunatic) {
-        QuestionnaireModelDto questionnaireModelDto = new QuestionnaireModelDto(questionnaireModelId, questionnaireModel.label(), new ArrayList<>(), jsonLunatic.jsonContent());
+    public void createQuestionnaireModel(String questionnaireModelId, @NotNull QuestionnaireModel questionnaireModel, @NotNull JsonLunatic jsonLunatic, List<String> nomenclatureIds) {
+        QuestionnaireModelDto questionnaireModelDto = new QuestionnaireModelDto(questionnaireModelId, questionnaireModel.label(), nomenclatureIds, jsonLunatic.jsonContent());
 
         URI uri = UriComponentsBuilder
                 .fromUriString(queenUrl)
@@ -94,6 +94,42 @@ public class QueenServiceImpl implements QueenServicePort {
                 .block();
 
         return result != null && !result.isEmpty();
+    }
+
+    @Override
+    public void createNomenclature(NomenclatureUrl nomenclatureUrl) {
+        String content = webClient.get().uri(nomenclatureUrl.url())
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                String.format("Error fetching nomenclature content from %s", nomenclatureUrl.url())))
+                )
+                .bodyToMono(String.class)
+                .blockOptional().orElse("[]");
+
+        NomenclatureDto nomenclatureDto = new NomenclatureDto(nomenclatureUrl.id(), nomenclatureUrl.id(), content);
+
+        URI uri = UriComponentsBuilder
+                .fromUriString(queenUrl)
+                .path("/api/nomenclature")
+                .build()
+                .toUri();
+
+        webClient.post().uri(uri)
+                .body(BodyInserters.fromValue(nomenclatureDto))
+                .retrieve()
+                .onStatus(
+                        HttpStatus.CONFLICT::equals,
+                        response -> Mono.empty()
+                )
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new ServiceException(HttpStatus.valueOf(response.statusCode().value()),
+                                String.format("Error creating nomenclature %s in queen", nomenclatureUrl.id())))
+                )
+                .toBodilessEntity()
+                .block();
     }
 
     public void createCampaign(@NotNull String campaignId, @NotNull Questionnaire questionnaire, QuestionnaireModel questionnaireModel) {

@@ -2,8 +2,8 @@ package fr.insee.publicenemy.api.application.ports;
 
 import fr.insee.publicenemy.api.application.domain.model.Questionnaire;
 import fr.insee.publicenemy.api.application.domain.model.QuestionnaireModel;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.domain.model.pogues.VariableType;
-import tools.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -23,12 +23,12 @@ public interface PoguesServicePort {
     Questionnaire getQuestionnaire(String poguesId);
 
     /**
-     * Get nomenclature
+     * Get nomenclatures with URLs for a questionnaire
      *
      * @param poguesId questionnaire pogues id
-     * @return the nomenclature of questionnaire
+     * @return list of nomenclature id+url used by the questionnaire
      */
-    JsonNode getNomenclaturesByQuestionnaire(String poguesId);
+    List<NomenclatureUrl> getNomenclatureUrls(String poguesId);
 
     /**
      * Get Json Pogues variables

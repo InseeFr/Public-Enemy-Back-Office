@@ -2,6 +2,7 @@ package fr.insee.publicenemy.api.application.usecase;
 
 import fr.insee.publicenemy.api.application.domain.model.*;
 import fr.insee.publicenemy.api.application.domain.model.interrogation.Interrogation;
+import fr.insee.publicenemy.api.application.domain.model.pogues.NomenclatureUrl;
 import fr.insee.publicenemy.api.application.ports.InterrogationJsonPort;
 import fr.insee.publicenemy.api.application.ports.PersonalizationPort;
 import fr.insee.publicenemy.api.application.ports.QueenServicePort;
@@ -71,7 +72,7 @@ class QueenUseCaseTest {
         when(poguesUseCase.getJsonLunatic(questionnaireModel, context, mode)).thenReturn(jsonLunatic);
         when(questionnaire.getContext()).thenReturn(context);
         queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
-        verify(queenServicePort).createQuestionnaireModel(any(), eq(questionnaireModel), eq(jsonLunatic));
+        verify(queenServicePort).createQuestionnaireModel(any(), eq(questionnaireModel), eq(jsonLunatic), any());
     }
 
     @Test
@@ -112,7 +113,7 @@ class QueenUseCaseTest {
 
         when(questionnaire.getContext()).thenReturn(context);
         queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
-        modes.forEach(mode -> verify(queenServicePort).createQuestionnaireModel(any(), eq(questionnaireModel), eq(map.get(mode))));
+        modes.forEach(mode -> verify(queenServicePort).createQuestionnaireModel(any(), eq(questionnaireModel), eq(map.get(mode)), any()));
     }
 
     @Test
@@ -125,7 +126,7 @@ class QueenUseCaseTest {
         Mockito.lenient().when(poguesUseCase.getJsonLunatic(questionnaireModel, context, Mode.PAPI)).thenReturn(jsonLunatic);
         when(questionnaire.getContext()).thenReturn(context);
         queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
-        verify(queenServicePort, times(0)).createQuestionnaireModel(any(), eq(questionnaireModel), eq(jsonLunatic));
+        verify(queenServicePort, times(0)).createQuestionnaireModel(any(), eq(questionnaireModel), eq(jsonLunatic), any());
     }
 
     @Test
@@ -225,6 +226,64 @@ class QueenUseCaseTest {
             assertTrue(modes.contains(mode));
         }
         assertEquals(modes.size(), questionnaireTest.getQuestionnaireModes().size());
+    }
+
+    @Test
+    void onSynchronizeShouldCreateNomenclatures() {
+        Context context = Context.BUSINESS;
+        String poguesId = "l8wwljbo";
+        NomenclatureUrl nom1 = new NomenclatureUrl("COMMUNES-2025", "https://example.com/COMMUNES-2025");
+        NomenclatureUrl nom2 = new NomenclatureUrl("DEPARTEMENTS-2026", "https://example.com/DEPARTEMENTS-2026");
+        List<NomenclatureUrl> nomenclatureUrls = List.of(nom1, nom2);
+
+        QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
+        when(questionnaire.getQuestionnaireModes()).thenReturn(List.of(questionnaireMode));
+        when(questionnaire.getContext()).thenReturn(context);
+        when(questionnaire.getPoguesId()).thenReturn(poguesId);
+        when(poguesUseCase.getNomenclaturesUrls(poguesId)).thenReturn(nomenclatureUrls);
+
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+
+        verify(queenServicePort).createNomenclature(nom1);
+        verify(queenServicePort).createNomenclature(nom2);
+    }
+
+    @Test
+    void onSynchronizeShouldNotCreateNomenclatureWhenNomenclaturesListIsEmpty() {
+        Context context = Context.BUSINESS;
+        String poguesId = "l8wwljbo";
+        List<NomenclatureUrl> nomenclatureUrls = List.of();
+
+        QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
+        when(questionnaire.getQuestionnaireModes()).thenReturn(List.of(questionnaireMode));
+        when(questionnaire.getContext()).thenReturn(context);
+        when(questionnaire.getPoguesId()).thenReturn(poguesId);
+        when(poguesUseCase.getNomenclaturesUrls(poguesId)).thenReturn(nomenclatureUrls);
+
+
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+
+        verify(queenServicePort, never()).createNomenclature(any());
+    }
+
+    @Test
+    void onSynchronizeShouldAddRequiredNomenclaturesToQuestionnaire() {
+        Context context = Context.BUSINESS;
+        String poguesId = "l8wwljbo";
+        NomenclatureUrl nom1 = new NomenclatureUrl("COMMUNES-2025", "https://example.com/COMMUNES-2025");
+        NomenclatureUrl nom2 = new NomenclatureUrl("DEPARTEMENTS-2026", "https://example.com/DEPARTEMENTS-2026");
+        List<NomenclatureUrl> nomenclatureUrls = List.of(nom1, nom2);
+        List<String> expectedIds = List.of("COMMUNES-2025", "DEPARTEMENTS-2026");
+
+        QuestionnaireMode questionnaireMode = new QuestionnaireMode(Mode.CAWI);
+        when(questionnaire.getQuestionnaireModes()).thenReturn(List.of(questionnaireMode));
+        when(questionnaire.getContext()).thenReturn(context);
+        when(questionnaire.getPoguesId()).thenReturn(poguesId);
+        when(poguesUseCase.getNomenclaturesUrls(poguesId)).thenReturn(nomenclatureUrls);
+
+        queenUseCase.synchronizeCreate(questionnaireModel, questionnaire);
+
+        verify(queenServicePort).createQuestionnaireModel(any(), eq(questionnaireModel), any(), eq(expectedIds));
     }
 
     @Test
