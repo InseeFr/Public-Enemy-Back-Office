@@ -25,12 +25,14 @@
         <sonar.projectKey>InseeFr_Public-Enemy-Back-Office</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.java.binaries>target</sonar.java.binaries>
-        <revision>3.4.1</revision>
+        <revision>3.4.3</revision>
 
         <!-- Version properties not managed by Spring Boot -->
         <springdoc-openapi-ui.version>3.0.3</springdoc-openapi-ui.version>
 
         <!-- !!! Version properties overridden from Spring Boot !!! -->
+        <netty.version>4.2.16.Final</netty.version>
+        <postgresql.version>42.7.12</postgresql.version>
     </properties>
 
     <dependencies>
@@ -100,14 +102,14 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
+            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>mockwebserver</artifactId>
-            <version>4.12.0</version>
+            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
 
