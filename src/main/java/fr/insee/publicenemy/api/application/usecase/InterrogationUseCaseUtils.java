@@ -12,6 +12,8 @@ import tools.jackson.databind.json.JsonMapper;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class InterrogationUseCaseUtils {
@@ -53,7 +55,10 @@ public class InterrogationUseCaseUtils {
                 String dataUrl = String.format("%s/api/interrogations/%s",
                         apiQuestionnaire,
                         interrogationId);
-                    String nomenclaturesJson = OBJECT_MAPPER.writeValueAsString(nomenclatureUrls);
+                    Map<String, String> nomenclatureUrisById = nomenclatureUrls.stream().collect(
+                            Collectors.toMap(NomenclatureUrl::id, NomenclatureUrl::url)
+                    );
+                    String nomenclaturesJson = OBJECT_MAPPER.writeValueAsString(nomenclatureUrisById);
                     return String.format(capiCatiVisuSchema,
                             capiCatiOrchestratorUrl,
                             URLEncoder.encode(questionnaireUrl, StandardCharsets.UTF_8),

@@ -25,7 +25,7 @@
         <sonar.projectKey>InseeFr_Public-Enemy-Back-Office</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.java.binaries>target</sonar.java.binaries>
-        <revision>3.4.3</revision>
+        <revision>3.4.4</revision>
 
         <!-- Version properties not managed by Spring Boot -->
         <springdoc-openapi-ui.version>3.0.3</springdoc-openapi-ui.version>
