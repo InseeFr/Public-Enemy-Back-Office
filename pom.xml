@@ -28,7 +28,7 @@
         <revision>3.5.1</revision>
 
         <!-- Version properties not managed by Spring Boot -->
-        <springdoc-openapi-ui.version>3.1.0</springdoc-openapi-ui.version>
+        <springdoc-openapi-ui.version>3.1.1</springdoc-openapi-ui.version>
 
         <!-- !!! Version properties overridden from Spring Boot !!! -->
         <postgresql.version>42.7.13</postgresql.version>
@@ -208,7 +208,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.15.0</version>
+                <version>3.16.0</version>
                 <configuration>
                     <!--Ajout nécessaire à partir de java 23-->
                     <annotationProcessorPaths>
